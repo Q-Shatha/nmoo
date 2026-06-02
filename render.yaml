@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: nmoo-api
+    runtime: node
+    rootDir: backend
+    plan: starter
+    buildCommand: npm install && npm run deploy:prepare
+    startCommand: npm run start:prod
+    healthCheckPath: /api
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nmoo-postgres
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://nmoo.com
+      - key: CORS_ORIGINS
+        value: https://nmoo.com
+      - key: SWAGGER_ENABLED
+        value: "false"
+      - key: RATE_LIMIT_TTL_SECONDS
+        value: "60"
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: "120"
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_CURRENCY
+        value: sar
+      - key: PUBLIC_ASSET_BASE_URL
+        value: https://cdn.nmoo.com
+
+databases:
+  - name: nmoo-postgres
+    plan: starter
+    databaseName: nmoo_db
+    user: nmoo

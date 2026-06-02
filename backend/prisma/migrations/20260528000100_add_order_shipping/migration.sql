@@ -1,0 +1,3 @@
+ALTER TABLE "orders"
+ADD COLUMN "shippingCarrier" TEXT,
+ADD COLUMN "shippingFee" DECIMAL(10,2) NOT NULL DEFAULT 0;

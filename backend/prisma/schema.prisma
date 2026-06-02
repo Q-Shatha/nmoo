@@ -1,0 +1,308 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BUYER
+  VENDOR
+  ADMIN
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum DiscountType {
+  FIXED
+  PERCENTAGE
+}
+
+model User {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  storeUsername   String?  @unique
+  passwordHash    String
+  role            UserRole @default(BUYER)
+  country         String?
+  phoneNumber     String?
+  region          String?
+  city            String?
+  district        String?
+  street          String?
+  buildingNumber  String?
+  postalCode      String?
+  nationalAddress String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  products        Product[]
+  categories      Category[]
+  orders          Order[]
+  shippingMethods VendorShippingMethod[]
+  storePages      StorePage[]
+  theme           VendorTheme?
+  discountCodes   DiscountCode[]
+  discountUses    DiscountRedemption[]
+  subscription    VendorSubscription?
+  reviews         Review[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model VendorSubscription {
+  id        String    @id @default(uuid())
+  vendorId  String    @unique
+  plan      String    @default("free")
+  status    String    @default("none")
+  startedAt DateTime?
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  vendor User @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendor_subscriptions")
+}
+
+model VendorShippingMethod {
+  id          String   @id @default(uuid())
+  vendorId    String
+  code        String
+  name        String
+  description String?
+  eta         String?
+  fee         Decimal  @db.Decimal(10, 2)
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor User @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorId, code])
+  @@index([vendorId])
+  @@index([code])
+  @@map("vendor_shipping_methods")
+}
+
+model StorePage {
+  id        String   @id @default(uuid())
+  vendorId  String
+  title     String
+  slug      String
+  content   String
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor User @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorId, slug])
+  @@index([vendorId])
+  @@index([published])
+  @@map("store_pages")
+}
+
+model VendorTheme {
+  id             String   @id @default(uuid())
+  vendorId       String   @unique
+  primaryColor   String   @default("#884a70")
+  secondaryColor String   @default("#1e293b")
+  logoUrl        String?
+  bannerUrl      String?
+  storefrontImageUrl String?
+  storefrontTitle String?
+  storefrontDescription String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  vendor User @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendor_themes")
+}
+
+model DiscountCode {
+  id             String       @id @default(uuid())
+  vendorId       String
+  code           String
+  description    String?
+  type           DiscountType @default(FIXED)
+  value          Decimal      @db.Decimal(10, 2)
+  enabled        Boolean      @default(true)
+  maxUses        Int?
+  maxUsesPerUser Int?
+  startsAt       DateTime?
+  expiresAt      DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  vendor      User                 @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  redemptions DiscountRedemption[]
+
+  @@unique([vendorId, code])
+  @@index([vendorId])
+  @@index([code])
+  @@index([enabled])
+  @@map("discount_codes")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  vendorId  String?
+  name      String
+  slug      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor   User?     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  products Product[]
+
+  @@unique([vendorId, slug])
+  @@index([vendorId])
+  @@map("categories")
+}
+
+model Product {
+  id          String        @id @default(uuid())
+  vendorId    String
+  categoryId  String?
+  title       String
+  slug        String        @unique
+  description String?
+  price       Decimal       @db.Decimal(10, 2)
+  discountType  DiscountType?
+  discountValue Decimal?    @db.Decimal(10, 2)
+  stock       Int           @default(0)
+  status      ProductStatus @default(DRAFT)
+  imageUrl    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  vendor     User            @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  category   Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images     ProductImage[]
+  options    ProductOption[]
+  orderItems OrderItem[]
+  reviews    Review[]
+
+  @@index([vendorId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([title])
+  @@map("products")
+}
+
+model ProductOption {
+  id        String   @id @default(uuid())
+  productId String
+  name      String
+  values    String[]
+  sortOrder Int      @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_options")
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  productId String
+  url       String
+  alt       String?
+  sortOrder Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  buyerId         String
+  status          OrderStatus @default(PENDING)
+  total           Decimal     @db.Decimal(10, 2)
+  shippingCarrier String?
+  shippingFee     Decimal     @default(0) @db.Decimal(10, 2)
+  discountCode    String?
+  discountAmount  Decimal     @default(0) @db.Decimal(10, 2)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  buyer              User                @relation(fields: [buyerId], references: [id], onDelete: Restrict)
+  items              OrderItem[]
+  discountRedemption DiscountRedemption?
+
+  @@index([buyerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model DiscountRedemption {
+  id             String   @id @default(uuid())
+  discountCodeId String
+  orderId        String   @unique
+  userId         String
+  amount         Decimal  @db.Decimal(10, 2)
+  createdAt      DateTime @default(now())
+
+  discountCode DiscountCode @relation(fields: [discountCodeId], references: [id], onDelete: Cascade)
+  order        Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([discountCodeId])
+  @@index([userId])
+  @@map("discount_redemptions")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  productId String
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([productId])
+  @@index([userId])
+  @@map("reviews")
+}

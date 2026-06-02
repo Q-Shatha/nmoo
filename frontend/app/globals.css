@@ -1,0 +1,403 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-tertiary-fixed: #d8e3fb;
+  --color-surface-container: #eaeef2;
+  --color-surface-container-high: #e4e9ed;
+  --color-on-surface: #171c1f;
+  --color-on-primary-fixed-variant: #6c3357;
+  --color-on-tertiary-fixed-variant: #3c475a;
+  --color-on-surface-variant: #50434a;
+  --color-on-primary: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-outline: #82737a;
+  --color-on-tertiary-container: #404b5e;
+  --color-secondary-container: #1e293b;
+  --color-secondary-fixed-dim: #1e293b;
+  --color-outline-variant: #d4c2c9;
+  --color-primary-fixed: #ffd8eb;
+  --color-on-primary-container: #71365b;
+  --color-on-tertiary: #ffffff;
+  --color-surface-tint: #884a70;
+  --color-on-secondary-fixed-variant: #f8fafc;
+  --color-primary-fixed-dim: #fcb0db;
+  --color-secondary-fixed: #1e293b;
+  --color-error: #ba1a1a;
+  --color-on-secondary: #f8fafc;
+  --color-tertiary-fixed-dim: #bcc7de;
+  --color-surface-container-low: #f0f4f8;
+  --color-tertiary: #545f73;
+  --color-on-error-container: #93000a;
+  --color-on-background: #171c1f;
+  --color-on-tertiary-fixed: #111c2d;
+  --color-surface-dim: #d6dade;
+  --color-surface-variant: #dfe3e7;
+  --color-surface-bright: #f6fafe;
+  --color-tertiary-container: #b0bbd2;
+  --color-on-secondary-container: #f8fafc;
+  --color-surface-container-highest: #dfe3e7;
+  --color-inverse-primary: #fcb0db;
+  --color-primary-container: #efa4cf;
+  --color-on-secondary-fixed: #f8fafc;
+  --color-surface: #f6fafe;
+  --color-primary: #884a70;
+  --color-inverse-surface: #2c3134;
+  --color-background: #f6fafe;
+  --color-secondary: #1e293b;
+  --color-on-primary-fixed: #38052a;
+  --color-inverse-on-surface: #edf1f5;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-error: #ffffff;
+
+  --radius-DEFAULT: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 12px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  
+  --spacing-xl: 80px;
+  --spacing-sm: 12px;
+  --spacing-margin-mobile: 16px;
+  --spacing-base: 8px;
+  --spacing-gutter: 24px;
+  --spacing-margin-desktop: 64px;
+  --spacing-xs: 4px;
+  --spacing-lg: 48px;
+  --spacing-md: 24px;
+
+  --container-sm: 24rem;
+  --container-md: 28rem;
+  --container-lg: 32rem;
+  --container-xl: 36rem;
+  --container-2xl: 42rem;
+  --container-3xl: 48rem;
+  --container-4xl: 56rem;
+  --container-5xl: 64rem;
+  --container-6xl: 72rem;
+  --container-7xl: 80rem;
+
+  --font-headline-lg: "IBM Plex Sans Arabic", "IBM Plex Sans", sans-serif;
+  --font-headline-md: "IBM Plex Sans Arabic", "IBM Plex Sans", sans-serif;
+  --font-body-lg: "IBM Plex Sans Arabic", "IBM Plex Sans", sans-serif;
+  --font-body-md: "IBM Plex Sans Arabic", "IBM Plex Sans", sans-serif;
+  --font-label-md: "IBM Plex Sans Arabic", "IBM Plex Sans", sans-serif;
+  --font-label-sm: "IBM Plex Sans Arabic", "IBM Plex Sans", sans-serif;
+}
+
+body {
+  font-family: var(--font-ibm-plex), "IBM Plex Sans Arabic", "IBM Plex Sans", sans-serif;
+  scroll-behavior: smooth;
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+}
+
+::selection {
+  background: var(--color-primary-fixed-dim);
+  color: var(--color-on-primary-fixed);
+}
+
+.bg-background {
+  background-color: var(--color-background) !important;
+}
+
+.bg-surface {
+  background-color: var(--color-surface) !important;
+}
+
+.bg-surface-container-lowest {
+  background-color: var(--color-surface-container-lowest) !important;
+}
+
+.bg-surface-container-low {
+  background-color: var(--color-surface-container-low) !important;
+}
+
+.bg-surface-container {
+  background-color: var(--color-surface-container) !important;
+}
+
+.bg-surface-container-high {
+  background-color: var(--color-surface-container-high) !important;
+}
+
+.bg-surface-container-highest {
+  background-color: var(--color-surface-container-highest) !important;
+}
+
+.bg-surface-variant {
+  background-color: var(--color-surface-variant) !important;
+}
+
+.bg-primary {
+  background-color: var(--color-primary) !important;
+}
+
+.bg-primary-container {
+  background-color: var(--color-primary-container) !important;
+}
+
+.bg-primary-container\/25 {
+  background-color: color-mix(in oklab, var(--color-primary-container) 25%, transparent) !important;
+}
+
+.bg-primary-container\/30 {
+  background-color: color-mix(in oklab, var(--color-primary-container) 30%, transparent) !important;
+}
+
+.bg-primary-container\/35 {
+  background-color: color-mix(in oklab, var(--color-primary-container) 35%, transparent) !important;
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary) !important;
+}
+
+.bg-secondary-container {
+  background-color: var(--color-secondary-container) !important;
+}
+
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.text-on-primary {
+  color: var(--color-on-primary) !important;
+}
+
+.text-on-primary-container {
+  color: var(--color-on-primary-container) !important;
+}
+
+.text-secondary {
+  color: var(--color-secondary) !important;
+}
+
+.text-on-secondary {
+  color: var(--color-on-secondary) !important;
+}
+
+.text-on-secondary-container {
+  color: var(--color-on-secondary-container) !important;
+}
+
+.text-on-background {
+  color: var(--color-on-background) !important;
+}
+
+.text-on-surface {
+  color: var(--color-on-surface) !important;
+}
+
+.text-on-surface-variant {
+  color: var(--color-on-surface-variant) !important;
+}
+
+.border-primary {
+  border-color: var(--color-primary) !important;
+}
+
+.border-outline {
+  border-color: var(--color-outline) !important;
+}
+
+.border-outline-variant {
+  border-color: var(--color-outline-variant) !important;
+}
+
+.border-outline-variant\/20 {
+  border-color: color-mix(in oklab, var(--color-outline-variant) 20%, transparent) !important;
+}
+
+.border-outline-variant\/25 {
+  border-color: color-mix(in oklab, var(--color-outline-variant) 25%, transparent) !important;
+}
+
+.border-outline-variant\/30 {
+  border-color: color-mix(in oklab, var(--color-outline-variant) 30%, transparent) !important;
+}
+
+.border-outline-variant\/35 {
+  border-color: color-mix(in oklab, var(--color-outline-variant) 35%, transparent) !important;
+}
+
+.border-outline-variant\/40 {
+  border-color: color-mix(in oklab, var(--color-outline-variant) 40%, transparent) !important;
+}
+
+.hover\:bg-primary\/90:hover {
+  background-color: color-mix(in oklab, var(--color-primary) 90%, white) !important;
+}
+
+.hover\:bg-primary-container\/30:hover {
+  background-color: color-mix(in oklab, var(--color-primary-container) 30%, transparent) !important;
+}
+
+.hover\:text-primary:hover {
+  color: var(--color-primary) !important;
+}
+
+.hover\:border-primary\/50:hover {
+  border-color: color-mix(in oklab, var(--color-primary) 50%, transparent) !important;
+}
+
+.peer:checked ~ .peer-checked\:border-primary {
+  border-color: var(--color-primary) !important;
+}
+
+.peer:checked ~ .peer-checked\:bg-primary-container\/35 {
+  background-color: color-mix(in oklab, var(--color-primary-container) 35%, transparent) !important;
+}
+
+.peer:checked ~ .peer-checked\:text-primary {
+  color: var(--color-primary) !important;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(241, 245, 249, 0.5);
+}
+
+.hero-gradient {
+  background: radial-gradient(circle at 70% 30%, rgba(239, 164, 207, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+.app-container {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .app-container {
+    padding-inline: 4rem;
+  }
+}
+
+.panel {
+  background: var(--color-surface-container-lowest);
+  border: 1px solid color-mix(in oklab, var(--color-outline-variant) 55%, transparent);
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(23, 28, 31, 0.05);
+}
+
+.dashboard-panel {
+  background: color-mix(in oklab, var(--color-surface-container-lowest) 92%, white);
+  border: 1px solid color-mix(in oklab, var(--color-outline-variant) 45%, transparent);
+  border-radius: 1rem;
+  box-shadow: 0 10px 28px rgba(23, 28, 31, 0.06);
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 700;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.primary-button:active,
+.secondary-button:active,
+.icon-button:active {
+  transform: translateY(1px);
+}
+
+.primary-button:hover {
+  background: color-mix(in oklab, var(--color-primary) 92%, black);
+}
+
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font-weight: 700;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.secondary-button:hover {
+  background: var(--color-surface-container-low);
+  border-color: var(--color-primary-container);
+}
+
+.input-field {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--color-outline-variant) 72%, transparent);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.input-field::placeholder {
+  color: color-mix(in oklab, var(--color-on-surface-variant) 70%, white);
+}
+
+.input-field:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary-container) 45%, transparent);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--color-primary-fixed) 78%, white);
+  color: var(--color-on-primary-fixed-variant);
+  font-weight: 700;
+}
+
+.icon-button {
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font-weight: 800;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.icon-button:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-primary);
+}
+
+.section-title {
+  color: var(--color-on-surface);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.section-copy {
+  color: var(--color-on-surface-variant);
+  line-height: 2;
+}
+
+.muted-link {
+  color: var(--color-on-surface-variant);
+  transition: color 160ms ease;
+}
+
+.muted-link:hover {
+  color: var(--color-primary);
+}

@@ -1,0 +1,9 @@
+{
+  "name": "nmoo-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "check:production": "node scripts/check-production.js",
+    "check:local": "node scripts/check-production.js http://localhost:3000 http://localhost:5000"
+  }
+}
