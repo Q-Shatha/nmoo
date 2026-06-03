@@ -17,6 +17,12 @@ export class ReviewsController {
     return this.reviewsService.findByVendor(vendorId);
   }
 
+  @Get("product/:productId")
+  @ApiOperation({ summary: "List public reviews for one product" })
+  findByProduct(@Param("productId", ParseUUIDPipe) productId: string) {
+    return this.reviewsService.findByProduct(productId);
+  }
+
   @Get("vendor/:vendorId/reviewable-products")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

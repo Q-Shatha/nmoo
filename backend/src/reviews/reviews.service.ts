@@ -64,6 +64,24 @@ export class ReviewsService {
     return reviews.map((review) => this.serializeReview(review));
   }
 
+  async findByProduct(productId: string) {
+    const reviews = await this.prisma.review.findMany({
+      where: {
+        product: {
+          id: productId,
+          status: ProductStatus.ACTIVE,
+        },
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      take: 48,
+      include: this.reviewIncludes(),
+    });
+
+    return reviews.map((review) => this.serializeReview(review));
+  }
+
   async create(dto: CreateReviewDto, user: AuthenticatedUser) {
     if (user.role === UserRole.VENDOR) {
       throw new ForbiddenException("Vendors cannot review products as customers");

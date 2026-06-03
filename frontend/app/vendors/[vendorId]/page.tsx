@@ -157,17 +157,23 @@ function ReviewsSection({ profileHref, reviews, vendor }: { profileHref: string;
 
   return (
     <section id="reviews" className="mt-20 rounded-[28px] border border-outline-variant/25 bg-surface-container-lowest px-5 py-10 shadow-sm md:px-16 md:py-14">
-      <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-start">
-        <Link className="secondary-button order-2 px-7 py-3 text-primary md:order-1" href={`${profileHref}/reviews/new`}>
+      <div className="flex justify-start text-right">
+        <Link className="hidden" href={`${profileHref}/reviews/new`}>
           كتابة مراجعة
         </Link>
-        <div className="order-1 text-right md:order-2">
+        <div className="text-right [&>p]:hidden">
           <h2 className="text-2xl font-black text-on-surface">آراء العملاء</h2>
           <p className="mt-2 text-on-surface-variant">ماذا يقول المتسوقون عن تجربتهم مع متجر {vendor.name}</p>
         </div>
       </div>
 
-      <ReviewsCarousel fallbackReviews={fallbackReviews} reviews={visibleReviews} vendor={vendor} />
+      <ReviewsCarousel fallbackContext={`متجر ${vendor.name}`} fallbackReviews={fallbackReviews} reviews={visibleReviews} />
+
+      <div className="mt-8 flex justify-start">
+        <Link className="primary-button px-7 py-3" href={`${profileHref}/reviews/new`}>
+          كتابة مراجعة
+        </Link>
+      </div>
 
       <div className="hidden">
         <div className="review-marquee-track flex w-max gap-6">

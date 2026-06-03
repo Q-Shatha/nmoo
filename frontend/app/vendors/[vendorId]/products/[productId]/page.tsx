@@ -2,12 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { ApiError, getProductById, getProducts, getVendorTheme, Product, VendorTheme } from "@/lib/api";
+import { ApiError, getProductById, getProductReviews, getProducts, getVendorTheme, Product, Review, VendorTheme } from "@/lib/api";
 import { themeToStyle } from "@/lib/theme";
 import { AddToCartWithQuantity } from "../../../../components/AddToCartWithQuantity";
 import { ProductCard } from "../../../../components/ProductCard";
 import { PublicFooter } from "../../../../components/PublicFooter";
 import { PublicHeader } from "../../../../components/PublicHeader";
+import { ReviewsCarousel } from "../../ReviewsCarousel";
 
 const fallbackProductImage =
   "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=1200&q=80";
@@ -23,6 +24,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
   const { vendorId, productId } = await params;
   const product = await loadProduct(productId, vendorId);
   const relatedProducts = await loadRelatedProducts(product, vendorId);
+  const reviews = await loadProductReviews(product.id);
   const theme = await loadProductTheme(product);
   const images = getProductImages(product);
   const hasDiscount = Boolean(product.hasDiscount && product.salePrice && Number(product.salePrice) < Number(product.price));
@@ -138,6 +140,24 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
           </div>
         </section>
 
+        <section id="reviews" className="mt-16 rounded-[28px] border border-outline-variant/25 bg-surface-container-lowest px-5 py-10 shadow-sm md:px-12 md:py-12">
+          <div className="flex justify-start text-right">
+            <Link className="hidden" href={`${profileHref}/reviews/new`}>
+              كتابة مراجعة
+            </Link>
+            <div className="text-right [&>p]:hidden">
+              <h2 className="text-2xl font-black text-on-surface">مراجعات المنتج</h2>
+              <p className="mt-2 text-on-surface-variant">آراء العملاء الذين اشتروا {product.title}</p>
+            </div>
+          </div>
+          <ReviewsCarousel fallbackContext={product.title} reviews={reviews} />
+          <div className="mt-8 flex justify-start">
+            <Link className="primary-button px-7 py-3" href={`${profileHref}/reviews/new`}>
+              كتابة مراجعة
+            </Link>
+          </div>
+        </section>
+
         {relatedProducts.length > 0 ? (
           <section className="mt-16 border-t border-outline-variant/20 pt-12">
             <h2 className="section-title mb-8 text-center text-3xl">قد يعجبك أيضا</h2>
@@ -170,6 +190,14 @@ async function loadProduct(id: string, vendorId: string) {
     }
 
     throw error;
+  }
+}
+
+async function loadProductReviews(productId: string): Promise<Review[]> {
+  try {
+    return await getProductReviews(productId);
+  } catch {
+    return [];
   }
 }
 

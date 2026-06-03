@@ -448,6 +448,12 @@ export function getVendorReviews(vendorId: string) {
   });
 }
 
+export function getProductReviews(productId: string) {
+  return apiRequest<Review[]>(`/reviews/product/${productId}`, {
+    cache: "no-store",
+  });
+}
+
 export function getReviewableProducts(vendorId: string, token: string) {
   return apiRequest<ReviewableProduct[]>(`/reviews/vendor/${vendorId}/reviewable-products`, {
     token,
