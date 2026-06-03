@@ -88,6 +88,7 @@ export class ProductsService {
         title: createProductDto.title,
         slug: await this.createUniqueSlug(createProductDto.title),
         description: createProductDto.description,
+        badgeLabel: this.normalizeOptionalText(createProductDto.badgeLabel),
         price: new Prisma.Decimal(createProductDto.price),
         discountType: discountData.discountType,
         discountValue: discountData.discountValue,
@@ -119,6 +120,7 @@ export class ProductsService {
     const data: Prisma.ProductUpdateInput = {
       title: updateProductDto.title,
       description: updateProductDto.description,
+      badgeLabel: this.normalizeOptionalText(updateProductDto.badgeLabel),
       stock: updateProductDto.stock,
       imageUrl: updateProductDto.imageUrl,
       status: updateProductDto.status,
@@ -364,6 +366,15 @@ export class ProductsService {
         sortOrder: index,
       }))
       .filter((option) => option.name && option.values.length > 0);
+  }
+
+  private normalizeOptionalText(value: string | undefined) {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    const trimmedValue = value.trim();
+    return trimmedValue.length > 0 ? trimmedValue : null;
   }
 
   private productIncludes() {

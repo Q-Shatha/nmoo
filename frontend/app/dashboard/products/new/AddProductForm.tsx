@@ -8,6 +8,7 @@ import { normalizeProductOptions, ProductDraft, ProductFields, ProductImageUploa
 const emptyDraft: ProductDraft = {
   title: "",
   description: "",
+  badgeLabel: "",
   price: "",
   discountType: "",
   discountValue: "",
@@ -83,6 +84,7 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
         {
           title: draft.title,
           description: draft.description,
+          badgeLabel: draft.badgeLabel,
           price: Number(draft.price),
           discountType: draft.discountType || undefined,
           discountValue: draft.discountType ? Number(draft.discountValue || 0) : 0,

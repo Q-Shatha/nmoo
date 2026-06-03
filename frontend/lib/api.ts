@@ -16,6 +16,7 @@ export type ApiUser = {
   name: string;
   email: string;
   storeUsername?: string | null;
+  avatarUrl?: string | null;
   role: UserRole;
   theme?: VendorTheme | null;
   country?: string | null;
@@ -71,6 +72,7 @@ export type Product = {
   title: string;
   slug: string;
   description?: string | null;
+  badgeLabel?: string | null;
   price: string;
   discountType?: DiscountType | null;
   discountValue?: string | null;
@@ -86,6 +88,26 @@ export type Product = {
   images?: ProductImage[];
   options?: ProductOption[];
 };
+
+export type Review = {
+  id: string;
+  productId: string;
+  userId: string;
+  rating: number;
+  comment?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user?: Pick<ApiUser, "id" | "name" | "avatarUrl" | "city">;
+  product?: Pick<Product, "id" | "title" | "vendorId">;
+};
+
+export type ReviewInput = {
+  productId: string;
+  rating: number;
+  comment?: string;
+};
+
+export type ReviewableProduct = Pick<Product, "id" | "title" | "vendorId">;
 
 export type PaginatedProducts = {
   data: Product[];
@@ -137,6 +159,10 @@ export type AddressInput = {
   nationalAddress?: string;
 };
 
+export type ProfileInput = {
+  name?: string;
+};
+
 export type LoginInput = {
   email: string;
   password: string;
@@ -145,6 +171,7 @@ export type LoginInput = {
 export type ProductInput = {
   title: string;
   description?: string;
+  badgeLabel?: string;
   price: number;
   discountType?: DiscountType;
   discountValue?: number;
@@ -246,6 +273,16 @@ export type VendorTheme = {
   storefrontImageUrl?: string | null;
   storefrontTitle?: string | null;
   storefrontDescription?: string | null;
+  whatsappUrl?: string | null;
+  instagramUrl?: string | null;
+  tiktokUrl?: string | null;
+  lineUrl?: string | null;
+  telegramUrl?: string | null;
+  xUrl?: string | null;
+  snapchatUrl?: string | null;
+  youtubeUrl?: string | null;
+  contactEmail?: string | null;
+  websiteUrl?: string | null;
   tokens: ThemeTokens;
 };
 
@@ -257,6 +294,16 @@ export type ThemeInput = {
   storefrontImageUrl?: string;
   storefrontTitle?: string;
   storefrontDescription?: string;
+  whatsappUrl?: string;
+  instagramUrl?: string;
+  tiktokUrl?: string;
+  lineUrl?: string;
+  telegramUrl?: string;
+  xUrl?: string;
+  snapchatUrl?: string;
+  youtubeUrl?: string;
+  contactEmail?: string;
+  websiteUrl?: string;
 };
 
 export type DiscountCode = {
@@ -395,6 +442,27 @@ export function getProductById(id: string) {
   return apiRequest<Product>(`/products/${id}`, { cache: "no-store" });
 }
 
+export function getVendorReviews(vendorId: string) {
+  return apiRequest<Review[]>(`/reviews/vendor/${vendorId}`, {
+    cache: "no-store",
+  });
+}
+
+export function getReviewableProducts(vendorId: string, token: string) {
+  return apiRequest<ReviewableProduct[]>(`/reviews/vendor/${vendorId}/reviewable-products`, {
+    token,
+    cache: "no-store",
+  });
+}
+
+export function createReview(input: ReviewInput, token: string) {
+  return apiRequest<Review>("/reviews", {
+    method: "POST",
+    token,
+    body: input,
+  });
+}
+
 export function getMyProducts(token: string) {
   return apiRequest<Product[]>("/products/me", {
     token,
@@ -519,6 +587,33 @@ export async function uploadProductImage(file: File, token: string) {
   }
 
   return payload as ProductImageUpload;
+}
+
+export async function uploadMyAvatar(file: File, token: string) {
+  const formData = new FormData();
+  formData.set("file", file);
+
+  const response = await fetch(buildUrl("/users/me/avatar"), {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  const contentType = response.headers.get("content-type") ?? "";
+  const payload = contentType.includes("application/json") ? await response.json() : await response.text();
+
+  if (!response.ok) {
+    const message =
+      typeof payload === "object" && payload !== null && "message" in payload
+        ? String((payload as { message: unknown }).message)
+        : `Request failed with status ${response.status}`;
+    throw new ApiError(message, response.status, payload);
+  }
+
+  return payload as ApiUser;
 }
 
 export function createOrder(input: CreateOrderInput, token: string) {
@@ -715,6 +810,14 @@ export function createCheckoutSession(orderId: string, token: string) {
 
 export function updateMyAddress(input: AddressInput, token: string) {
   return apiRequest<ApiUser>("/users/me/address", {
+    method: "PATCH",
+    token,
+    body: input,
+  });
+}
+
+export function updateMyProfile(input: ProfileInput, token: string) {
+  return apiRequest<ApiUser>("/users/me/profile", {
     method: "PATCH",
     token,
     body: input,

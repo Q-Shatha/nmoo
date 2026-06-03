@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ApiError, ApiUser, getProducts, getVendor, getVendorStorePages, getVendorTheme, Product, StorePage, VendorTheme } from "@/lib/api";
+import { ApiError, ApiUser, getProducts, getVendor, getVendorReviews, getVendorStorePages, getVendorTheme, Product, Review, StorePage, VendorTheme } from "@/lib/api";
 import { themeToStyle } from "@/lib/theme";
 import { ProductCard } from "../../components/ProductCard";
 import { PublicFooter } from "../../components/PublicFooter";
 import { PublicHeader } from "../../components/PublicHeader";
+import { ReviewsCarousel } from "./ReviewsCarousel";
 
 const fallbackHeroImage = "https://images.unsplash.com/photo-1607082349566-187342175e2f?auto=format&fit=crop&w=1800&q=85";
 
@@ -19,6 +20,7 @@ type VendorPageData =
       vendor: ApiUser;
       theme: VendorTheme;
       products: Product[];
+      reviews: Review[];
       storePages: StorePage[];
       total: number;
       query: string;
@@ -34,16 +36,15 @@ export default async function VendorPage({ params, searchParams }: VendorPagePro
     return <Unavailable message={data.message} />;
   }
 
-  return <VendorStorefront data={data} />;
+  return <VendorProfile data={data} />;
 }
 
-function VendorStorefront({ data }: { data: Extract<VendorPageData, { ok: true }> }) {
+function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }) {
   const storefrontImage = data.theme.storefrontImageUrl || data.products[0]?.imageUrl || data.products[0]?.images?.[0]?.url || fallbackHeroImage;
   const heroImage = data.theme.bannerUrl || storefrontImage;
   const logoImage = data.theme.logoUrl || "/nmoo-logo.png";
-  const aboutPage = findPage(data.storePages, ["about", "عن"]) ?? data.storePages[0];
   const returnPolicy = findPage(data.storePages, ["return", "استرجاع", "سياسة"]);
-  const rating = data.total > 20 ? "4.9" : "4.8";
+  const rating = data.reviews.length > 0 ? averageRating(data.reviews) : data.total > 20 ? "4.9" : "4.8";
   const profileHref = data.vendor.storeUsername ? `/${data.vendor.storeUsername}` : `/vendors/${data.vendor.id}`;
   const storefrontHref = `${profileHref}/storefront`;
 
@@ -79,7 +80,7 @@ function VendorStorefront({ data }: { data: Extract<VendorPageData, { ok: true }
 
               <div className="order-1 justify-self-end md:order-2">
                 <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-[10px] border-surface-container-lowest bg-surface-container-lowest shadow-xl md:h-36 md:w-36">
-                  <Image className="h-full w-full object-contain p-2" alt={`شعار ${data.vendor.name}`} src={logoImage} width={144} height={144} unoptimized />
+                  <Image className="h-full w-full object-cover" alt={`شعار ${data.vendor.name}`} src={logoImage} width={144} height={144} unoptimized />
                 </div>
               </div>
             </div>
@@ -93,7 +94,7 @@ function VendorStorefront({ data }: { data: Extract<VendorPageData, { ok: true }
 
           <section id="products" className="mt-16">
             <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
-              <form action={`/vendors/${data.vendor.id}`} className="order-2 lg:order-1 lg:w-[390px]">
+              <form action={profileHref} className="order-2 lg:order-1 lg:w-[390px]">
                 <label className="relative block">
                   <span className="sr-only">البحث في منتجات المتجر</span>
                   <input className="h-14 w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-5 text-right text-sm text-on-surface outline-none transition focus:border-primary focus:ring-4 focus:ring-primary-container/35" defaultValue={data.query} name="q" placeholder="البحث في منتجات المتجر..." type="search" />
@@ -101,10 +102,7 @@ function VendorStorefront({ data }: { data: Extract<VendorPageData, { ok: true }
               </form>
 
               <div className="order-1 flex justify-start lg:order-2">
-                <Link
-                  className="rounded-full bg-surface-container px-7 py-3 text-sm font-black text-primary transition hover:bg-primary hover:text-on-primary"
-                  href={storefrontHref}
-                >
+                <Link className="rounded-full bg-surface-container px-7 py-3 text-sm font-black text-primary transition hover:bg-primary hover:text-on-primary" href={storefrontHref}>
                   إظهار جميع المنتجات
                 </Link>
               </div>
@@ -127,16 +125,16 @@ function VendorStorefront({ data }: { data: Extract<VendorPageData, { ok: true }
               </>
             ) : (
               <div className="mt-8 rounded-2xl border border-outline-variant/35 bg-surface-container-lowest p-10 text-center font-bold text-on-surface-variant shadow-sm">
-                لا توجد منتجات نشطة لهذا التاجر حاليا.
+                لا توجد منتجات نشطة لهذا التاجر حالياً.
               </div>
             )}
           </section>
 
-          <ReviewsSection vendor={data.vendor} aboutPage={aboutPage} />
+          <ReviewsSection profileHref={profileHref} reviews={data.reviews} vendor={data.vendor} />
         </div>
       </main>
 
-      <PublicFooter storePages={data.storePages} />
+      <PublicFooter storePages={data.storePages} theme={data.theme} />
     </div>
   );
 }
@@ -153,11 +151,14 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
   );
 }
 
-function ReviewsSection({ vendor, aboutPage }: { vendor: ApiUser; aboutPage?: StorePage }) {
+function ReviewsSection({ profileHref, reviews, vendor }: { profileHref: string; reviews: Review[]; vendor: ApiUser }) {
+  const visibleReviews = reviews.length > 0 ? reviews : fallbackReviews;
+  const carouselReviews = [...visibleReviews, ...visibleReviews];
+
   return (
-    <section className="mt-20 rounded-[28px] border border-outline-variant/25 bg-surface-container-lowest px-5 py-10 shadow-sm md:px-16 md:py-14">
+    <section id="reviews" className="mt-20 rounded-[28px] border border-outline-variant/25 bg-surface-container-lowest px-5 py-10 shadow-sm md:px-16 md:py-14">
       <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-start">
-        <Link className="secondary-button order-2 px-7 py-3 text-primary md:order-1" href={aboutPage ? `/store-pages/${aboutPage.id}` : "#products"}>
+        <Link className="secondary-button order-2 px-7 py-3 text-primary md:order-1" href={`${profileHref}/reviews/new`}>
           كتابة مراجعة
         </Link>
         <div className="order-1 text-right md:order-2">
@@ -166,23 +167,42 @@ function ReviewsSection({ vendor, aboutPage }: { vendor: ApiUser; aboutPage?: St
         </div>
       </div>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
-        <ReviewCard name="أحمد محمد" city="الرياض" text="تجربة رائعة، وصلت المنتجات مغلفة بعناية والتواصل كان سريع من أول الطلب حتى استلام الشحنة." />
-        <ReviewCard name="سارة عبدالله" city="جدة" text="أعجبتني التفاصيل وسهولة استخدام المتجر. تجربة موفقة وأكيد سأكرر الطلب." />
+      <ReviewsCarousel fallbackReviews={fallbackReviews} reviews={visibleReviews} vendor={vendor} />
+
+      <div className="hidden">
+        <div className="review-marquee-track flex w-max gap-6">
+        {carouselReviews.map((review, index) => (
+          <ReviewCard
+            key={`${review.id}-${index}`}
+            city={review.user?.city ?? "عميل نمو"}
+            avatarUrl={review.user?.avatarUrl}
+            initials={getInitials(review.user?.name ?? "عميل")}
+            name={review.user?.name ?? "عميل"}
+            productTitle={review.product?.title}
+            rating={review.rating}
+            text={review.comment || "تجربة موفقة مع المتجر."}
+          />
+        ))}
+        </div>
       </div>
     </section>
   );
 }
 
-function ReviewCard({ name, city, text }: { name: string; city: string; text: string }) {
+function ReviewCard({ avatarUrl, city, initials, name, productTitle, rating, text }: { avatarUrl?: string | null; city: string; initials: string; name: string; productTitle?: string; rating: number; text: string }) {
   return (
-    <article className="rounded-2xl border border-outline-variant/35 bg-surface-container-lowest p-7 text-right shadow-sm">
+    <article className="w-[330px] shrink-0 rounded-2xl border border-outline-variant/35 bg-surface-container-lowest p-7 text-right shadow-sm sm:w-[390px]">
       <div className="flex items-center justify-between gap-4">
-        <div>
-          <h3 className="font-black text-on-surface">{name}</h3>
-          <p className="text-sm text-on-surface-variant">{city}</p>
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-sm font-black text-on-primary-container">
+            {avatarUrl ? <Image alt={name} className="object-cover" src={avatarUrl} fill sizes="48px" unoptimized /> : initials}
+          </div>
+          <div>
+            <h3 className="font-black text-on-surface">{name}</h3>
+            <p className="text-sm text-on-surface-variant">{productTitle ? `${city} · ${productTitle}` : city}</p>
+          </div>
         </div>
-        <span className="text-primary">{"★★★★★"}</span>
+        <span className="text-primary">{"★".repeat(rating)}{"☆".repeat(5 - rating)}</span>
       </div>
       <p className="mt-5 leading-8 text-on-surface-variant">“{text}”</p>
     </article>
@@ -209,10 +229,11 @@ function Unavailable({ message }: { message: string }) {
 
 async function loadVendorPage(vendorId: string, query: string): Promise<VendorPageData> {
   try {
-    const [vendor, theme, products, storePages] = await Promise.all([
+    const [vendor, theme, products, reviews, storePages] = await Promise.all([
       getVendor(vendorId),
       getVendorTheme(vendorId),
       getProducts({ vendorId, q: query || undefined, page: 1, limit: 8, sort: "latest" }),
+      getVendorReviews(vendorId),
       getVendorStorePages(vendorId),
     ]);
 
@@ -221,6 +242,7 @@ async function loadVendorPage(vendorId: string, query: string): Promise<VendorPa
       vendor,
       theme,
       products: products.data,
+      reviews,
       storePages,
       total: products.meta.total,
       query,
@@ -233,11 +255,46 @@ async function loadVendorPage(vendorId: string, query: string): Promise<VendorPa
   }
 }
 
+const fallbackReviews: Review[] = [
+  {
+    id: "fallback-ahmad",
+    productId: "fallback",
+    userId: "fallback-ahmad",
+    rating: 5,
+    comment: "تجربة رائعة، وصلت المنتجات مغلفة بعناية والتواصل كان سريع من أول الطلب حتى استلام الشحنة.",
+    createdAt: new Date(0).toISOString(),
+    updatedAt: new Date(0).toISOString(),
+    user: { id: "fallback-ahmad", name: "أحمد محمد", city: "الرياض" },
+    product: { id: "fallback", title: "طلب من المتجر", vendorId: "fallback" },
+  },
+  {
+    id: "fallback-sarah",
+    productId: "fallback",
+    userId: "fallback-sarah",
+    rating: 5,
+    comment: "أعجبتني التفاصيل وسهولة استخدام المتجر. تجربة موفقة وأكيد سأكرر الطلب.",
+    createdAt: new Date(0).toISOString(),
+    updatedAt: new Date(0).toISOString(),
+    user: { id: "fallback-sarah", name: "سارة عبدالله", city: "جدة" },
+    product: { id: "fallback", title: "طلب من المتجر", vendorId: "fallback" },
+  },
+];
+
 function findPage(pages: StorePage[], keywords: string[]) {
   return pages.find((page) => {
     const text = `${page.slug} ${page.title}`.toLowerCase();
     return keywords.some((keyword) => text.includes(keyword.toLowerCase()));
   });
+}
+
+function averageRating(reviews: Review[]) {
+  const average = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+  return average.toFixed(1);
+}
+
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return (parts[0]?.[0] ?? "ع") + (parts[1]?.[0] ?? "");
 }
 
 function formatMonthYear(value?: string) {

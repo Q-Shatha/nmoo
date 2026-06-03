@@ -4,6 +4,8 @@ import { ApiError, getMe } from "@/lib/api";
 import { getCountryLabel } from "@/lib/location-data";
 import { PublicFooter } from "../components/PublicFooter";
 import { PublicHeader } from "../components/PublicHeader";
+import { AccountAvatar } from "./AccountAvatar";
+import { EditableName } from "./EditableName";
 
 type AccountData =
   | {
@@ -42,11 +44,17 @@ function AccountDetails({ user }: { user: Awaited<ReturnType<typeof getMe>> }) {
   return (
     <section className="panel p-6 text-right">
       <div className="flex items-center gap-4 border-b border-outline-variant/20 pb-6">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-container text-2xl font-black text-on-primary-container">
-          {user.name.trim()[0] ?? "ن"}
+        <AccountAvatar user={user} />
+        <span className="hidden h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-primary-container text-2xl font-black text-on-primary-container">
+          {user.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img alt={user.name} className="h-full w-full object-cover" src={user.avatarUrl} />
+          ) : (
+            user.name.trim()[0] ?? "ن"
+          )}
         </span>
         <div>
-          <h2 className="text-2xl font-black text-on-surface">{user.name}</h2>
+          <EditableName user={user} />
           <p className="mt-1 text-on-surface-variant">{formatRole(user.role)}</p>
         </div>
       </div>
@@ -127,7 +135,7 @@ async function loadAccount(): Promise<AccountData> {
   if (!token) {
     return {
       ok: false,
-      message: "سجل الدخول أولا حتى نعرض بيانات حسابك.",
+      message: "سجل الدخول أولاً حتى نعرض بيانات حسابك.",
     };
   }
 

@@ -46,6 +46,12 @@ export class CreateProductDto {
   @MaxLength(1000)
   description?: string;
 
+  @ApiPropertyOptional({ example: "وصل حديثاً", maxLength: 40 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  badgeLabel?: string;
+
   @ApiProperty({ example: 149.99, minimum: 0 })
   @Type(() => Number)
   @IsNumber({ maxDecimalPlaces: 2 })

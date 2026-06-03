@@ -1,7 +1,9 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma, UserRole } from "@prisma/client";
+import { ProductAssetsService } from "../products/product-assets.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { UpdateAddressDto } from "./dto/update-address.dto";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { UpdateStoreUsernameDto } from "./dto/update-store-username.dto";
 
 const safeUserSelect = Prisma.validator<Prisma.UserSelect>()({
@@ -9,6 +11,7 @@ const safeUserSelect = Prisma.validator<Prisma.UserSelect>()({
   name: true,
   email: true,
   storeUsername: true,
+  avatarUrl: true,
   role: true,
   country: true,
   phoneNumber: true,
@@ -33,7 +36,10 @@ export type UserWithPassword = Prisma.UserGetPayload<{ select: typeof userWithPa
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly productAssetsService: ProductAssetsService,
+  ) {}
 
   create(data: Prisma.UserCreateInput) {
     return this.prisma.user.create({
@@ -138,12 +144,35 @@ export class UsersService {
     });
   }
 
+  updateProfile(id: string, data: UpdateProfileDto) {
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        ...(data.name === undefined ? {} : { name: data.name.trim() }),
+      },
+      select: safeUserSelect,
+    });
+  }
+
+  async updateAvatar(id: string, file: Express.Multer.File) {
+    const uploaded = await this.productAssetsService.uploadUserAvatar(file, id);
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        avatarUrl: uploaded.url,
+      },
+      select: safeUserSelect,
+    });
+  }
+
   toSafeUser(user: SafeUser | UserWithPassword): SafeUser {
     return {
       id: user.id,
       name: user.name,
       email: user.email,
       storeUsername: user.storeUsername,
+      avatarUrl: user.avatarUrl,
       role: user.role,
       country: user.country,
       phoneNumber: user.phoneNumber,

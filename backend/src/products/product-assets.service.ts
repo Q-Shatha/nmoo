@@ -30,8 +30,16 @@ export class ProductAssetsService {
       : null;
 
   async uploadProductImage(file: Express.Multer.File, vendorId: string): Promise<UploadedProductAsset> {
+    return this.uploadImage(file, `products/${vendorId}`);
+  }
+
+  async uploadUserAvatar(file: Express.Multer.File, userId: string): Promise<UploadedProductAsset> {
+    return this.uploadImage(file, `avatars/${userId}`);
+  }
+
+  private async uploadImage(file: Express.Multer.File, directory: string): Promise<UploadedProductAsset> {
     if (!file) {
-      throw new BadRequestException("Product image file is required");
+      throw new BadRequestException("Image file is required");
     }
 
     if (!this.s3 || !this.bucket || !this.region) {
@@ -39,7 +47,7 @@ export class ProductAssetsService {
     }
 
     const extension = extname(file.originalname).toLowerCase() || this.extensionFromMimeType(file.mimetype);
-    const key = `products/${vendorId}/${randomUUID()}${extension}`;
+    const key = `${directory}/${randomUUID()}${extension}`;
 
     await this.s3.send(
       new PutObjectCommand({

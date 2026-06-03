@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Query, UseGuards } from "@nestjs/common";
-import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { AuthenticatedUser } from "../common/types/authenticated-user";
 import { UpdateAddressDto } from "./dto/update-address.dto";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { UpdateStoreUsernameDto } from "./dto/update-store-username.dto";
 import { UsersService } from "./users.service";
 
@@ -46,5 +48,48 @@ export class UsersController {
   @ApiOperation({ summary: "Update the authenticated user's address" })
   updateMyAddress(@Body() updateAddressDto: UpdateAddressDto, @CurrentUser() user: AuthenticatedUser) {
     return this.usersService.updateAddress(user.id, updateAddressDto);
+  }
+
+  @Patch("me/profile")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Update the authenticated user's profile" })
+  updateMyProfile(@Body() updateProfileDto: UpdateProfileDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.updateProfile(user.id, updateProfileDto);
+  }
+
+  @Post("me/avatar")
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor("file", {
+      limits: {
+        fileSize: 5 * 1024 * 1024,
+      },
+      fileFilter: (_request, file, callback) => {
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) {
+          callback(new Error("Only JPEG, PNG, and WEBP images are allowed"), false);
+          return;
+        }
+
+        callback(null, true);
+      },
+    }),
+  )
+  @ApiBearerAuth()
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        file: {
+          type: "string",
+          format: "binary",
+        },
+      },
+    },
+  })
+  @ApiOperation({ summary: "Upload the authenticated user's avatar" })
+  updateMyAvatar(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.updateAvatar(user.id, file);
   }
 }

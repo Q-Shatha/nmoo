@@ -153,7 +153,7 @@ function Storefront({ data }: { data: Extract<StorefrontData, { ok: true }> }) {
         </section>
       </main>
 
-      <PublicFooter storePages={data.storePages} />
+      <PublicFooter storePages={data.storePages} theme={data.theme} />
     </div>
   );
 }

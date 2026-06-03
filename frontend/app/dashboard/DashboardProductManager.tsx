@@ -7,6 +7,7 @@ import { ApiError, Category, deleteProduct, DiscountType, Product, ProductStatus
 type ProductDraft = {
   title: string;
   description: string;
+  badgeLabel: string;
   price: string;
   discountType: DiscountType | "";
   discountValue: string;
@@ -34,6 +35,7 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
     setDraft({
       title: product.title,
       description: product.description ?? "",
+      badgeLabel: product.badgeLabel ?? "",
       price: String(product.price),
       discountType: product.discountType ?? "",
       discountValue: product.discountValue ? String(product.discountValue) : "",
@@ -68,6 +70,7 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
         {
           title: draft.title,
           description: draft.description,
+          badgeLabel: draft.badgeLabel,
           price: Number(draft.price),
           discountType: draft.discountType || undefined,
           discountValue: draft.discountType ? Number(draft.discountValue || 0) : 0,
@@ -194,6 +197,17 @@ export function ProductFields({
         <label className="grid gap-2 lg:col-span-2">
           <RequiredLabel>اسم المنتج</RequiredLabel>
           <input className="input-field px-4 py-3 text-right" dir="rtl" required value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} />
+        </label>
+        <label className="grid gap-2">
+          <span className="text-sm font-bold text-on-surface">شارة المنتج</span>
+          <input
+            className="input-field px-4 py-3 text-right"
+            dir="rtl"
+            maxLength={40}
+            placeholder="مثال: جديد"
+            value={draft.badgeLabel}
+            onChange={(event) => setDraft({ ...draft, badgeLabel: event.target.value })}
+          />
         </label>
         <label className="grid gap-2">
           <RequiredLabel>السعر</RequiredLabel>
@@ -430,6 +444,7 @@ function ProductRow({ product, onDelete, onEdit }: { product: Product; onDelete:
         <div className="mt-3 flex flex-wrap gap-2 text-sm font-bold text-on-surface-variant">
           <span className="rounded-full bg-surface-container-low px-3 py-1">السعر: {formatPrice(Number(hasDiscount ? product.salePrice : product.price))}</span>
           {hasDiscount ? <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">خصم من {formatPrice(Number(product.price))}</span> : null}
+          {!hasDiscount && product.badgeLabel ? <span className="rounded-full bg-primary-container/35 px-3 py-1 text-primary">الشارة: {product.badgeLabel}</span> : null}
           <span className="rounded-full bg-surface-container-low px-3 py-1">الكمية: {product.stock}</span>
           <span className="rounded-full bg-surface-container-low px-3 py-1">الصور: {product.images?.length ?? 0}</span>
           <span className="rounded-full bg-surface-container-low px-3 py-1">الأنواع: {product.options?.length ?? 0}</span>

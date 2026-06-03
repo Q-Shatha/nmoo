@@ -138,7 +138,9 @@ export class StorePagesService {
           id: true,
           name: true,
           email: true,
+          storeUsername: true,
           role: true,
+          theme: true,
         },
       },
     };

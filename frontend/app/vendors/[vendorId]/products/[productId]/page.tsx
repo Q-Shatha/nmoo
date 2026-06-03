@@ -150,7 +150,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
         ) : null}
       </main>
 
-      <PublicFooter />
+      <PublicFooter theme={theme} />
     </div>
   );
 }

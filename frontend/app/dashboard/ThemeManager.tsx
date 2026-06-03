@@ -7,6 +7,7 @@ import { ApiError, updateMyTheme, uploadProductImage, VendorTheme } from "@/lib/
 import { applyThemeTokens } from "@/lib/theme";
 
 type ImageField = "logoUrl" | "bannerUrl" | "storefrontImageUrl";
+type SocialField = "whatsappUrl" | "instagramUrl" | "tiktokUrl" | "lineUrl" | "telegramUrl" | "xUrl" | "snapchatUrl" | "youtubeUrl" | "contactEmail" | "websiteUrl";
 
 const imageFields: Array<{
   key: ImageField;
@@ -34,6 +35,23 @@ const imageFields: Array<{
   },
 ];
 
+const socialFields: Array<{
+  key: SocialField;
+  label: string;
+  placeholder: string;
+}> = [
+  { key: "whatsappUrl", label: "واتساب", placeholder: "https://wa.me/9665..." },
+  { key: "instagramUrl", label: "إنستغرام", placeholder: "https://instagram.com/store" },
+  { key: "tiktokUrl", label: "تيك توك", placeholder: "https://tiktok.com/@store" },
+  { key: "lineUrl", label: "لاين", placeholder: "https://line.me/R/ti/p/@store" },
+  { key: "telegramUrl", label: "تيليقرام", placeholder: "https://t.me/store" },
+  { key: "xUrl", label: "إكس", placeholder: "https://x.com/store" },
+  { key: "snapchatUrl", label: "سناب شات", placeholder: "https://snapchat.com/add/store" },
+  { key: "youtubeUrl", label: "يوتيوب", placeholder: "https://youtube.com/@store" },
+  { key: "contactEmail", label: "البريد", placeholder: "support@example.com" },
+  { key: "websiteUrl", label: "الموقع", placeholder: "https://example.com" },
+];
+
 export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
   const router = useRouter();
   const [primaryColor, setPrimaryColor] = useState(initialTheme.primaryColor);
@@ -43,6 +61,18 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
   const [storefrontImageUrl, setStorefrontImageUrl] = useState(initialTheme.storefrontImageUrl ?? "");
   const [storefrontTitle, setStorefrontTitle] = useState(initialTheme.storefrontTitle ?? "");
   const [storefrontDescription, setStorefrontDescription] = useState(initialTheme.storefrontDescription ?? "");
+  const [socialLinks, setSocialLinks] = useState<Record<SocialField, string>>({
+    whatsappUrl: initialTheme.whatsappUrl ?? "",
+    instagramUrl: initialTheme.instagramUrl ?? "",
+    tiktokUrl: initialTheme.tiktokUrl ?? "",
+    lineUrl: initialTheme.lineUrl ?? "",
+    telegramUrl: initialTheme.telegramUrl ?? "",
+    xUrl: initialTheme.xUrl ?? "",
+    snapchatUrl: initialTheme.snapchatUrl ?? "",
+    youtubeUrl: initialTheme.youtubeUrl ?? "",
+    contactEmail: initialTheme.contactEmail ?? "",
+    websiteUrl: initialTheme.websiteUrl ?? "",
+  });
   const [previewTheme, setPreviewTheme] = useState(initialTheme);
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -103,6 +133,7 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
           storefrontImageUrl,
           storefrontTitle,
           storefrontDescription,
+          ...socialLinks,
         },
         token,
       );
@@ -154,6 +185,33 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
                 onChange={(event) => setStorefrontDescription(event.target.value)}
               />
             </label>
+          </div>
+
+          <div className="grid gap-4 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
+            <div>
+              <h5 className="font-black text-on-surface">روابط التواصل</h5>
+              <p className="mt-1 text-sm leading-6 text-on-surface-variant">أضف القنوات التي تريد ظهورها في أسفل صفحات متجرك. اترك أي خانة فارغة لإخفائها.</p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {socialFields.map((field) => (
+                <label key={field.key} className="grid gap-2">
+                  <span className="text-sm font-bold text-on-surface">{field.label}</span>
+                  <input
+                    className="input-field px-4 py-3 text-left"
+                    dir="ltr"
+                    placeholder={field.placeholder}
+                    type={field.key === "contactEmail" ? "email" : "url"}
+                    value={socialLinks[field.key]}
+                    onChange={(event) =>
+                      setSocialLinks((current) => ({
+                        ...current,
+                        [field.key]: event.target.value,
+                      }))
+                    }
+                  />
+                </label>
+              ))}
+            </div>
           </div>
 
           <div className="grid gap-4">

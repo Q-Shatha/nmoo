@@ -34,7 +34,7 @@ export default async function StorePageView({ params }: StorePageProps) {
           </Link>
         </article>
       </main>
-      <PublicFooter />
+      <PublicFooter theme={page.vendor?.theme} />
     </>
   );
 }

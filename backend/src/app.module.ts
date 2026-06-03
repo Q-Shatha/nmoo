@@ -11,6 +11,7 @@ import { OrdersModule } from "./orders/orders.module";
 import { PaymentsModule } from "./payments/payments.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { ProductsModule } from "./products/products.module";
+import { ReviewsModule } from "./reviews/reviews.module";
 import { ShippingMethodsModule } from "./shipping-methods/shipping-methods.module";
 import { StorePagesModule } from "./store-pages/store-pages.module";
 import { SubscriptionsModule } from "./subscriptions/subscriptions.module";
@@ -34,6 +35,7 @@ import { validateEnvironment } from "./config/env.validation";
     AuthModule,
     UsersModule,
     ProductsModule,
+    ReviewsModule,
     CategoriesModule,
     DiscountsModule,
     OrdersModule,

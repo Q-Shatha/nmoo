@@ -14,14 +14,12 @@ type ProductCardProps = {
   showVendor?: boolean;
 };
 
-const badges = ["خصم جديد", "جديد", "", "مميز"];
-
 export function ProductCard({ product, fallbackImage = defaultFallbackImage, index = 0, showVendor = false }: ProductCardProps) {
   const imageUrl = product.imageUrl || product.images?.[0]?.url || fallbackImage;
   const rating = (4.7 + (index % 3) * 0.1).toFixed(1);
   const hasDiscount = Boolean(product.hasDiscount && product.salePrice && Number(product.salePrice) < Number(product.price));
   const displayPrice = hasDiscount ? product.salePrice! : product.price;
-  const badge = hasDiscount ? "خصم" : badges[index % badges.length];
+  const badge = hasDiscount ? "خصم" : product.badgeLabel?.trim();
   const themeStyle = product.vendor?.theme ? themeToStyle(product.vendor.theme) : undefined;
   const vendorHref = product.vendor?.storeUsername ? `/${product.vendor.storeUsername}` : product.vendor ? `/vendors/${product.vendor.id}` : `/vendors/${product.vendorId}`;
   const productHref = `${vendorHref}/products/${product.id}`;
