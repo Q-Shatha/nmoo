@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ApiError, ApiUser, CheckoutShippingOption, createOrder, DiscountValidationResult, getCheckoutShippingOptions, getMe, ShippingCarrier, validateDiscountCode } from "@/lib/api";
 import { getCountryLabel } from "@/lib/location-data";
 import { CartItem, clearVendorCart, getCartSummary, readCart, subscribeToCart } from "@/lib/cart";
@@ -414,11 +414,15 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 }
 
 function useCartItems(vendorId?: string) {
-  return useSyncExternalStore(subscribeToCart, () => readCart(vendorId), getEmptyCart);
-}
+  const [items, setItems] = useState<CartItem[]>([]);
 
-function getEmptyCart(): CartItem[] {
-  return [];
+  useEffect(() => {
+    const syncCart = () => setItems(readCart(vendorId));
+    syncCart();
+    return subscribeToCart(syncCart);
+  }, [vendorId]);
+
+  return items;
 }
 
 function hasCompleteAddress(user: ApiUser) {

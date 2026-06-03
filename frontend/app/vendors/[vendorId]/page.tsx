@@ -110,7 +110,7 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
 
             {data.products.length > 0 ? (
               <>
-                <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
                   {data.products.map((product, index) => (
                     <ProductCard key={product.id} product={product} index={index} fallbackImage={storefrontImage} />
                   ))}

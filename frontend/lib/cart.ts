@@ -24,7 +24,7 @@ export function readCart(vendorId?: string) {
   try {
     const value = window.localStorage.getItem(CART_STORAGE_KEY);
     if (value === cachedCartText) {
-      return cachedCartItems;
+      return filterCartItems(cachedCartItems, vendorId);
     }
 
     cachedCartText = value ?? "";

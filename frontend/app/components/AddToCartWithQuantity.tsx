@@ -42,15 +42,18 @@ export function AddToCartWithQuantity({
   }
 
   const quantityWidth = isInline ? "10rem" : "100%";
+  const fallbackItem = JSON.stringify({ ...item, quantity });
 
   return (
-    <div className={className} dir="rtl" style={{ width: "100%" }}>
+    <div className={className} data-cart-form dir="rtl" style={{ width: "100%" }}>
+      <input name="cartItem" type="hidden" value={fallbackItem} />
       <label className="grid min-w-0 gap-1 text-right" style={{ width: quantityWidth, minWidth: isInline ? quantityWidth : "14rem" }}>
         <span className="text-xs font-bold text-on-surface-variant">الكمية</span>
         <div className="flex h-12 min-w-0 items-center overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest" style={{ width: quantityWidth }}>
           <button
             aria-label="تقليل الكمية"
             className="flex h-full w-12 shrink-0 items-center justify-center text-lg font-black text-primary disabled:cursor-not-allowed disabled:opacity-40"
+            data-quantity-action="decrease"
             disabled={unavailable || quantity <= 1}
             type="button"
             onClick={() => updateQuantity(quantity - 1)}
@@ -60,6 +63,7 @@ export function AddToCartWithQuantity({
           <input
             aria-label="الكمية"
             className="h-full min-w-0 flex-1 border-x border-outline-variant bg-transparent text-center text-lg font-black text-on-surface outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            data-quantity-input
             disabled={unavailable}
             max={maxQuantity}
             min={1}
@@ -70,6 +74,7 @@ export function AddToCartWithQuantity({
           <button
             aria-label="زيادة الكمية"
             className="flex h-full w-12 shrink-0 items-center justify-center text-lg font-black text-primary disabled:cursor-not-allowed disabled:opacity-40"
+            data-quantity-action="increase"
             disabled={unavailable || quantity >= maxQuantity}
             type="button"
             onClick={() => updateQuantity(quantity + 1)}
@@ -81,6 +86,7 @@ export function AddToCartWithQuantity({
       <button
         aria-label={buttonLabel}
         className={`${buttonClassName} min-w-0`}
+        data-cart-submit
         disabled={unavailable}
         style={isInline ? undefined : { width: "100%" }}
         title={buttonLabel}

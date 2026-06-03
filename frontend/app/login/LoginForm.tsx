@@ -7,6 +7,11 @@ import { ApiError, login } from "@/lib/api";
 
 type LoginMode = "vendor" | "buyer";
 
+type LoginFormProps = {
+  initialMessage?: string;
+  nextPath?: string;
+};
+
 const demoAccounts: Record<LoginMode, { label: string; email: string }> = {
   vendor: {
     label: "تاجر",
@@ -18,12 +23,12 @@ const demoAccounts: Record<LoginMode, { label: string; email: string }> = {
   },
 };
 
-export function LoginForm() {
+export function LoginForm({ initialMessage = "", nextPath = "" }: LoginFormProps) {
   const router = useRouter();
   const [mode, setMode] = useState<LoginMode>("vendor");
   const [email, setEmail] = useState("vendor@nmoo.test");
   const [password, setPassword] = useState("Nmoo12345");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(initialMessage);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -46,8 +51,19 @@ export function LoginForm() {
   }
 
   return (
-    <form className="grid gap-5 p-8 text-right lg:p-10" onSubmit={handleSubmit}>
-      <div className="grid grid-cols-2 gap-2 rounded-xl bg-surface-container-low p-1">
+    <form action="/login/submit" className="grid gap-5 p-8 text-right lg:p-10" method="post" onSubmit={handleSubmit}>
+      <input name="next" type="hidden" value={nextPath} />
+
+      <div className="grid grid-cols-2 gap-2 rounded-xl bg-surface-container-low p-1 sm:hidden">
+        <button className="rounded-lg px-4 py-3 font-bold text-on-surface-variant transition-colors hover:bg-surface-container-lowest" name="demo" type="submit" value="buyer">
+          دخول عميل
+        </button>
+        <button className="rounded-lg bg-primary px-4 py-3 font-bold text-on-primary shadow-sm transition-colors" name="demo" type="submit" value="vendor">
+          دخول تاجر
+        </button>
+      </div>
+
+      <div className="hidden grid-cols-2 gap-2 rounded-xl bg-surface-container-low p-1 sm:grid">
         {(Object.keys(demoAccounts) as LoginMode[]).map((accountMode) => {
           const account = demoAccounts[accountMode];
           const isActive = mode === accountMode;
@@ -79,6 +95,7 @@ export function LoginForm() {
           className="input-field px-4 py-3 text-right"
           dir="ltr"
           inputMode="email"
+          name="email"
           required
           type="email"
           value={email}
@@ -91,13 +108,7 @@ export function LoginForm() {
 
       <label className="grid gap-2">
         <span className="font-bold text-on-surface">كلمة المرور</span>
-        <input
-          className="input-field px-4 py-3 text-right"
-          required
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-        />
+        <input className="input-field px-4 py-3 text-right" dir="ltr" name="password" required type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
       </label>
 
       {message ? <p className="rounded-xl bg-error-container/60 px-4 py-3 text-sm font-bold text-error">{message}</p> : null}
@@ -107,7 +118,7 @@ export function LoginForm() {
       </button>
 
       <p className="text-center text-sm text-on-surface-variant">
-        لا تملك حساباً؟{" "}
+        لا تملك حسابا؟{" "}
         <Link className="font-bold text-primary hover:underline" href="/register">
           أنشئ حساب تاجر
         </Link>

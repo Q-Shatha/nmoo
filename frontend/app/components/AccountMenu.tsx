@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
 import { ApiUser, getMe } from "@/lib/api";
 
@@ -52,6 +53,94 @@ export function AccountMenu({ compact = false }: AccountMenuProps) {
     router.refresh();
   }
 
+  if (compact) {
+    return (
+      <>
+        <div className="sm:hidden">
+          <MobileAccountMenu user={user} onLogout={handleLogout} />
+        </div>
+        <div className="hidden sm:block">
+          <DesktopAccountMenu isLoading={isLoading} isOpen={isOpen} menuRef={menuRef} setIsOpen={setIsOpen} user={user} onLogout={handleLogout} compact />
+        </div>
+      </>
+    );
+  }
+
+  return <DesktopAccountMenu isLoading={isLoading} isOpen={isOpen} menuRef={menuRef} setIsOpen={setIsOpen} user={user} onLogout={handleLogout} />;
+}
+
+function MobileAccountMenu({ user, onLogout }: { user: ApiUser | null; onLogout: () => void }) {
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+
+  function closeMenu() {
+    if (detailsRef.current) {
+      detailsRef.current.open = false;
+    }
+  }
+
+  return (
+    <details ref={detailsRef} className="group relative">
+      <summary
+        className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full border border-outline-variant/45 bg-surface-container-lowest text-primary shadow-sm transition hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden"
+        aria-label="قائمة الحساب"
+      >
+        <MenuIcon />
+      </summary>
+      <div className="fixed inset-0 z-[80] hidden h-dvh group-open:block" role="presentation">
+        <button className="absolute inset-0 h-full w-full bg-black/35" type="button" aria-label="إغلاق القائمة" data-mobile-menu-close onClick={closeMenu} />
+        <aside className="absolute right-0 top-0 flex h-dvh w-[84vw] max-w-80 flex-col overflow-hidden rounded-l-3xl border-l border-outline-variant/40 bg-surface-container-lowest p-4 text-right shadow-2xl" dir="rtl" role="menu">
+          <div className="mb-3 flex items-center justify-between gap-3 border-b border-outline-variant/20 pb-4">
+            <button className="icon-button border border-outline-variant bg-surface-container-lowest" type="button" aria-label="إغلاق القائمة" data-mobile-menu-close onClick={closeMenu}>
+              <CloseIcon />
+            </button>
+            <h2 className="text-xl font-black text-on-surface">القائمة</h2>
+          </div>
+          <div className="grid gap-1 overflow-y-auto">
+            {user ? (
+              <>
+                <div className="border-b border-outline-variant/20 px-3 py-3">
+                  <p className="font-black text-on-surface">{user.name}</p>
+                  <p className="mt-1 truncate text-xs text-on-surface-variant">{user.email}</p>
+                </div>
+                <MenuLink href="/orders" label="طلباتي" onClick={closeMenu} />
+                <MenuLink href="/account" label="إعدادات الحساب" onClick={closeMenu} />
+                {user.role === "BUYER" ? <MenuLink href="/account/address" label="عنوان الشحن" onClick={closeMenu} /> : null}
+                {user.role !== "BUYER" ? <MenuLink href="/dashboard" label="لوحة التحكم" onClick={closeMenu} /> : null}
+                {user.role === "VENDOR" ? <MenuLink href={user.storeUsername ? `/${user.storeUsername}` : `/vendors/${user.id}`} label="المتجر" onClick={closeMenu} /> : null}
+                <button className="mt-2 w-full rounded-lg px-3 py-3 text-right font-bold text-error hover:bg-error-container/50" type="button" role="menuitem" onClick={onLogout}>
+                  تسجيل الخروج
+                </button>
+              </>
+            ) : (
+              <>
+                <MenuLink href="/login" label="تسجيل الدخول" onClick={closeMenu} />
+                <MenuLink href="/register" label="إنشاء حساب" onClick={closeMenu} />
+              </>
+            )}
+          </div>
+        </aside>
+      </div>
+    </details>
+  );
+}
+
+function DesktopAccountMenu({
+  compact = false,
+  isLoading,
+  isOpen,
+  menuRef,
+  setIsOpen,
+  user,
+  onLogout,
+}: {
+  compact?: boolean;
+  isLoading: boolean;
+  isOpen: boolean;
+  menuRef: RefObject<HTMLDivElement | null>;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+  user: ApiUser | null;
+  onLogout: () => void;
+}) {
   if (isLoading) {
     return <div className="h-11 w-11 animate-pulse rounded-full bg-surface-container-low" aria-hidden="true" />;
   }
@@ -129,7 +218,7 @@ export function AccountMenu({ compact = false }: AccountMenuProps) {
           {user.role === "BUYER" ? <MenuLink href="/account/address" label="عنوان الشحن" onClick={() => setIsOpen(false)} /> : null}
           {user.role !== "BUYER" ? <MenuLink href="/dashboard" label="لوحة التحكم" onClick={() => setIsOpen(false)} /> : null}
           {user.role === "VENDOR" ? <MenuLink href={user.storeUsername ? `/${user.storeUsername}` : `/vendors/${user.id}`} label="المتجر" onClick={() => setIsOpen(false)} /> : null}
-          <button className="mt-2 w-full rounded-lg px-3 py-3 text-right font-bold text-error hover:bg-error-container/50" type="button" role="menuitem" onClick={handleLogout}>
+          <button className="mt-2 w-full rounded-lg px-3 py-3 text-right font-bold text-error hover:bg-error-container/50" type="button" role="menuitem" onClick={onLogout}>
             تسجيل الخروج
           </button>
         </div>
@@ -148,10 +237,18 @@ function MenuLink({ href, label, onClick }: { href: string; label: string; onCli
 
 function MenuIcon() {
   return (
-    <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24">
+    <svg aria-hidden="true" className="pointer-events-none h-5 w-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24">
       <path d="M4 7h16" />
       <path d="M4 12h16" />
       <path d="M4 17h16" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg aria-hidden="true" className="pointer-events-none h-5 w-5" fill="none" viewBox="0 0 24 24">
+      <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2.2" />
     </svg>
   );
 }

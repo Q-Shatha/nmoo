@@ -2,7 +2,16 @@ import { PublicFooter } from "../components/PublicFooter";
 import { PublicHeader } from "../components/PublicHeader";
 import { LoginForm } from "./LoginForm";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams?: Promise<{
+    error?: string;
+    next?: string;
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = searchParams ? await searchParams : {};
+
   return (
     <>
       <PublicHeader />
@@ -19,7 +28,7 @@ export default function LoginPage() {
               <p>كلمة المرور: Nmoo12345</p>
             </div>
           </div>
-          <LoginForm />
+          <LoginForm initialMessage={params.error} nextPath={params.next ?? ""} />
         </section>
       </main>
       <PublicFooter />

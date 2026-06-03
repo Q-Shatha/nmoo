@@ -137,7 +137,7 @@ function Storefront({ data }: { data: Extract<StorefrontData, { ok: true }> }) {
 
             {data.products.length > 0 ? (
               <>
-                <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3 2xl:grid-cols-4">
                   {data.products.map((product, index) => (
                     <ProductCard key={product.id} product={product} index={index} fallbackImage={storefrontImage} />
                   ))}

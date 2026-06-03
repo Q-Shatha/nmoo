@@ -6,7 +6,7 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 
 function getCorsOrigins() {
-  const configuredOrigins = process.env.CORS_ORIGINS ?? process.env.FRONTEND_URL ?? "http://localhost:3000";
+  const configuredOrigins = process.env.CORS_ORIGINS ?? process.env.FRONTEND_URL ?? "http://localhost:3000,http://127.0.0.1:3000";
   return configuredOrigins
     .split(",")
     .map((origin) => origin.trim())

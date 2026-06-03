@@ -161,7 +161,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
         {relatedProducts.length > 0 ? (
           <section className="mt-16 border-t border-outline-variant/20 pt-12">
             <h2 className="section-title mb-8 text-center text-3xl">قد يعجبك أيضا</h2>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
               {relatedProducts.map((relatedProduct, index) => (
                 <ProductCard key={relatedProduct.id} product={relatedProduct} index={index} fallbackImage={fallbackProductImage} />
               ))}

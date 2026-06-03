@@ -21,7 +21,7 @@ export function AddToCartButton({ item, className = "primary-button flex h-11 w-
   }
 
   return (
-    <button aria-label={label} className={className} disabled={disabled || item.stock <= 0} title={label} type="button" onClick={handleAddToCart}>
+    <button aria-label={label} className={className} data-cart-button data-cart-item={JSON.stringify(item)} disabled={disabled || item.stock <= 0} title={label} type="button" onClick={handleAddToCart}>
       <CartIcon />
     </button>
   );

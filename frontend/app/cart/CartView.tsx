@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CartItem,
   clearVendorCart,
@@ -31,7 +31,7 @@ export function CartView({ vendorId }: { vendorId?: string }) {
 
   if (items.length === 0) {
     return (
-      <section className="panel mx-auto max-w-2xl p-10 text-center">
+      <section className="panel mx-auto max-w-2xl p-10 text-center" data-mobile-cart-root data-vendor-id={vendorId ?? ""}>
         <h1 className="text-3xl font-black text-primary">السلة فارغة</h1>
         <p className="mt-3 leading-8 text-on-surface-variant">أضف منتجات من المتجر وستظهر هنا لإكمال الشراء.</p>
         <Link className="primary-button mt-6 px-8 py-3" href="/">
@@ -42,7 +42,7 @@ export function CartView({ vendorId }: { vendorId?: string }) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]" data-cart-rendered data-mobile-cart-root data-vendor-id={vendorId ?? ""}>
       <section className="panel overflow-hidden">
         <div className="flex items-center justify-between border-b border-outline-variant/20 p-5">
           <h1 className="text-2xl font-black text-primary">سلة التسوق</h1>
@@ -54,7 +54,7 @@ export function CartView({ vendorId }: { vendorId?: string }) {
           {items.map((item) => (
             <article key={item.productId} className="grid grid-cols-[92px_1fr] gap-4 p-5 text-right sm:grid-cols-[120px_1fr_auto]">
               <div className="relative h-24 w-24 overflow-hidden rounded-xl sm:h-28 sm:w-28">
-                <Image className="object-cover" alt={item.title} src={item.imageUrl || "/nmoo-logo.png"} fill sizes="112px" />
+                <Image className="object-cover" alt={item.title} src={item.imageUrl || "/nmoo-logo.png"} fill sizes="112px" unoptimized />
               </div>
               <div>
                 <Link className="text-lg font-bold text-on-surface hover:text-primary" href={getCartItemHref(item)}>
@@ -96,11 +96,15 @@ export function CartView({ vendorId }: { vendorId?: string }) {
 }
 
 function useCartItems(vendorId?: string) {
-  return useSyncExternalStore(subscribeToCart, () => readCart(vendorId), getEmptyCart);
-}
+  const [items, setItems] = useState<CartItem[]>([]);
 
-function getEmptyCart(): CartItem[] {
-  return [];
+  useEffect(() => {
+    const syncCart = () => setItems(readCart(vendorId));
+    syncCart();
+    return subscribeToCart(syncCart);
+  }, [vendorId]);
+
+  return items;
 }
 
 function CartSummary({ subtotal, count, vendorId }: { subtotal: number; count: number; vendorId?: string }) {

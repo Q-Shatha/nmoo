@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans_Arabic } from "next/font/google";
+import Script from "next/script";
 import { getActiveTheme } from "@/lib/api";
 import { ThemeStyle } from "./components/ThemeStyle";
 import "./globals.css";
@@ -32,6 +33,7 @@ export default async function RootLayout({
   return (
     <html lang="ar" dir="rtl" className={`${ibmPlexSansArabic.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-on-surface overflow-x-hidden">
+        <Script src="/nmoo-mobile-controls.js" strategy="beforeInteractive" />
         <ThemeStyle theme={theme} />
         {children}
       </body>
