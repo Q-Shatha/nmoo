@@ -2,6 +2,7 @@ import { VendorTheme } from "./api";
 import type { CSSProperties } from "react";
 
 type ThemeSource = Pick<VendorTheme, "primaryColor" | "secondaryColor"> & {
+  textColor?: string | null;
   tokens?: Partial<VendorTheme["tokens"]>;
 };
 
@@ -49,9 +50,11 @@ function getThemeVariables(theme: ThemeSource) {
   );
   const primary = theme.primaryColor;
   const secondary = theme.secondaryColor;
+  const text = theme.textColor || secondary;
 
   return {
     ...tokenVariables,
+    "--color-text": text,
     "--color-background": mixWithWhite(primary, 0.97),
     "--color-surface": mixWithWhite(primary, 0.97),
     "--color-surface-container-lowest": mixWithWhite(primary, 0.99),
@@ -62,9 +65,9 @@ function getThemeVariables(theme: ThemeSource) {
     "--color-surface-variant": mixWithWhite(primary, 0.86),
     "--color-outline": mixWithWhite(secondary, 0.42),
     "--color-outline-variant": mixWithWhite(primary, 0.72),
-    "--color-on-background": secondary,
-    "--color-on-surface": secondary,
-    "--color-on-surface-variant": mixWithWhite(secondary, 0.28),
+    "--color-on-background": text,
+    "--color-on-surface": text,
+    "--color-on-surface-variant": mixWithWhite(text, 0.28),
     "--color-inverse-surface": secondary,
     "--color-inverse-on-surface": readableTextColor(secondary),
   };

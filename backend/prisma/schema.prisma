@@ -130,6 +130,7 @@ model VendorTheme {
   vendorId       String   @unique
   primaryColor   String   @default("#884a70")
   secondaryColor String   @default("#1e293b")
+  textColor      String   @default("#1e293b")
   logoUrl        String?
   bannerUrl      String?
   storefrontImageUrl String?

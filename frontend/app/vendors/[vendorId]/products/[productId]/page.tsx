@@ -38,7 +38,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
     <div className={`min-h-screen text-on-surface ${template.className}`} dir="rtl" style={theme ? { ...themeToStyle(theme), backgroundColor: "var(--color-background)" } : undefined}>
       <PublicHeader active="store" storeHref={storeHref} profileHref={profileHref} vendorId={product.vendorId} storeLogoUrl={theme?.logoUrl} />
 
-      <main className="app-container pt-8" style={theme ? { backgroundColor: "var(--color-background)" } : undefined}>
+      <main className="store-product-page app-container pt-8" style={theme ? { backgroundColor: "var(--color-background)" } : undefined}>
         <nav className="mb-8 flex flex-wrap gap-2 text-sm text-on-surface-variant">
           <Link className="muted-link" href={storeHref}>
             متجر {product.vendor?.name ?? "التاجر"}
@@ -51,8 +51,8 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
           <span className="text-on-surface">{product.title}</span>
         </nav>
 
-        <section className="grid grid-cols-1 gap-12 lg:grid-cols-2">
-          <div className="order-2 text-right lg:order-1">
+        <section className={`store-product-detail store-product-detail-${template.id} grid grid-cols-1 gap-12 lg:grid-cols-2`}>
+          <div className="store-product-info order-2 text-right lg:order-1">
             <span className="chip mb-4 px-4 py-2 text-sm">{product.category?.name ?? "منتج"}</span>
             <h1 className="section-title text-4xl md:text-5xl">{product.title}</h1>
 
@@ -75,7 +75,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
             </p>
 
             {product.options && product.options.length > 0 ? (
-              <div className="mt-8 grid gap-4 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5 text-right" dir="rtl">
+              <div className="store-product-options mt-8 grid gap-4 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5 text-right" dir="rtl">
                 <h2 className="text-xl font-black text-on-surface">اختر نوع المنتج</h2>
                 {product.options.map((option) => (
                   <div key={option.id} className="grid gap-2">
@@ -95,7 +95,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
               </div>
             ) : null}
 
-            <div className="mt-8 grid gap-4 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5">
+            <div className="store-product-meta mt-8 grid gap-4 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5">
               <InfoRow label="الحالة" value={<StatusBadge status={product.status} />} />
               <InfoRow label="التصنيف" value={product.category?.name ?? "غير مصنف"} />
               <InfoRow
@@ -108,7 +108,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
               />
             </div>
 
-            <div className="mt-8 w-full max-w-2xl">
+            <div className="store-product-actions mt-8 w-full max-w-2xl">
               <AddToCartWithQuantity
                 buttonClassName="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
                 className="flex w-full max-w-sm items-end gap-3"
@@ -128,11 +128,11 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
             </div>
           </div>
 
-          <div className="order-1 lg:order-2">
-            <div className="panel relative aspect-[3/4] overflow-hidden">
+          <div className="store-product-gallery order-1 lg:order-2">
+            <div className="store-product-main-image panel relative aspect-[3/4] overflow-hidden">
               <Image className="object-cover" alt={product.title} src={images[0]} fill priority sizes="(min-width: 1024px) 46vw, 92vw" unoptimized />
             </div>
-            <div className="mt-4 grid grid-cols-4 gap-3">
+            <div className="store-product-thumbnails mt-4 grid grid-cols-4 gap-3">
               {images.slice(0, 4).map((src, index) => (
                 <div key={`${src}-${index}`} className={`relative aspect-square overflow-hidden rounded-xl border-2 ${index === 0 ? "border-primary" : "border-transparent"}`}>
                   <Image className="object-cover" alt={`${product.title} ${index + 1}`} src={src} fill sizes="25vw" unoptimized />
@@ -142,7 +142,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
           </div>
         </section>
 
-        <section id="reviews" className="mt-16 rounded-[28px] border border-outline-variant/25 bg-surface-container-lowest px-5 py-10 shadow-sm md:px-12 md:py-12">
+        <section id="reviews" className="store-product-reviews mt-16 rounded-[28px] border border-outline-variant/25 bg-surface-container-lowest px-5 py-10 shadow-sm md:px-12 md:py-12">
           <div className="flex justify-start text-right">
             <Link className="hidden" href={`${profileHref}/reviews/new`}>
               كتابة مراجعة
@@ -161,9 +161,9 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
         </section>
 
         {relatedProducts.length > 0 ? (
-          <section className="mt-16 border-t border-outline-variant/20 pt-12">
+          <section className="store-related-products mt-16 border-t border-outline-variant/20 pt-12">
             <h2 className="section-title mb-8 text-center text-3xl">قد يعجبك أيضا</h2>
-            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
+            <div className="store-related-products-grid grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
               {relatedProducts.map((relatedProduct, index) => (
                 <ProductCard key={relatedProduct.id} product={relatedProduct} index={index} fallbackImage={fallbackProductImage} />
               ))}
@@ -219,7 +219,7 @@ async function loadRelatedProducts(product: Product, vendorId: string) {
 }
 
 async function loadProductTheme(product: Product): Promise<VendorTheme | null> {
-  if (product.vendor?.theme) {
+  if (product.vendor?.theme?.templateId && product.vendor.theme.tokens) {
     return product.vendor.theme;
   }
 

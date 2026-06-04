@@ -57,6 +57,7 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
   const router = useRouter();
   const [primaryColor, setPrimaryColor] = useState(initialTheme.primaryColor);
   const [secondaryColor, setSecondaryColor] = useState(initialTheme.secondaryColor);
+  const [textColor, setTextColor] = useState(initialTheme.textColor ?? initialTheme.secondaryColor);
   const [logoUrl, setLogoUrl] = useState(initialTheme.logoUrl ?? "");
   const [bannerUrl, setBannerUrl] = useState(initialTheme.bannerUrl ?? "");
   const [storefrontImageUrl, setStorefrontImageUrl] = useState(initialTheme.storefrontImageUrl ?? "");
@@ -130,6 +131,7 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
         {
           primaryColor,
           secondaryColor,
+          textColor,
           logoUrl,
           bannerUrl,
           storefrontImageUrl,
@@ -162,12 +164,13 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
 
       <form className="grid gap-5 p-5 text-right lg:grid-cols-[1fr_360px]" dir="rtl" onSubmit={handleSubmit}>
         <div className="grid gap-5">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <ColorField label="اللون الأساسي" value={primaryColor} onChange={setPrimaryColor} />
             <ColorField label="اللون الثانوي" value={secondaryColor} onChange={setSecondaryColor} />
+            <ColorField label="لون الخط" value={textColor} onChange={setTextColor} />
           </div>
 
-          <TemplateSelector primaryColor={primaryColor} secondaryColor={secondaryColor} selectedTemplateId={templateId} onChange={setTemplateId} />
+          <TemplateSelector primaryColor={primaryColor} secondaryColor={secondaryColor} textColor={textColor} selectedTemplateId={templateId} onChange={setTemplateId} />
 <div className="grid gap-4 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
             <label className="grid gap-2">
               <span className="text-sm font-bold text-on-surface">عنوان واجهة المتجر</span>
@@ -254,6 +257,7 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
               <div className="mt-4 grid gap-3">
                 <PreviewBlock background={previewTheme.tokens.primary} color={previewTheme.tokens.onPrimary} label="زر أساسي" />
                 <PreviewBlock background={previewTheme.tokens.secondary} color={previewTheme.tokens.onSecondary} label="زر ثانوي" />
+                <PreviewBlock background="#ffffff" color={previewTheme.textColor ?? textColor} label="لون الخط" />
               </div>
             </div>
           </div>
@@ -266,11 +270,13 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
 function TemplateSelector({
   primaryColor,
   secondaryColor,
+  textColor,
   selectedTemplateId,
   onChange,
 }: {
   primaryColor: string;
   secondaryColor: string;
+  textColor: string;
   selectedTemplateId: StoreTemplateId;
   onChange: (value: StoreTemplateId) => void;
 }) {
@@ -286,6 +292,7 @@ function TemplateSelector({
             key={template.id}
             primaryColor={primaryColor}
             secondaryColor={secondaryColor}
+            textColor={textColor}
             selected={selectedTemplateId === template.id}
             template={template}
             onChange={onChange}
@@ -299,20 +306,22 @@ function TemplateSelector({
 function TemplateOption({
   primaryColor,
   secondaryColor,
+  textColor,
   selected,
   template,
   onChange,
 }: {
   primaryColor: string;
   secondaryColor: string;
+  textColor: string;
   selected: boolean;
   template: StoreTemplate;
   onChange: (value: StoreTemplateId) => void;
 }) {
   return (
-    <label className={`cursor-pointer overflow-hidden rounded-2xl border bg-white text-right transition ${selected ? "border-primary shadow-md ring-2 ring-primary-container" : "border-outline-variant/25 hover:border-primary/50"}`}>
+    <label className={`cursor-pointer overflow-hidden rounded-2xl border bg-white text-right transition ${selected ? "border-primary shadow-md ring-2 ring-primary-container" : "border-outline-variant/25 hover:border-primary/50"}`} onClick={() => onChange(template.id)}>
       <input checked={selected} className="sr-only" name="store-template" type="radio" value={template.id} onChange={() => onChange(template.id)} />
-      <TemplatePreview primaryColor={primaryColor} secondaryColor={secondaryColor} templateId={template.id} />
+      <TemplatePreview primaryColor={primaryColor} secondaryColor={secondaryColor} textColor={textColor} templateId={template.id} />
       <div className="grid gap-1 p-4">
         <span className="text-base font-black text-on-surface">{template.name}</span>
         <span className="text-sm leading-6 text-on-surface-variant">{template.description}</span>
@@ -324,7 +333,7 @@ function TemplateOption({
   );
 }
 
-function TemplatePreview({ primaryColor, secondaryColor, templateId }: { primaryColor: string; secondaryColor: string; templateId: StoreTemplateId }) {
+function TemplatePreview({ primaryColor, secondaryColor, textColor, templateId }: { primaryColor: string; secondaryColor: string; textColor: string; templateId: StoreTemplateId }) {
   const isBoutique = templateId === "boutique";
   const isGallery = templateId === "gallery";
 
@@ -336,6 +345,7 @@ function TemplatePreview({ primaryColor, secondaryColor, templateId }: { primary
           <span className="h-5 w-5 rounded-full" style={{ backgroundColor: readablePreviewText(isGallery ? secondaryColor : primaryColor), opacity: 0.75 }} />
         </div>
         <div className={`grid gap-2 p-3 ${isGallery ? "grid-cols-3" : "grid-cols-2"}`}>
+          <span className="col-span-full h-3 w-3/4 rounded-full" style={{ backgroundColor: textColor }} />
           {[0, 1, 2].map((item) => (
             <span
               key={item}

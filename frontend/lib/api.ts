@@ -289,6 +289,7 @@ export type VendorTheme = {
   vendor?: ApiUser;
   primaryColor: string;
   secondaryColor: string;
+  textColor: string;
   logoUrl?: string | null;
   bannerUrl?: string | null;
   storefrontImageUrl?: string | null;
@@ -312,6 +313,7 @@ export type VendorTheme = {
 export type ThemeInput = {
   primaryColor: string;
   secondaryColor: string;
+  textColor: string;
   logoUrl?: string;
   bannerUrl?: string;
   storefrontImageUrl?: string;

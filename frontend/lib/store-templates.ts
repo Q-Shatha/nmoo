@@ -1,4 +1,4 @@
-export type StoreTemplateId = "classic" | "boutique" | "gallery";
+export type StoreTemplateId = "classic" | "boutique" | "gallery" | "minimal" | "market";
 
 export type StoreTemplate = {
   id: StoreTemplateId;
@@ -29,6 +29,20 @@ export const storeTemplates: StoreTemplate[] = [
     description: "عرض بصري قوي للمنتجات مع تباين أوضح وأقسام مضغوطة.",
     previewTone: "شبكة بارزة وتركيز على الصور",
     className: "store-template-gallery",
+  },
+  {
+    id: "minimal",
+    name: "هادئ",
+    description: "تخطيط نظيف بمساحات واسعة وواجهة هادئة تبرز النص والمنتج بدون ازدحام.",
+    previewTone: "مساحات واسعة وبطاقات خفيفة",
+    className: "store-template-minimal",
+  },
+  {
+    id: "market",
+    name: "سوق حديث",
+    description: "واجهة جريئة بكُتل واضحة وشبكة منتجات كثيفة مناسبة للمتاجر كثيرة الأصناف.",
+    previewTone: "كتل قوية وشبكة كثيفة",
+    className: "store-template-market",
   },
 ];
 

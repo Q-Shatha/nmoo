@@ -80,7 +80,7 @@ function Storefront({ data }: { data: Extract<StorefrontData, { ok: true }> }) {
         <section className="app-container pt-8">
           <LocationUnsupportedNotice coverage={data.coverage} />
 
-          <div className="grid gap-6 rounded-[24px] bg-surface-container-lowest p-4 shadow-sm md:grid-cols-[minmax(0,0.95fr)_minmax(320px,1.05fr)] md:items-center md:p-6">
+          <div className="storefront-hero grid gap-6 rounded-[24px] bg-surface-container-lowest p-4 shadow-sm md:grid-cols-[minmax(0,0.95fr)_minmax(320px,1.05fr)] md:items-center md:p-6">
             <div className="relative h-48 overflow-hidden rounded-[20px] bg-surface-container md:h-64">
               <Image className="object-cover" alt={`واجهة متجر ${data.vendor.name}`} src={storefrontImage} fill priority sizes="(min-width: 1280px) 540px, 94vw" unoptimized />
             </div>
@@ -97,7 +97,7 @@ function Storefront({ data }: { data: Extract<StorefrontData, { ok: true }> }) {
         </section>
 
         <section className="app-container mt-8">
-          <form action={storefrontHref} className="grid gap-3 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-3 shadow-sm md:grid-cols-[1fr_auto]">
+          <form action={storefrontHref} className="storefront-search grid gap-3 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-3 shadow-sm md:grid-cols-[1fr_auto]">
             <input
               className="h-14 min-w-0 rounded-xl border border-outline-variant/40 bg-white px-5 text-right font-bold text-on-surface outline-none focus:border-primary"
               defaultValue={data.query}
@@ -114,7 +114,7 @@ function Storefront({ data }: { data: Extract<StorefrontData, { ok: true }> }) {
         </section>
 
         <section className="app-container mt-8 grid gap-8 lg:grid-cols-[260px_1fr] lg:items-start">
-          <details className="group rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4 text-right shadow-sm lg:hidden">
+          <details className="storefront-category-panel group rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4 text-right shadow-sm lg:hidden">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
               <span className="text-lg font-black text-on-surface">التصنيفات</span>
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-low text-primary transition group-open:rotate-180">⌄</span>
@@ -134,7 +134,7 @@ function Storefront({ data }: { data: Extract<StorefrontData, { ok: true }> }) {
             </nav>
           </details>
 
-          <aside className="hidden rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-5 text-right shadow-sm lg:block">
+          <aside className="storefront-category-panel hidden rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-5 text-right shadow-sm lg:block">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-xl font-black text-on-surface">التصنيفات</h2>
               <Link className="text-sm font-black text-primary hover:underline" href={storefrontHref}>
@@ -169,7 +169,7 @@ function Storefront({ data }: { data: Extract<StorefrontData, { ok: true }> }) {
 
             {data.products.length > 0 ? (
               <>
-                <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3 2xl:grid-cols-4">
+                <div className="storefront-products-grid mt-6 grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3 2xl:grid-cols-4">
                   {data.products.map((product, index) => (
                     <ProductCard key={product.id} product={product} index={index} fallbackImage={storefrontImage} />
                   ))}

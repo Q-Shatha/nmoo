@@ -12,6 +12,10 @@ export class UpdateThemeDto {
   @Matches(hexColorPattern, { message: "secondaryColor must be a valid hex color like #1e293b" })
   secondaryColor!: string;
 
+  @ApiProperty({ example: "#1e293b" })
+  @Matches(hexColorPattern, { message: "textColor must be a valid hex color like #1e293b" })
+  textColor!: string;
+
   @ApiProperty({ example: "https://cdn.example.com/store-logo.png", required: false })
   @IsOptional()
   @IsString()
@@ -37,10 +41,10 @@ export class UpdateThemeDto {
   @IsString()
   storefrontDescription?: string;
 
-  @ApiProperty({ example: "classic", enum: ["classic", "boutique", "gallery"], required: false })
+  @ApiProperty({ example: "classic", enum: ["classic", "boutique", "gallery", "minimal", "market"], required: false })
   @IsOptional()
   @IsString()
-  @IsIn(["classic", "boutique", "gallery"])
+  @IsIn(["classic", "boutique", "gallery", "minimal", "market"])
   templateId?: string;
 
   @ApiProperty({ example: false, required: false })

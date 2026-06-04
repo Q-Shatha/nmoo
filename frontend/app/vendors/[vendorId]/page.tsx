@@ -66,15 +66,15 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
         <div className="mx-auto w-full max-w-[1180px] px-4 pb-20 pt-8 sm:px-6 lg:px-8">
           <LocationUnsupportedNotice coverage={data.coverage} />
 
-          <section className="relative">
-            <div className="relative h-[230px] overflow-hidden rounded-[28px] bg-surface-container shadow-sm md:h-[310px]">
+          <section className="store-profile-hero relative">
+            <div className="store-profile-banner relative h-[230px] overflow-hidden rounded-[28px] bg-surface-container shadow-sm md:h-[310px]">
               <Image className="scale-105 object-cover blur-[3px]" alt={data.vendor.name} src={heroImage} fill priority sizes="(min-width: 1180px) 1180px, 94vw" unoptimized />
               <div className="absolute inset-0 bg-gradient-to-t from-black/18 via-white/8 to-white/5" />
             </div>
 
-            <div className="relative z-10 -mt-12 grid gap-6 px-4 md:grid-cols-[1fr_auto] md:items-end md:px-8">
+            <div className="store-profile-header relative z-10 -mt-12 grid gap-6 px-4 md:grid-cols-[1fr_auto] md:items-end md:px-8">
               <div className="order-2 text-right md:order-1">
-                <div className="mb-4 flex flex-wrap gap-3">
+                <div className="store-profile-actions mb-4 flex flex-wrap gap-3">
                   <Link className="rounded-xl bg-primary px-8 py-3 text-sm font-black text-on-primary shadow-sm transition hover:bg-primary/90" href={storefrontHref}>
                     تسوق
                   </Link>
@@ -90,21 +90,21 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
                 </p>
               </div>
 
-              <div className="order-1 justify-self-end md:order-2">
-                <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-[10px] border-surface-container-lowest bg-surface-container-lowest shadow-xl md:h-36 md:w-36">
+              <div className="store-profile-logo order-1 justify-self-end md:order-2">
+                <div className="store-profile-logo-frame flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-[10px] border-surface-container-lowest bg-surface-container-lowest shadow-xl md:h-36 md:w-36">
                   <Image className="h-full w-full object-cover" alt={`شعار ${data.vendor.name}`} src={logoImage} width={144} height={144} unoptimized />
                 </div>
               </div>
             </div>
           </section>
 
-          <section className="mt-14 grid gap-5 md:grid-cols-3">
+          <section className="store-profile-stats mt-14 grid gap-5 md:grid-cols-3">
             <StatCard icon={<CalendarIcon />} label="تاريخ الانضمام" value={formatMonthYear(data.vendor.createdAt)} />
             <StatCard icon={<StarIcon />} label="التقييم العام" value={`${rating} / 5.0`} />
             <StatCard icon={<BoxIcon />} label="إجمالي المنتجات" value={String(data.total)} />
           </section>
 
-          <section id="products" className="mt-16">
+          <section id="products" className="store-profile-products mt-16">
             <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
               <form action={profileHref} className="order-2 lg:order-1 lg:w-[390px]">
                 <label className="relative block">
@@ -122,7 +122,7 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
 
             {data.products.length > 0 ? (
               <>
-                <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
+                <div className="store-profile-products-grid mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
                   {data.products.map((product, index) => (
                     <ProductCard key={product.id} product={product} index={index} fallbackImage={storefrontImage} />
                   ))}

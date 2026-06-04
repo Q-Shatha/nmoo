@@ -8,6 +8,7 @@ import { UpdateThemeDto } from "./dto/update-theme.dto";
 const defaultTheme = {
   primaryColor: "#884a70",
   secondaryColor: "#1e293b",
+  textColor: "#1e293b",
   logoUrl: null,
   bannerUrl: null,
   storefrontImageUrl: null,
@@ -91,6 +92,7 @@ export class ThemesService {
       update: {
         primaryColor: dto.primaryColor,
         secondaryColor: dto.secondaryColor,
+        textColor: dto.textColor,
         logoUrl: normalizeOptionalUrl(dto.logoUrl),
         bannerUrl: normalizeOptionalUrl(dto.bannerUrl),
         storefrontImageUrl: normalizeOptionalUrl(dto.storefrontImageUrl),
@@ -113,6 +115,7 @@ export class ThemesService {
         vendorId: user.id,
         primaryColor: dto.primaryColor,
         secondaryColor: dto.secondaryColor,
+        textColor: dto.textColor,
         logoUrl: normalizeOptionalUrl(dto.logoUrl),
         bannerUrl: normalizeOptionalUrl(dto.bannerUrl),
         storefrontImageUrl: normalizeOptionalUrl(dto.storefrontImageUrl),
@@ -139,6 +142,7 @@ export class ThemesService {
   async serializeTheme(theme: Partial<VendorTheme> & { vendor?: { id: string; name: string; email: string; storeUsername: string | null; role: UserRole } }) {
     const primaryColor = theme.primaryColor ?? defaultTheme.primaryColor;
     const secondaryColor = theme.secondaryColor ?? defaultTheme.secondaryColor;
+    const textColor = theme.textColor ?? defaultTheme.textColor;
     const primaryContainer = mixWithWhite(primaryColor, 0.64);
     const secondaryContainer = mixWithWhite(secondaryColor, 0.16);
     const [logoUrl, bannerUrl, storefrontImageUrl] = await Promise.all([
@@ -153,6 +157,7 @@ export class ThemesService {
       vendor: theme.vendor,
       primaryColor,
       secondaryColor,
+      textColor,
       logoUrl,
       bannerUrl,
       storefrontImageUrl,
@@ -213,7 +218,7 @@ function normalizeOptionalText(value: string | undefined) {
 }
 
 function normalizeTemplateId(value: string | null | undefined) {
-  return value === "boutique" || value === "gallery" ? value : "classic";
+  return value === "boutique" || value === "gallery" || value === "minimal" || value === "market" ? value : "classic";
 }
 
 function readableTextColor(background: string) {
