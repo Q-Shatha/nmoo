@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { ApiError, updateMyTheme, uploadProductImage, VendorTheme } from "@/lib/api";
+import { getStoreTemplate, StoreTemplate, storeTemplates, StoreTemplateId } from "@/lib/store-templates";
 import { applyThemeTokens } from "@/lib/theme";
 
 type ImageField = "logoUrl" | "bannerUrl" | "storefrontImageUrl";
@@ -61,6 +62,7 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
   const [storefrontImageUrl, setStorefrontImageUrl] = useState(initialTheme.storefrontImageUrl ?? "");
   const [storefrontTitle, setStorefrontTitle] = useState(initialTheme.storefrontTitle ?? "");
   const [storefrontDescription, setStorefrontDescription] = useState(initialTheme.storefrontDescription ?? "");
+  const [templateId, setTemplateId] = useState<StoreTemplateId>(getStoreTemplate(initialTheme.templateId).id);
   const [socialLinks, setSocialLinks] = useState<Record<SocialField, string>>({
     whatsappUrl: initialTheme.whatsappUrl ?? "",
     instagramUrl: initialTheme.instagramUrl ?? "",
@@ -133,6 +135,7 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
           storefrontImageUrl,
           storefrontTitle,
           storefrontDescription,
+          templateId,
           ...socialLinks,
         },
         token,
@@ -164,7 +167,8 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
             <ColorField label="اللون الثانوي" value={secondaryColor} onChange={setSecondaryColor} />
           </div>
 
-          <div className="grid gap-4 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
+          <TemplateSelector primaryColor={primaryColor} secondaryColor={secondaryColor} selectedTemplateId={templateId} onChange={setTemplateId} />
+<div className="grid gap-4 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
             <label className="grid gap-2">
               <span className="text-sm font-bold text-on-surface">عنوان واجهة المتجر</span>
               <input
@@ -259,6 +263,92 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
   );
 }
 
+function TemplateSelector({
+  primaryColor,
+  secondaryColor,
+  selectedTemplateId,
+  onChange,
+}: {
+  primaryColor: string;
+  secondaryColor: string;
+  selectedTemplateId: StoreTemplateId;
+  onChange: (value: StoreTemplateId) => void;
+}) {
+  return (
+    <section className="grid gap-4 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
+      <div>
+        <h5 className="font-black text-on-surface">قالب تصميم المتجر</h5>
+        <p className="mt-1 text-sm leading-6 text-on-surface-variant">اختر شكل واجهة المتجر. كل قالب يستخدم اللون الأساسي والثانوي الخاصين بمتجرك في كل الصفحات.</p>
+      </div>
+      <div className="grid gap-3 md:grid-cols-3">
+        {storeTemplates.map((template) => (
+          <TemplateOption
+            key={template.id}
+            primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
+            selected={selectedTemplateId === template.id}
+            template={template}
+            onChange={onChange}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TemplateOption({
+  primaryColor,
+  secondaryColor,
+  selected,
+  template,
+  onChange,
+}: {
+  primaryColor: string;
+  secondaryColor: string;
+  selected: boolean;
+  template: StoreTemplate;
+  onChange: (value: StoreTemplateId) => void;
+}) {
+  return (
+    <label className={`cursor-pointer overflow-hidden rounded-2xl border bg-white text-right transition ${selected ? "border-primary shadow-md ring-2 ring-primary-container" : "border-outline-variant/25 hover:border-primary/50"}`}>
+      <input checked={selected} className="sr-only" name="store-template" type="radio" value={template.id} onChange={() => onChange(template.id)} />
+      <TemplatePreview primaryColor={primaryColor} secondaryColor={secondaryColor} templateId={template.id} />
+      <div className="grid gap-1 p-4">
+        <span className="text-base font-black text-on-surface">{template.name}</span>
+        <span className="text-sm leading-6 text-on-surface-variant">{template.description}</span>
+        <span className="mt-2 w-fit rounded-full px-3 py-1 text-xs font-black" style={{ backgroundColor: primaryColor, color: readablePreviewText(primaryColor) }}>
+          {selected ? "محدد" : template.previewTone}
+        </span>
+      </div>
+    </label>
+  );
+}
+
+function TemplatePreview({ primaryColor, secondaryColor, templateId }: { primaryColor: string; secondaryColor: string; templateId: StoreTemplateId }) {
+  const isBoutique = templateId === "boutique";
+  const isGallery = templateId === "gallery";
+
+  return (
+    <div className={`h-36 border-b border-outline-variant/20 p-3 ${isGallery ? "bg-slate-50" : "bg-surface-container-low"}`}>
+      <div className={`h-full overflow-hidden ${isBoutique ? "rounded-[28px]" : isGallery ? "rounded-md" : "rounded-xl"}`} style={{ backgroundColor: "#ffffff" }}>
+        <div className={`flex h-14 items-center gap-2 px-3 ${isGallery ? "justify-between" : "justify-end"}`} style={{ backgroundColor: isGallery ? secondaryColor : primaryColor }}>
+          <span className="h-5 w-12 rounded-full" style={{ backgroundColor: readablePreviewText(isGallery ? secondaryColor : primaryColor), opacity: 0.9 }} />
+          <span className="h-5 w-5 rounded-full" style={{ backgroundColor: readablePreviewText(isGallery ? secondaryColor : primaryColor), opacity: 0.75 }} />
+        </div>
+        <div className={`grid gap-2 p-3 ${isGallery ? "grid-cols-3" : "grid-cols-2"}`}>
+          {[0, 1, 2].map((item) => (
+            <span
+              key={item}
+              className={`${isBoutique ? "rounded-2xl" : isGallery ? "rounded-md" : "rounded-xl"} block h-12`}
+              style={{ backgroundColor: item === 0 ? primaryColor : item === 1 ? secondaryColor : colorMix(primaryColor, "#ffffff", 0.72) }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
     <label className="grid gap-2">
@@ -333,4 +423,40 @@ function readCookie(name: string) {
     ?.split("=")[1];
 
   return cookie ? decodeURIComponent(cookie) : "";
+}
+
+function readablePreviewText(background: string) {
+  return contrastRatio(background, "#ffffff") >= 4.5 ? "#ffffff" : "#111827";
+}
+
+function contrastRatio(first: string, second: string) {
+  const firstLum = relativeLuminance(hexToRgb(first));
+  const secondLum = relativeLuminance(hexToRgb(second));
+  const lighter = Math.max(firstLum, secondLum);
+  const darker = Math.min(firstLum, secondLum);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function relativeLuminance([r, g, b]: [number, number, number]) {
+  const [red, green, blue] = [r, g, b].map((channel) => {
+    const value = channel / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+function colorMix(first: string, second: string, secondAmount: number) {
+  const [r1, g1, b1] = hexToRgb(first);
+  const [r2, g2, b2] = hexToRgb(second);
+  const mix = (start: number, end: number) => Math.round(start * (1 - secondAmount) + end * secondAmount);
+  return rgbToHex(mix(r1, r2), mix(g1, g2), mix(b1, b2));
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  return [Number.parseInt(hex.slice(1, 3), 16), Number.parseInt(hex.slice(3, 5), 16), Number.parseInt(hex.slice(5, 7), 16)];
+}
+
+function rgbToHex(r: number, g: number, b: number) {
+  return `#${[r, g, b].map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
 }

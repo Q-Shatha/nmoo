@@ -17,12 +17,26 @@ export class OrdersService {
 
   async create(createOrderDto: CreateOrderDto, user: AuthenticatedUser) {
     const items = this.mergeDuplicateItems(createOrderDto.items);
-    const shipping = await this.shippingMethodsService.resolveCheckoutShipping(items, createOrderDto.shippingCarrier);
+    const buyer = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      select: { country: true, region: true, city: true },
+    });
+    const shipping = await this.shippingMethodsService.resolveCheckoutShipping(items, createOrderDto.shippingCarrier, {
+      country: buyer?.country,
+      region: buyer?.region,
+      city: buyer?.city,
+    });
     const productsById = new Map(shipping.products.map((product) => [product.id, product]));
     const vendorIds = new Set(shipping.products.map((product) => product.vendorId));
 
     if (vendorIds.size > 1) {
       throw new BadRequestException("Orders can only include products from one store");
+    }
+
+    const paymentMethod = createOrderDto.paymentMethod ?? "ONLINE";
+
+    if (paymentMethod === "CASH_ON_DELIVERY" && !shipping.cashOnDeliveryEnabled) {
+      throw new BadRequestException("Cash on delivery is not available for this shipping method");
     }
 
     const shippingFee = shipping.fee;
@@ -74,8 +88,10 @@ export class OrdersService {
         data: {
           buyerId: user.id,
           total,
+          status: paymentMethod === "CASH_ON_DELIVERY" ? OrderStatus.PROCESSING : OrderStatus.PENDING,
           shippingCarrier: shipping.code,
           shippingFee,
+          paymentMethod,
           discountCode: discount?.code,
           discountAmount,
           items: {

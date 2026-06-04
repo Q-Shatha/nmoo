@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsOptional, IsString, Matches } from "class-validator";
+import { IsBoolean, IsIn, IsOptional, IsString, Matches } from "class-validator";
 
 const hexColorPattern = /^#[0-9a-fA-F]{6}$/;
 
@@ -36,6 +36,17 @@ export class UpdateThemeDto {
   @IsOptional()
   @IsString()
   storefrontDescription?: string;
+
+  @ApiProperty({ example: "classic", enum: ["classic", "boutique", "gallery"], required: false })
+  @IsOptional()
+  @IsString()
+  @IsIn(["classic", "boutique", "gallery"])
+  templateId?: string;
+
+  @ApiProperty({ example: false, required: false })
+  @IsOptional()
+  @IsBoolean()
+  cashOnDeliveryEnabled?: boolean;
 
   @ApiProperty({ example: "https://wa.me/966500000000", required: false })
   @IsOptional()

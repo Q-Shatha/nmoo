@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { FiEdit3, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 import { TbFileSearch } from "react-icons/tb";
@@ -111,11 +112,16 @@ export function StorePageManager({ initialPages }: { initialPages: StorePage[] }
   return (
     <section id="store-pages" className="dashboard-panel overflow-hidden">
       <div className="border-b border-outline-variant/15 p-5 text-right">
-        <h4 className="text-xl font-black text-on-surface">مدونة وصفحات المتجر</h4>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Link className="primary-button px-6 py-3 text-center" href="/dashboard/settings/pages/new">
+            إضافة صفحة
+          </Link>
+          <h4 className="text-xl font-black text-on-surface">مدونة وصفحات المتجر</h4>
+        </div>
         <p className="mt-1 text-sm leading-6 text-on-surface-variant">أضف صفحات مثل سياسة الاسترجاع أو شرح عام عن المتجر. الصفحات المنشورة تظهر في الفوتر آخر الموقع.</p>
       </div>
 
-      <form className="grid gap-4 border-b border-outline-variant/15 p-5 text-right" dir="rtl" onSubmit={handleSubmit}>
+      {false ? <form className="grid gap-4 border-b border-outline-variant/15 p-5 text-right" dir="rtl" onSubmit={handleSubmit}>
         <div className="grid gap-4 lg:grid-cols-2">
           <label className="grid gap-2">
             <RequiredLabel>عنوان الصفحة</RequiredLabel>
@@ -147,7 +153,7 @@ export function StorePageManager({ initialPages }: { initialPages: StorePage[] }
             {isSaving ? "جاري الحفظ..." : editingId ? "حفظ التعديل" : "إضافة صفحة"}
           </button>
         </div>
-      </form>
+      </form> : null}
 
       {message ? <p className="mx-5 mt-5 rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface">{message}</p> : null}
 
@@ -171,9 +177,9 @@ export function StorePageManager({ initialPages }: { initialPages: StorePage[] }
                 <a className="secondary-button flex h-11 w-full items-center justify-center p-0 text-[0px] lg:w-11" href={`/store-pages/${page.id}`} target="_blank" title="عرض" aria-label={`عرض ${page.title}`}>
                   <TbFileSearch aria-hidden="true" className="h-6 w-6" />
                 </a>
-                <button className="secondary-button h-11 w-full p-0 text-[0px] lg:w-11" type="button" title="تعديل" aria-label={`تعديل ${page.title}`} onClick={() => startEdit(page)}>
+                <Link className="secondary-button flex h-11 w-full items-center justify-center p-0 text-[0px] lg:w-11" title="تعديل" aria-label={`تعديل ${page.title}`} href={`/dashboard/settings/pages/${page.id}`}>
                   <FiEdit3 aria-hidden="true" className="h-5 w-5" />
-                </button>
+                </Link>
                 <button className="secondary-button h-11 w-full p-0 text-[0px] lg:w-11" type="button" title={page.published ? "إخفاء" : "نشر"} aria-label={`${page.published ? "إخفاء" : "نشر"} ${page.title}`} onClick={() => togglePublished(page)}>
                   {page.published ? <FiEyeOff aria-hidden="true" className="h-5 w-5" /> : <FiEye aria-hidden="true" className="h-5 w-5" />}
                 </button>

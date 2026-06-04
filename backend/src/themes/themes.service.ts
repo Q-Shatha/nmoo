@@ -13,6 +13,8 @@ const defaultTheme = {
   storefrontImageUrl: null,
   storefrontTitle: null,
   storefrontDescription: null,
+  templateId: "classic",
+  cashOnDeliveryEnabled: false,
   whatsappUrl: null,
   instagramUrl: null,
   tiktokUrl: null,
@@ -94,6 +96,8 @@ export class ThemesService {
         storefrontImageUrl: normalizeOptionalUrl(dto.storefrontImageUrl),
         storefrontTitle: normalizeOptionalText(dto.storefrontTitle),
         storefrontDescription: normalizeOptionalText(dto.storefrontDescription),
+        templateId: normalizeTemplateId(dto.templateId),
+        cashOnDeliveryEnabled: dto.cashOnDeliveryEnabled ?? false,
         whatsappUrl: normalizeOptionalUrl(dto.whatsappUrl),
         instagramUrl: normalizeOptionalUrl(dto.instagramUrl),
         tiktokUrl: normalizeOptionalUrl(dto.tiktokUrl),
@@ -114,6 +118,8 @@ export class ThemesService {
         storefrontImageUrl: normalizeOptionalUrl(dto.storefrontImageUrl),
         storefrontTitle: normalizeOptionalText(dto.storefrontTitle),
         storefrontDescription: normalizeOptionalText(dto.storefrontDescription),
+        templateId: normalizeTemplateId(dto.templateId),
+        cashOnDeliveryEnabled: dto.cashOnDeliveryEnabled ?? false,
         whatsappUrl: normalizeOptionalUrl(dto.whatsappUrl),
         instagramUrl: normalizeOptionalUrl(dto.instagramUrl),
         tiktokUrl: normalizeOptionalUrl(dto.tiktokUrl),
@@ -152,6 +158,8 @@ export class ThemesService {
       storefrontImageUrl,
       storefrontTitle: theme.storefrontTitle ?? defaultTheme.storefrontTitle,
       storefrontDescription: theme.storefrontDescription ?? defaultTheme.storefrontDescription,
+      templateId: normalizeTemplateId(theme.templateId),
+      cashOnDeliveryEnabled: theme.cashOnDeliveryEnabled ?? defaultTheme.cashOnDeliveryEnabled,
       whatsappUrl: theme.whatsappUrl ?? defaultTheme.whatsappUrl,
       instagramUrl: theme.instagramUrl ?? defaultTheme.instagramUrl,
       tiktokUrl: theme.tiktokUrl ?? defaultTheme.tiktokUrl,
@@ -202,6 +210,10 @@ function normalizeOptionalText(value: string | undefined) {
 
   const trimmedValue = value.trim();
   return trimmedValue.length > 0 ? trimmedValue : null;
+}
+
+function normalizeTemplateId(value: string | null | undefined) {
+  return value === "boutique" || value === "gallery" ? value : "classic";
 }
 
 function readableTextColor(background: string) {

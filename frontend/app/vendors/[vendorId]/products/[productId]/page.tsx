@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { ApiError, getProductById, getProductReviews, getProducts, getVendorTheme, Product, Review, VendorTheme } from "@/lib/api";
+import { getStoreTemplate } from "@/lib/store-templates";
 import { themeToStyle } from "@/lib/theme";
 import { AddToCartWithQuantity } from "../../../../components/AddToCartWithQuantity";
 import { ProductCard } from "../../../../components/ProductCard";
@@ -31,9 +32,10 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
   const displayPrice = hasDiscount ? product.salePrice! : product.price;
   const profileHref = product.vendor?.storeUsername ? `/${product.vendor.storeUsername}` : `/vendors/${vendorId}`;
   const storeHref = `${profileHref}/storefront`;
+  const template = getStoreTemplate(theme?.templateId);
 
   return (
-    <div className="min-h-screen text-on-surface" dir="rtl" style={theme ? { ...themeToStyle(theme), backgroundColor: "var(--color-background)" } : undefined}>
+    <div className={`min-h-screen text-on-surface ${template.className}`} dir="rtl" style={theme ? { ...themeToStyle(theme), backgroundColor: "var(--color-background)" } : undefined}>
       <PublicHeader active="store" storeHref={storeHref} profileHref={profileHref} vendorId={product.vendorId} storeLogoUrl={theme?.logoUrl} />
 
       <main className="app-container pt-8" style={theme ? { backgroundColor: "var(--color-background)" } : undefined}>

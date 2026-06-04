@@ -92,6 +92,10 @@ model VendorShippingMethod {
   eta         String?
   fee         Decimal  @db.Decimal(10, 2)
   enabled     Boolean  @default(true)
+  cashOnDeliveryEnabled Boolean @default(false)
+  excludedRegions String[] @default([])
+  unavailableLocations Json @default("[]")
+  deliveryLocations Json @default("[]")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -131,6 +135,8 @@ model VendorTheme {
   storefrontImageUrl String?
   storefrontTitle String?
   storefrontDescription String?
+  templateId     String   @default("classic")
+  cashOnDeliveryEnabled Boolean @default(false)
   whatsappUrl    String?
   instagramUrl   String?
   tiktokUrl      String?
@@ -254,6 +260,7 @@ model Order {
   total           Decimal     @db.Decimal(10, 2)
   shippingCarrier String?
   shippingFee     Decimal     @default(0) @db.Decimal(10, 2)
+  paymentMethod   String      @default("ONLINE")
   discountCode    String?
   discountAmount  Decimal     @default(0) @db.Decimal(10, 2)
   createdAt       DateTime    @default(now())

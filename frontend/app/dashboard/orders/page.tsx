@@ -1,10 +1,17 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { ApiError, getOrders, Order } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable, EmptyPanel, formatDashboardDate, formatDashboardPrice, formatOrderStatus, statusClass } from "../DashboardShell";
 import { loadVendorDashboardBase } from "../dashboard-data";
 
-export default async function DashboardOrdersPage() {
+type DashboardOrdersPageProps = {
+  searchParams?: Promise<{ q?: string }>;
+};
+
+export default async function DashboardOrdersPage({ searchParams }: DashboardOrdersPageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const query = resolvedSearchParams.q?.trim() ?? "";
   const data = await loadPageData();
+  const visibleOrders = data.ok ? filterOrders(data.orders, query) : [];
 
   return (
     <DashboardShell
@@ -16,11 +23,16 @@ export default async function DashboardOrdersPage() {
     >
       {data.ok ? (
         <section className="dashboard-panel overflow-hidden">
-          <div className="flex items-center justify-between border-b border-outline-variant/15 p-4 md:p-5">
-            <h2 className="text-xl font-black text-on-surface">كل الطلبات</h2>
-            <span className="text-sm font-bold text-on-surface-variant">{data.orders.length} طلب</span>
+          <div className="grid gap-4 border-b border-outline-variant/15 p-4 md:p-5 lg:grid-cols-[1fr_auto] lg:items-center">
+            <form className="order-2 lg:order-1 lg:w-80" dir="rtl">
+              <input className="input-field w-full px-4 py-3 text-right" defaultValue={query} name="q" placeholder="بحث برقم الطلب أو العميل..." type="search" />
+            </form>
+            <div className="order-1 flex items-center justify-between gap-4 text-right lg:order-2">
+              <h2 className="text-xl font-black text-on-surface">كل الطلبات</h2>
+              <span className="text-sm font-bold text-on-surface-variant">{visibleOrders.length} / {data.orders.length} طلب</span>
+            </div>
           </div>
-          {data.orders.length > 0 ? <OrdersTable orders={data.orders} /> : <EmptyPanel title="لا توجد طلبات بعد" />}
+          {visibleOrders.length > 0 ? <OrdersTable orders={visibleOrders} /> : <EmptyPanel title={query ? "لا توجد طلبات مطابقة للبحث" : "لا توجد طلبات بعد"} />}
         </section>
       ) : (
         <DashboardUnavailable message={data.message} needsLogin={data.needsLogin} />
@@ -94,6 +106,31 @@ function OrdersTable({ orders }: { orders: Order[] }) {
   );
 }
 
+function filterOrders(orders: Order[], query: string) {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return orders;
+  }
+
+  return orders.filter((order) => {
+    const haystack = [
+      order.id,
+      order.id.slice(0, 8),
+      order.buyer?.name,
+      order.buyer?.email,
+      order.status,
+      formatOrderStatus(order.status),
+      order.total,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(normalizedQuery);
+  });
+}
+
 async function loadPageData() {
   const base = await loadVendorDashboardBase();
 
@@ -116,3 +153,4 @@ async function loadPageData() {
     };
   }
 }
+

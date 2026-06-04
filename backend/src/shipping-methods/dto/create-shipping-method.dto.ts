@@ -1,6 +1,25 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsBoolean, IsNumber, IsOptional, IsString, MaxLength, Min } from "class-validator";
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, MaxLength, Min, ValidateNested } from "class-validator";
+
+export class ShippingUnavailableLocationDto {
+  @ApiProperty({ example: "SA" })
+  @IsString()
+  @MaxLength(2)
+  country!: string;
+
+  @ApiPropertyOptional({ example: "منطقة الرياض" })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  region?: string;
+
+  @ApiPropertyOptional({ example: "الرياض" })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  city?: string;
+}
 
 export class CreateShippingMethodDto {
   @ApiProperty({ example: "spl" })
@@ -35,4 +54,29 @@ export class CreateShippingMethodDto {
   @IsOptional()
   @IsBoolean()
   enabled?: boolean;
+
+  @ApiPropertyOptional({ example: false })
+  @IsOptional()
+  @IsBoolean()
+  cashOnDeliveryEnabled?: boolean;
+
+  @ApiPropertyOptional({ example: ["منطقة الرياض", "منطقة مكة المكرمة"], type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  excludedRegions?: string[];
+
+  @ApiPropertyOptional({ type: [ShippingUnavailableLocationDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ShippingUnavailableLocationDto)
+  unavailableLocations?: ShippingUnavailableLocationDto[];
+
+  @ApiPropertyOptional({ type: [ShippingUnavailableLocationDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ShippingUnavailableLocationDto)
+  deliveryLocations?: ShippingUnavailableLocationDto[];
 }

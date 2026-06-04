@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ApiError, getStorePage } from "@/lib/api";
+import { getStoreTemplate } from "@/lib/store-templates";
+import { themeToStyle } from "@/lib/theme";
 import { PublicFooter } from "../../components/PublicFooter";
 import { PublicHeader } from "../../components/PublicHeader";
 
@@ -13,9 +15,10 @@ type StorePageProps = {
 export default async function StorePageView({ params }: StorePageProps) {
   const { id } = await params;
   const page = await loadPage(id);
+  const template = getStoreTemplate(page.vendor?.theme?.templateId);
 
   return (
-    <>
+    <div className={`min-h-screen text-on-surface ${template.className}`} dir="rtl" style={page.vendor?.theme ? { ...themeToStyle(page.vendor.theme), backgroundColor: "var(--color-background)" } : undefined}>
       <PublicHeader
         active="store"
         storeHref={page.vendor?.storeUsername ? `/${page.vendor.storeUsername}/storefront` : `/vendors/${page.vendorId}/storefront`}
@@ -35,7 +38,7 @@ export default async function StorePageView({ params }: StorePageProps) {
         </article>
       </main>
       <PublicFooter theme={page.vendor?.theme} />
-    </>
+    </div>
   );
 }
 

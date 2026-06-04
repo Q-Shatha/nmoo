@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { ArrayMinSize, IsArray, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min, ValidateNested } from "class-validator";
+import { ArrayMinSize, IsArray, IsIn, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min, ValidateNested } from "class-validator";
 
 export class CreateOrderItemDto {
   @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000" })
@@ -31,4 +31,10 @@ export class CreateOrderDto {
   @IsString()
   @MaxLength(40)
   discountCode?: string;
+
+  @ApiPropertyOptional({ example: "ONLINE", enum: ["ONLINE", "CASH_ON_DELIVERY"] })
+  @IsOptional()
+  @IsString()
+  @IsIn(["ONLINE", "CASH_ON_DELIVERY"])
+  paymentMethod?: "ONLINE" | "CASH_ON_DELIVERY";
 }

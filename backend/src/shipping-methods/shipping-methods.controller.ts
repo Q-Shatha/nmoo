@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { UserRole } from "@prisma/client";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
@@ -19,7 +19,11 @@ export class ShippingMethodsController {
   @Post("checkout-options")
   @ApiOperation({ summary: "List shipping options available for the checkout items" })
   findCheckoutOptions(@Body() dto: CheckoutShippingOptionsDto) {
-    return this.shippingMethodsService.findCheckoutOptions(dto.items);
+    return this.shippingMethodsService.findCheckoutOptions(dto.items, {
+      country: dto.destinationCountry,
+      region: dto.destinationRegion,
+      city: dto.destinationCity,
+    });
   }
 
   @Get("me")
@@ -29,6 +33,17 @@ export class ShippingMethodsController {
   @ApiOperation({ summary: "List shipping methods owned by the authenticated vendor" })
   findMine(@CurrentUser() user: AuthenticatedUser) {
     return this.shippingMethodsService.findMine(user);
+  }
+
+  @Get("vendor/:vendorId/coverage")
+  @ApiOperation({ summary: "Check whether a vendor supports shipping to a destination" })
+  checkVendorCoverage(
+    @Param("vendorId", ParseUUIDPipe) vendorId: string,
+    @Query("country") country?: string,
+    @Query("region") region?: string,
+    @Query("city") city?: string,
+  ) {
+    return this.shippingMethodsService.checkVendorCoverage(vendorId, { country, region, city });
   }
 
   @Post()

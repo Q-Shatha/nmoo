@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ApiError, ApiUser, getProducts, getVendor, getVendorReviews, getVendorStorePages, getVendorTheme, Product, Review, StorePage, VendorTheme } from "@/lib/api";
+import { cookies } from "next/headers";
+import { ApiError, ApiUser, getMe, getProducts, getVendor, getVendorReviews, getVendorShippingCoverage, getVendorStorePages, getVendorTheme, Product, Review, StorePage, VendorTheme } from "@/lib/api";
+import { getStoreTemplate } from "@/lib/store-templates";
 import { themeToStyle } from "@/lib/theme";
 import { ProductCard } from "../../components/ProductCard";
 import { PublicFooter } from "../../components/PublicFooter";
@@ -24,8 +26,15 @@ type VendorPageData =
       storePages: StorePage[];
       total: number;
       query: string;
+      coverage: StoreCoverage;
     }
   | { ok: false; message: string };
+
+type StoreCoverage = {
+  checked: boolean;
+  supported: boolean;
+  needsAddress: boolean;
+};
 
 export default async function VendorPage({ params, searchParams }: VendorPageProps) {
   const { vendorId } = await params;
@@ -47,13 +56,16 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
   const rating = data.reviews.length > 0 ? averageRating(data.reviews) : data.total > 20 ? "4.9" : "4.8";
   const profileHref = data.vendor.storeUsername ? `/${data.vendor.storeUsername}` : `/vendors/${data.vendor.id}`;
   const storefrontHref = `${profileHref}/storefront`;
+  const template = getStoreTemplate(data.theme.templateId);
 
   return (
-    <div className="min-h-screen text-on-surface" dir="rtl" style={{ ...themeToStyle(data.theme), backgroundColor: "var(--color-background)" }}>
+    <div className={`min-h-screen text-on-surface ${template.className}`} dir="rtl" style={{ ...themeToStyle(data.theme), backgroundColor: "var(--color-background)" }}>
       <PublicHeader active="store" storeHref={storefrontHref} profileHref={profileHref} vendorId={data.vendor.id} storeLogoUrl={data.theme.logoUrl} />
 
       <main className="min-h-screen text-on-surface" style={{ backgroundColor: "var(--color-background)" }}>
         <div className="mx-auto w-full max-w-[1180px] px-4 pb-20 pt-8 sm:px-6 lg:px-8">
+          <LocationUnsupportedNotice coverage={data.coverage} />
+
           <section className="relative">
             <div className="relative h-[230px] overflow-hidden rounded-[28px] bg-surface-container shadow-sm md:h-[310px]">
               <Image className="scale-105 object-cover blur-[3px]" alt={data.vendor.name} src={heroImage} fill priority sizes="(min-width: 1180px) 1180px, 94vw" unoptimized />
@@ -151,6 +163,18 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
   );
 }
 
+function LocationUnsupportedNotice({ coverage }: { coverage: StoreCoverage }) {
+  if (!coverage.checked || coverage.supported) {
+    return null;
+  }
+
+  return (
+    <div className="mb-6 rounded-2xl border border-error/25 bg-error-container/35 px-5 py-4 text-right text-sm font-bold leading-7 text-error">
+      {coverage.needsAddress ? "أكمل عنوانك حتى تعرف هل هذا المتجر يدعم التوصيل لموقعك." : "هذا المتجر لا يدعم التوصيل إلى موقعك الحالي، لذلك لن تتمكن من إتمام الطلب لهذا العنوان."}
+    </div>
+  );
+}
+
 function ReviewsSection({ profileHref, reviews, vendor }: { profileHref: string; reviews: Review[]; vendor: ApiUser }) {
   const visibleReviews = reviews.length > 0 ? reviews : fallbackReviews;
   const carouselReviews = [...visibleReviews, ...visibleReviews];
@@ -235,12 +259,13 @@ function Unavailable({ message }: { message: string }) {
 
 async function loadVendorPage(vendorId: string, query: string): Promise<VendorPageData> {
   try {
-    const [vendor, theme, products, reviews, storePages] = await Promise.all([
+    const [vendor, theme, products, reviews, storePages, coverage] = await Promise.all([
       getVendor(vendorId),
       getVendorTheme(vendorId),
       getProducts({ vendorId, q: query || undefined, page: 1, limit: 8, sort: "latest" }),
       getVendorReviews(vendorId),
       getVendorStorePages(vendorId),
+      getCurrentUserCoverage(vendorId),
     ]);
 
     return {
@@ -252,12 +277,39 @@ async function loadVendorPage(vendorId: string, query: string): Promise<VendorPa
       storePages,
       total: products.meta.total,
       query,
+      coverage,
     };
   } catch (error) {
     return {
       ok: false,
       message: error instanceof ApiError ? error.message : "حدث خطأ أثناء تحميل صفحة التاجر.",
     };
+  }
+}
+
+async function getCurrentUserCoverage(vendorId: string): Promise<StoreCoverage> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("nmoo_access_token")?.value;
+
+    if (!token) {
+      return { checked: false, supported: true, needsAddress: false };
+    }
+
+    const user = await getMe(token);
+    const country = user.country?.trim();
+    const region = user.region?.trim();
+    const city = user.city?.trim();
+
+    if (!country || !region || !city) {
+      return { checked: true, supported: false, needsAddress: true };
+    }
+
+    const coverage = await getVendorShippingCoverage(vendorId, { country, region, city });
+
+    return { checked: true, supported: coverage.supported, needsAddress: false };
+  } catch {
+    return { checked: false, supported: true, needsAddress: false };
   }
 }
 

@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ApiError, Category, getProducts, getVendor, getVendorStorePages, getVendorTheme, Product, StorePage, VendorTheme } from "@/lib/api";
+import { cookies } from "next/headers";
+import { ApiError, Category, getMe, getProducts, getVendor, getVendorShippingCoverage, getVendorStorePages, getVendorTheme, Product, StorePage, VendorTheme } from "@/lib/api";
+import { getStoreTemplate } from "@/lib/store-templates";
 import { themeToStyle } from "@/lib/theme";
 import { ProductCard } from "../../../components/ProductCard";
 import { PublicFooter } from "../../../components/PublicFooter";
@@ -32,11 +34,18 @@ type StorefrontData =
       query: string;
       category?: string;
       filter?: "discounts" | "recent";
+      coverage: StoreCoverage;
     }
   | {
       ok: false;
       message: string;
     };
+
+type StoreCoverage = {
+  checked: boolean;
+  supported: boolean;
+  needsAddress: boolean;
+};
 
 export default async function VendorStorefrontPage({ params, searchParams }: StorefrontPageProps) {
   const { vendorId } = await params;
@@ -61,13 +70,16 @@ function Storefront({ data }: { data: Extract<StorefrontData, { ok: true }> }) {
   const storefrontImage = data.theme.storefrontImageUrl || data.theme.bannerUrl || data.products[0]?.imageUrl || data.products[0]?.images?.[0]?.url || fallbackStorefrontImage;
   const storefrontTitle = data.theme.storefrontTitle?.trim() || `واجهة متجر ${data.vendor.name}`;
   const storefrontDescription = data.theme.storefrontDescription?.trim() || "اكتشف منتجات المتجر واختر ما يناسبك من التصنيفات المتاحة.";
+  const template = getStoreTemplate(data.theme.templateId);
 
   return (
-    <div className="min-h-screen text-on-surface" dir="rtl" style={{ ...themeToStyle(data.theme), backgroundColor: "var(--color-background)" }}>
+    <div className={`min-h-screen text-on-surface ${template.className}`} dir="rtl" style={{ ...themeToStyle(data.theme), backgroundColor: "var(--color-background)" }}>
       <PublicHeader active="store" storeHref={storefrontHref} profileHref={profileHref} vendorId={data.vendor.id} storeLogoUrl={data.theme.logoUrl} />
 
       <main className="min-h-screen pb-20">
         <section className="app-container pt-8">
+          <LocationUnsupportedNotice coverage={data.coverage} />
+
           <div className="grid gap-6 rounded-[24px] bg-surface-container-lowest p-4 shadow-sm md:grid-cols-[minmax(0,0.95fr)_minmax(320px,1.05fr)] md:items-center md:p-6">
             <div className="relative h-48 overflow-hidden rounded-[20px] bg-surface-container md:h-64">
               <Image className="object-cover" alt={`واجهة متجر ${data.vendor.name}`} src={storefrontImage} fill priority sizes="(min-width: 1280px) 540px, 94vw" unoptimized />
@@ -102,7 +114,27 @@ function Storefront({ data }: { data: Extract<StorefrontData, { ok: true }> }) {
         </section>
 
         <section className="app-container mt-8 grid gap-8 lg:grid-cols-[260px_1fr] lg:items-start">
-          <aside className="rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-5 text-right shadow-sm">
+          <details className="group rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4 text-right shadow-sm lg:hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+              <span className="text-lg font-black text-on-surface">التصنيفات</span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-low text-primary transition group-open:rotate-180">⌄</span>
+            </summary>
+            <nav className="mt-4 grid gap-2">
+              <CategoryLink active={!data.category && !data.filter} href={buildStorefrontHref(storefrontHref, data.query, undefined, undefined, 1)} label="جميع المنتجات" />
+              <CategoryLink active={data.filter === "discounts"} href={buildStorefrontHref(storefrontHref, data.query, undefined, "discounts", 1)} label="التخفيضات" />
+              <CategoryLink active={data.filter === "recent"} href={buildStorefrontHref(storefrontHref, data.query, undefined, "recent", 1)} label="مضاف حديثاً" />
+              {data.categories.map((category) => (
+                <CategoryLink
+                  key={category.id}
+                  active={data.category === category.slug || data.category === category.id}
+                  href={buildStorefrontHref(storefrontHref, data.query, category.slug || category.id, undefined, 1)}
+                  label={`${category.name}${category._count?.products ? ` (${category._count.products})` : ""}`}
+                />
+              ))}
+            </nav>
+          </details>
+
+          <aside className="hidden rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-5 text-right shadow-sm lg:block">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-xl font-black text-on-surface">التصنيفات</h2>
               <Link className="text-sm font-black text-primary hover:underline" href={storefrontHref}>
@@ -154,6 +186,18 @@ function Storefront({ data }: { data: Extract<StorefrontData, { ok: true }> }) {
       </main>
 
       <PublicFooter storePages={data.storePages} theme={data.theme} />
+    </div>
+  );
+}
+
+function LocationUnsupportedNotice({ coverage }: { coverage: StoreCoverage }) {
+  if (!coverage.checked || coverage.supported) {
+    return null;
+  }
+
+  return (
+    <div className="mb-6 rounded-2xl border border-error/25 bg-error-container/35 px-5 py-4 text-right text-sm font-bold leading-7 text-error">
+      {coverage.needsAddress ? "أكمل عنوانك حتى تعرف هل هذا المتجر يدعم التوصيل لموقعك." : "هذا المتجر لا يدعم التوصيل إلى موقعك الحالي، لذلك لن تتمكن من إتمام الطلب لهذا العنوان."}
     </div>
   );
 }
@@ -211,7 +255,7 @@ function Unavailable({ message }: { message: string }) {
 
 async function loadStorefrontData(vendorId: string, input: { q: string; category?: string; filter?: "discounts" | "recent"; page: number }): Promise<StorefrontData> {
   try {
-    const [vendor, theme, products, categorySource, storePages] = await Promise.all([
+    const [vendor, theme, products, categorySource, storePages, coverage] = await Promise.all([
       getVendor(vendorId),
       getVendorTheme(vendorId),
       getProducts({
@@ -229,6 +273,7 @@ async function loadStorefrontData(vendorId: string, input: { q: string; category
         sort: "latest",
       }),
       getVendorStorePages(vendorId),
+      getCurrentUserCoverage(vendorId),
     ]);
 
     return {
@@ -244,12 +289,39 @@ async function loadStorefrontData(vendorId: string, input: { q: string; category
       query: input.q,
       category: input.category,
       filter: input.filter,
+      coverage,
     };
   } catch (error) {
     return {
       ok: false,
       message: error instanceof ApiError ? error.message : "حدث خطأ أثناء تحميل واجهة المتجر.",
     };
+  }
+}
+
+async function getCurrentUserCoverage(vendorId: string): Promise<StoreCoverage> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("nmoo_access_token")?.value;
+
+    if (!token) {
+      return { checked: false, supported: true, needsAddress: false };
+    }
+
+    const user = await getMe(token);
+    const country = user.country?.trim();
+    const region = user.region?.trim();
+    const city = user.city?.trim();
+
+    if (!country || !region || !city) {
+      return { checked: true, supported: false, needsAddress: true };
+    }
+
+    const coverage = await getVendorShippingCoverage(vendorId, { country, region, city });
+
+    return { checked: true, supported: coverage.supported, needsAddress: false };
+  } catch {
+    return { checked: false, supported: true, needsAddress: false };
   }
 }
 

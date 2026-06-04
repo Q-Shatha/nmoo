@@ -12,6 +12,22 @@ type VendorShippingChoice = {
   description: string | null;
   eta: string | null;
   fee: Prisma.Decimal;
+  cashOnDeliveryEnabled: boolean;
+  excludedRegions: string[];
+  unavailableLocations: Prisma.JsonValue;
+  deliveryLocations: Prisma.JsonValue;
+};
+
+type ShippingDestination = {
+  country?: string | null;
+  region?: string | null;
+  city?: string | null;
+};
+
+type ShippingUnavailableLocation = {
+  country: string;
+  region?: string;
+  city?: string;
 };
 
 @Injectable()
@@ -40,6 +56,10 @@ export class ShippingMethodsService {
           description: this.optionalText(dto.description),
           eta: this.optionalText(dto.eta),
           enabled: dto.enabled ?? true,
+          cashOnDeliveryEnabled: dto.cashOnDeliveryEnabled ?? false,
+          excludedRegions: this.normalizeExcludedRegions(dto.excludedRegions),
+          unavailableLocations: this.normalizeUnavailableLocations(dto.unavailableLocations),
+          deliveryLocations: this.normalizeUnavailableLocations(dto.deliveryLocations),
         },
       });
     } catch (error) {
@@ -81,6 +101,22 @@ export class ShippingMethodsService {
       data.enabled = dto.enabled;
     }
 
+    if (dto.cashOnDeliveryEnabled !== undefined) {
+      data.cashOnDeliveryEnabled = dto.cashOnDeliveryEnabled;
+    }
+
+    if (dto.excludedRegions !== undefined) {
+      data.excludedRegions = this.normalizeExcludedRegions(dto.excludedRegions);
+    }
+
+    if (dto.unavailableLocations !== undefined) {
+      data.unavailableLocations = this.normalizeUnavailableLocations(dto.unavailableLocations);
+    }
+
+    if (dto.deliveryLocations !== undefined) {
+      data.deliveryLocations = this.normalizeUnavailableLocations(dto.deliveryLocations);
+    }
+
     try {
       return await this.prisma.vendorShippingMethod.update({
         where: { id },
@@ -104,7 +140,7 @@ export class ShippingMethodsService {
     });
   }
 
-  async findCheckoutOptions(items: ShippingMethodItemDto[]) {
+  async findCheckoutOptions(items: ShippingMethodItemDto[], destination: ShippingDestination = {}) {
     const products = await this.getActiveProductsForItems(items);
     const vendorIds = this.getVendorIds(products);
 
@@ -122,7 +158,7 @@ export class ShippingMethodsService {
       orderBy: [{ name: "asc" }],
     });
 
-    const options = this.buildSharedOptions(vendorIds, methods);
+    const options = this.buildSharedOptions(vendorIds, methods, destination);
 
     return options.map((option) => ({
       code: option.code,
@@ -130,11 +166,12 @@ export class ShippingMethodsService {
       description: option.description,
       eta: option.eta,
       fee: option.fee.toFixed(2),
+      cashOnDeliveryEnabled: option.cashOnDeliveryEnabled,
       vendorCount: vendorIds.length,
     }));
   }
 
-  async resolveCheckoutShipping(items: ShippingMethodItemDto[], shippingCarrier: string) {
+  async resolveCheckoutShipping(items: ShippingMethodItemDto[], shippingCarrier: string, destination: ShippingDestination = {}) {
     const products = await this.getActiveProductsForItems(items);
     const vendorIds = this.getVendorIds(products);
     const code = this.normalizeCode(shippingCarrier);
@@ -153,14 +190,30 @@ export class ShippingMethodsService {
       },
     });
 
-    if (methods.length !== vendorIds.length) {
+    const availableMethods = methods.filter((method) => this.isAvailableForDestination(method, destination));
+
+    if (availableMethods.length !== vendorIds.length) {
       throw new BadRequestException("Selected shipping method is not available for all vendors in this order");
     }
 
     return {
       code,
-      fee: methods.reduce((sum, method) => sum.add(method.fee), new Prisma.Decimal(0)),
+      fee: availableMethods.reduce((sum, method) => sum.add(method.fee), new Prisma.Decimal(0)),
+      cashOnDeliveryEnabled: availableMethods.every((method) => method.cashOnDeliveryEnabled),
       products,
+    };
+  }
+
+  async checkVendorCoverage(vendorId: string, destination: ShippingDestination = {}) {
+    const methods = await this.prisma.vendorShippingMethod.findMany({
+      where: {
+        vendorId,
+        enabled: true,
+      },
+    });
+
+    return {
+      supported: methods.some((method) => this.isAvailableForDestination(method, destination)),
     };
   }
 
@@ -182,7 +235,7 @@ export class ShippingMethodsService {
     return products;
   }
 
-  private buildSharedOptions(vendorIds: string[], methods: VendorShippingChoice[]) {
+  private buildSharedOptions(vendorIds: string[], methods: VendorShippingChoice[], destination: ShippingDestination) {
     const methodsByCode = new Map<string, VendorShippingChoice[]>();
 
     for (const method of methods) {
@@ -192,6 +245,7 @@ export class ShippingMethodsService {
     }
 
     return Array.from(methodsByCode.entries())
+      .map(([code, group]) => [code, group.filter((method) => this.isAvailableForDestination(method, destination))] as const)
       .filter(([, group]) => group.length === vendorIds.length)
       .map(([code, group]) => ({
         code,
@@ -199,6 +253,7 @@ export class ShippingMethodsService {
         description: group[0].description,
         eta: group[0].eta,
         fee: group.reduce((sum, method) => sum.add(method.fee), new Prisma.Decimal(0)),
+        cashOnDeliveryEnabled: group.every((method) => method.cashOnDeliveryEnabled),
       }))
       .sort((first, second) => Number(first.fee) - Number(second.fee));
   }
@@ -240,6 +295,101 @@ export class ShippingMethodsService {
   private optionalText(value?: string) {
     const text = value?.trim();
     return text || null;
+  }
+
+  private normalizeExcludedRegions(value?: string[]) {
+    return [...new Set((value ?? []).map((region) => region.trim()).filter(Boolean))];
+  }
+
+  private normalizeUnavailableLocations(value?: ShippingUnavailableLocation[]) {
+    const unique = new Map<string, ShippingUnavailableLocation>();
+
+    for (const location of value ?? []) {
+      const country = location.country?.trim().toUpperCase();
+      const region = this.optionalText(location.region) ?? undefined;
+      const city = this.optionalText(location.city) ?? undefined;
+
+      if (!country) {
+        continue;
+      }
+
+      unique.set([country, region ?? "", city ?? ""].join("|"), { country, region, city });
+    }
+
+    return Array.from(unique.values());
+  }
+
+  private isAvailableForDestination(method: Pick<VendorShippingChoice, "excludedRegions" | "unavailableLocations" | "deliveryLocations">, destination: ShippingDestination) {
+    const normalizedCountry = destination.country?.trim().toUpperCase();
+    const normalizedRegion = destination.region?.trim();
+    const normalizedCity = destination.city?.trim();
+
+    const deliveryLocations = this.parseUnavailableLocations(method.deliveryLocations);
+    if (deliveryLocations.length > 0) {
+      return deliveryLocations.some((location) => this.locationMatchesDestination(location, normalizedCountry, normalizedRegion, normalizedCity));
+    }
+
+    if (normalizedRegion && (method.excludedRegions ?? []).includes(normalizedRegion)) {
+      return false;
+    }
+
+    const locations = this.parseUnavailableLocations(method.unavailableLocations);
+
+    return !locations.some((location) => this.locationMatchesDestination(location, normalizedCountry, normalizedRegion, normalizedCity));
+  }
+
+  private locationMatchesDestination(location: ShippingUnavailableLocation, country?: string, region?: string, city?: string) {
+    if (!country || location.country !== country) {
+      return false;
+    }
+
+    if (!location.region) {
+      return true;
+    }
+
+    if (location.region !== region) {
+      return false;
+    }
+
+    if (!location.city) {
+      return true;
+    }
+
+    return location.city === city;
+  }
+
+  private parseUnavailableLocations(value: Prisma.JsonValue): ShippingUnavailableLocation[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    const locations: ShippingUnavailableLocation[] = [];
+
+    for (const item of value) {
+      if (!item || typeof item !== "object" || Array.isArray(item)) {
+        continue;
+      }
+
+      const location = item as Record<string, unknown>;
+      const country = typeof location.country === "string" ? location.country.trim().toUpperCase() : "";
+      const region = typeof location.region === "string" ? location.region.trim() : undefined;
+      const city = typeof location.city === "string" ? location.city.trim() : undefined;
+
+      if (country) {
+        locations.push({ country, region: region || undefined, city: city || undefined });
+      }
+    }
+
+    return locations;
+  }
+
+  private isAvailableForRegion(excludedRegions: string[] | null | undefined, destinationRegion?: string) {
+    const normalizedRegion = destinationRegion?.trim();
+    if (!normalizedRegion) {
+      return true;
+    }
+
+    return !(excludedRegions ?? []).includes(normalizedRegion);
   }
 
   private isUniqueConstraintError(error: unknown) {

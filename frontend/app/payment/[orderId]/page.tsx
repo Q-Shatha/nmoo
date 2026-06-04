@@ -52,6 +52,7 @@ function PaymentSummary({ order, paymentStatus }: { order: Order; paymentStatus?
   const itemsSubtotal = order.items.reduce((sum, item) => sum + Number(item.unitPrice) * item.quantity, 0);
   const shippingFee = Number(order.shippingFee ?? 0);
   const discountAmount = Number(order.discountAmount ?? 0);
+  const isCashOnDelivery = order.paymentMethod === "CASH_ON_DELIVERY";
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
@@ -66,6 +67,10 @@ function PaymentSummary({ order, paymentStatus }: { order: Order; paymentStatus?
 
         {paymentStatus === "cancelled" ? (
           <p className="mt-5 rounded-2xl bg-error-container/60 px-5 py-4 font-bold text-error">تم إلغاء عملية الدفع. الطلب محفوظ وتقدر تحاول مرة أخرى.</p>
+        ) : null}
+
+        {isCashOnDelivery ? (
+          <p className="mt-5 rounded-2xl bg-primary-container/40 px-5 py-4 font-bold text-primary">تم اختيار الدفع عند الاستلام. الطلب وصل للتاجر ولا تحتاج فتح بوابة الدفع.</p>
         ) : null}
 
         <div className="mt-8 grid gap-4">
@@ -87,6 +92,7 @@ function PaymentSummary({ order, paymentStatus }: { order: Order; paymentStatus?
         <h2 className="text-xl font-black text-on-surface">ملخص الدفع</h2>
         <div className="mt-5 grid gap-3">
           <SummaryRow label="حالة الطلب" value={formatOrderStatus(order.status)} />
+          <SummaryRow label="طريقة الدفع" value={isCashOnDelivery ? "الدفع عند الاستلام" : "الدفع الإلكتروني"} />
           <SummaryRow label="المجموع الفرعي" value={formatPrice(itemsSubtotal)} />
           <SummaryRow label={`الشحن (${formatShippingCarrier(order.shippingCarrier)})`} value={formatPrice(shippingFee)} />
           {discountAmount > 0 ? <SummaryRow label={`الخصم (${order.discountCode ?? "كود تخفيض"})`} value={`- ${formatPrice(discountAmount)}`} /> : null}
@@ -95,7 +101,13 @@ function PaymentSummary({ order, paymentStatus }: { order: Order; paymentStatus?
             <span className="text-2xl font-black text-primary">{formatPrice(Number(order.total))}</span>
           </div>
         </div>
-        <PaymentActions orderId={order.id} />
+        {isCashOnDelivery ? (
+          <Link className="primary-button mt-6 w-full py-3 text-center" href="/orders">
+            عرض طلباتي
+          </Link>
+        ) : (
+          <PaymentActions orderId={order.id} />
+        )}
       </aside>
     </div>
   );

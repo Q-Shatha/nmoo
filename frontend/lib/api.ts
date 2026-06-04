@@ -191,6 +191,14 @@ export type ProductImageUpload = {
   url: string;
 };
 
+export type ShippingUnavailableLocation = {
+  country: string;
+  region?: string;
+  city?: string;
+};
+
+export type ShippingDeliveryLocation = ShippingUnavailableLocation;
+
 export type ShippingMethod = {
   id: string;
   vendorId: string;
@@ -200,6 +208,10 @@ export type ShippingMethod = {
   eta?: string | null;
   fee: string;
   enabled: boolean;
+  cashOnDeliveryEnabled: boolean;
+  excludedRegions: string[];
+  unavailableLocations: ShippingUnavailableLocation[];
+  deliveryLocations: ShippingDeliveryLocation[];
   createdAt: string;
   updatedAt: string;
 };
@@ -210,6 +222,7 @@ export type CheckoutShippingOption = {
   description?: string | null;
   eta?: string | null;
   fee: string;
+  cashOnDeliveryEnabled: boolean;
   vendorCount: number;
 };
 
@@ -220,6 +233,14 @@ export type ShippingMethodInput = {
   description?: string;
   eta?: string;
   enabled?: boolean;
+  cashOnDeliveryEnabled?: boolean;
+  excludedRegions?: string[];
+  unavailableLocations?: ShippingUnavailableLocation[];
+  deliveryLocations?: ShippingDeliveryLocation[];
+};
+
+export type ShippingCoverageResult = {
+  supported: boolean;
 };
 
 export type StorePage = {
@@ -273,6 +294,8 @@ export type VendorTheme = {
   storefrontImageUrl?: string | null;
   storefrontTitle?: string | null;
   storefrontDescription?: string | null;
+  templateId?: string | null;
+  cashOnDeliveryEnabled?: boolean;
   whatsappUrl?: string | null;
   instagramUrl?: string | null;
   tiktokUrl?: string | null;
@@ -294,6 +317,8 @@ export type ThemeInput = {
   storefrontImageUrl?: string;
   storefrontTitle?: string;
   storefrontDescription?: string;
+  templateId?: string;
+  cashOnDeliveryEnabled?: boolean;
   whatsappUrl?: string;
   instagramUrl?: string;
   tiktokUrl?: string;
@@ -348,6 +373,7 @@ export type DiscountValidationResult = {
 
 export type CreateOrderInput = {
   shippingCarrier: ShippingCarrier;
+  paymentMethod?: "ONLINE" | "CASH_ON_DELIVERY";
   items: Array<{
     productId: string;
     quantity: number;
@@ -371,6 +397,7 @@ export type Order = {
   total: string;
   shippingCarrier?: ShippingCarrier | null;
   shippingFee?: string;
+  paymentMethod?: "ONLINE" | "CASH_ON_DELIVERY";
   discountCode?: string | null;
   discountAmount?: string;
   createdAt: string;
@@ -698,10 +725,32 @@ export function deleteDiscountCode(id: string, token: string) {
   });
 }
 
-export function getCheckoutShippingOptions(input: Pick<CreateOrderInput, "items">) {
+export function getCheckoutShippingOptions(input: Pick<CreateOrderInput, "items"> & { destinationCountry?: string; destinationRegion?: string; destinationCity?: string }) {
   return apiRequest<CheckoutShippingOption[]>("/shipping-methods/checkout-options", {
     method: "POST",
     body: input,
+    cache: "no-store",
+  });
+}
+
+export function getVendorShippingCoverage(vendorId: string, input: { country?: string; region?: string; city?: string }) {
+  const params = new URLSearchParams();
+
+  if (input.country) {
+    params.set("country", input.country);
+  }
+
+  if (input.region) {
+    params.set("region", input.region);
+  }
+
+  if (input.city) {
+    params.set("city", input.city);
+  }
+
+  const queryString = params.toString();
+
+  return apiRequest<ShippingCoverageResult>(`/shipping-methods/vendor/${vendorId}/coverage${queryString ? `?${queryString}` : ""}`, {
     cache: "no-store",
   });
 }

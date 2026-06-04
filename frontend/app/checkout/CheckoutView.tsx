@@ -12,6 +12,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
   const [buyer, setBuyer] = useState<ApiUser | null>(null);
   const [shippingOptions, setShippingOptions] = useState<CheckoutShippingOption[]>([]);
   const [shippingCarrier, setShippingCarrier] = useState<ShippingCarrier>("");
+  const [paymentMethod, setPaymentMethod] = useState<"ONLINE" | "CASH_ON_DELIVERY">("ONLINE");
   const [errorMessage, setErrorMessage] = useState("");
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState<DiscountValidationResult | null>(null);
@@ -22,6 +23,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedShipping = shippingOptions.find((option) => option.code === shippingCarrier);
+  const cashOnDeliveryEnabled = Boolean(selectedShipping?.cashOnDeliveryEnabled);
   const discountAmount = Number(appliedDiscount?.amount ?? 0);
   const payableTotal = Math.max(0, summary.subtotal - discountAmount) + Number(selectedShipping?.fee ?? 0);
 
@@ -63,6 +65,12 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
   }, []);
 
   useEffect(() => {
+    if (!cashOnDeliveryEnabled && paymentMethod === "CASH_ON_DELIVERY") {
+      setPaymentMethod("ONLINE");
+    }
+  }, [cashOnDeliveryEnabled, paymentMethod]);
+
+  useEffect(() => {
     let isMounted = true;
 
     if (items.length === 0) {
@@ -89,6 +97,9 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
         productId: item.productId,
         quantity: item.quantity,
       })),
+      destinationCountry: buyer?.country ?? undefined,
+      destinationRegion: buyer?.region ?? undefined,
+      destinationCity: buyer?.city ?? undefined,
     })
       .then((options) => {
         if (!isMounted) {
@@ -114,7 +125,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
     return () => {
       isMounted = false;
     };
-  }, [items]);
+  }, [items, buyer?.country, buyer?.region, buyer?.city]);
 
   useEffect(() => {
     let isMounted = true;
@@ -197,6 +208,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
       const order = await createOrder(
         {
           shippingCarrier: selectedShipping.code,
+          paymentMethod,
           items: items.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
@@ -297,6 +309,22 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
             ))}
           </div>
         </section>
+
+        <section className="panel p-6">
+          <h2 className="text-2xl font-black text-on-surface">خيارات الدفع</h2>
+          <p className="mt-2 text-on-surface-variant">اختر طريقة الدفع المناسبة لهذا الطلب.</p>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            <PaymentOption checked={paymentMethod === "ONLINE"} description="ادفع عبر بوابة الدفع بعد إنشاء الطلب." label="الدفع الإلكتروني" onChange={() => setPaymentMethod("ONLINE")} />
+            {cashOnDeliveryEnabled ? (
+              <PaymentOption checked={paymentMethod === "CASH_ON_DELIVERY"} description="ادفع عند وصول الطلب حسب سياسة المتجر." label="الدفع عند الاستلام" onChange={() => setPaymentMethod("CASH_ON_DELIVERY")} />
+            ) : (
+              <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-4 text-right opacity-75">
+                <h3 className="font-black text-on-surface">الدفع عند الاستلام</h3>
+                <p className="mt-2 text-sm leading-6 text-on-surface-variant">هذا الخيار غير متاح حالياً من هذا المتجر.</p>
+              </div>
+            )}
+          </div>
+        </section>
       </section>
 
       <aside className="panel h-fit p-6 text-right">
@@ -343,7 +371,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
             <span className="text-2xl font-black text-primary">{formatPrice(payableTotal)}</span>
           </div>
         </div>
-        <p className="mt-3 text-sm leading-6 text-on-surface-variant">سيتم إنشاء الطلب أولا، ثم تنتقل إلى صفحة الدفع الخاصة به.</p>
+        <p className="mt-3 text-sm leading-6 text-on-surface-variant">{paymentMethod === "CASH_ON_DELIVERY" ? "سيتم إنشاء الطلب كطلب دفع عند الاستلام." : "سيتم إنشاء الطلب أولاً، ثم تنتقل إلى صفحة الدفع الخاصة به."}</p>
         {errorMessage ? <p className="mt-4 rounded-xl bg-error-container/60 px-4 py-3 text-sm font-bold text-error">{errorMessage}</p> : null}
         <button
           className="primary-button mt-6 w-full py-4 disabled:cursor-not-allowed disabled:opacity-60"
@@ -351,7 +379,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
           type="button"
           onClick={handleConfirmAddress}
         >
-          {isSubmitting ? "جاري إنشاء الطلب..." : "تأكيد العنوان والمتابعة للدفع"}
+          {isSubmitting ? "جاري إنشاء الطلب..." : paymentMethod === "CASH_ON_DELIVERY" ? "تأكيد الطلب والدفع عند الاستلام" : "تأكيد العنوان والمتابعة للدفع"}
         </button>
         <Link className="secondary-button mt-3 w-full py-3" href="/account/address?next=/checkout">
           تعديل العنوان
@@ -361,6 +389,16 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
         </Link>
       </aside>
     </div>
+  );
+}
+
+function PaymentOption({ checked, description, label, onChange }: { checked: boolean; description: string; label: string; onChange: () => void }) {
+  return (
+    <label className={`cursor-pointer rounded-2xl border p-4 text-right transition ${checked ? "border-primary bg-primary-container/30 shadow-sm" : "border-outline-variant/30 bg-white hover:border-primary/50"}`}>
+      <input checked={checked} className="sr-only" name="paymentMethod" type="radio" onChange={onChange} />
+      <h3 className="font-black text-on-surface">{label}</h3>
+      <p className="mt-2 text-sm leading-6 text-on-surface-variant">{description}</p>
+    </label>
   );
 }
 
