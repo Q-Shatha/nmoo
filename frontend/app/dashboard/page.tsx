@@ -50,7 +50,7 @@ function DashboardOverview({ data }: { data: Extract<DashboardData, { ok: true }
 
   return (
     <>
-      <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-6">
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-6 xl:grid-cols-6">
         <SummaryCard label="إجمالي المبيعات" value={formatDashboardPrice(data.stats.totalSales)} hint="محسوبة من الطلبات الظاهرة" />
         <SummaryCard label="إجمالي الطلبات" value={String(data.stats.totalOrders)} hint={`${data.stats.completedOrders} مكتمل`} />
         <SummaryCard label="منتجات المتجر" value={String(data.stats.totalProducts)} hint={`${data.stats.activeProducts} نشط`} />
@@ -60,12 +60,12 @@ function DashboardOverview({ data }: { data: Extract<DashboardData, { ok: true }
       </section>
 
       <section className="dashboard-panel overflow-hidden">
-        <div className="flex items-center justify-between border-b border-outline-variant/15 p-5">
+        <div className="flex flex-col gap-3 border-b border-outline-variant/15 p-4 text-right sm:flex-row sm:items-center sm:justify-between md:p-5">
           <div>
             <h2 className="text-xl font-black text-on-surface">آخر الطلبات</h2>
             <p className="mt-1 text-sm text-on-surface-variant">أحدث الطلبات التي وصلت لمتجرك.</p>
           </div>
-          <Link className="secondary-button px-5 py-3" href="/dashboard/orders">
+          <Link className="secondary-button w-full px-5 py-3 text-center sm:w-auto" href="/dashboard/orders">
             عرض كل الطلبات
           </Link>
         </div>
@@ -77,7 +77,37 @@ function DashboardOverview({ data }: { data: Extract<DashboardData, { ok: true }
 
 function OrdersTable({ orders }: { orders: Order[] }) {
   return (
-    <div className="overflow-x-auto">
+    <>
+      <div className="grid gap-3 p-4 md:hidden">
+        {orders.map((order) => (
+          <article key={order.id} className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4 text-right shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClass(order.status)}`}>{formatOrderStatus(order.status)}</span>
+              <Link className="font-black text-primary underline-offset-4 hover:underline" href={`/dashboard/orders/${order.id}`}>
+                #{order.id.slice(0, 8)}
+              </Link>
+            </div>
+            <div className="mt-4 grid gap-2 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-on-surface-variant">العميل</span>
+                <span className="font-bold text-on-surface">{order.buyer?.name ?? "عميل"}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-on-surface-variant">المبلغ</span>
+                <span className="font-black text-on-surface">{formatDashboardPrice(Number(order.total))}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-on-surface-variant">التاريخ</span>
+                <span className="text-left font-bold text-on-surface">{formatDashboardDate(order.createdAt)}</span>
+              </div>
+            </div>
+            <Link className="secondary-button mt-4 w-full py-3 text-center text-sm" href={`/dashboard/orders/${order.id}`}>
+              التفاصيل
+            </Link>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto md:block">
       <table className="w-full min-w-[680px] text-right">
         <thead>
           <tr className="bg-surface-container-low/60">
@@ -109,7 +139,8 @@ function OrdersTable({ orders }: { orders: Order[] }) {
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
 

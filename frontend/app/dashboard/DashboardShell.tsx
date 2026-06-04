@@ -25,12 +25,13 @@ const navItems: Array<{ key: DashboardShellProps["active"]; label: string; icon:
 
 export function DashboardShell({ active, title, description, userName = "التاجر", logoUrl, children }: DashboardShellProps) {
   return (
-    <div className="flex min-h-screen bg-background text-on-surface" dir="rtl">
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-background text-on-surface" dir="rtl">
       <DashboardSidebar active={active} />
 
-      <main className="min-h-screen flex-1 md:mr-64">
+      <main className="min-h-screen min-w-0 max-w-full flex-1 overflow-x-hidden md:mr-64">
         <DashboardHeader title={title} description={description} name={userName} logoUrl={logoUrl} />
-        <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 p-5 md:p-8">{children}</div>
+        <MobileDashboardNav active={active} />
+        <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 p-4 pb-24 md:gap-6 md:p-8">{children}</div>
         <PublicFooter />
       </main>
     </div>
@@ -51,10 +52,10 @@ export function DashboardUnavailable({ message, needsLogin = false }: { message:
 
 export function SummaryCard({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <article className="dashboard-panel p-6">
-      <p className="text-on-surface-variant">{label}</p>
-      <h3 className="mt-2 text-3xl font-black text-on-surface">{value}</h3>
-      <p className="mt-4 rounded-full bg-surface-container-low px-3 py-1 text-sm font-bold text-primary">{hint}</p>
+    <article className="dashboard-panel p-4 md:p-6">
+      <p className="text-sm text-on-surface-variant md:text-base">{label}</p>
+      <h3 className="mt-2 text-2xl font-black text-on-surface md:text-3xl">{value}</h3>
+      <p className="mt-3 rounded-full bg-surface-container-low px-3 py-1 text-xs font-bold text-primary md:mt-4 md:text-sm">{hint}</p>
     </article>
   );
 }
@@ -94,13 +95,38 @@ function DashboardSidebar({ active }: { active: DashboardShellProps["active"] })
   );
 }
 
+function MobileDashboardNav({ active }: { active: DashboardShellProps["active"] }) {
+  return (
+    <nav className="sticky top-[73px] z-30 border-b border-outline-variant/20 bg-background/95 px-4 py-3 backdrop-blur-xl md:hidden" aria-label="تنقل لوحة التحكم">
+      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {navItems.map((item) => (
+          <Link
+            key={item.key}
+            className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-black shadow-sm transition ${
+              active === item.key ? "bg-primary text-on-primary" : "bg-surface-container-lowest text-on-surface-variant"
+            }`}
+            href={item.href}
+          >
+            <span className="inline-flex h-5 w-5 items-center justify-center text-xs">{item.icon}</span>
+            <span>{item.label}</span>
+          </Link>
+        ))}
+        <Link className="flex shrink-0 items-center gap-2 rounded-full bg-primary-container px-4 py-2 text-sm font-black text-on-primary-container shadow-sm" href="/dashboard/products/new">
+          <span>+</span>
+          <span>إضافة منتج</span>
+        </Link>
+      </div>
+    </nav>
+  );
+}
+
 function DashboardHeader({ title, description, name, logoUrl }: { title: string; description: string; name: string; logoUrl?: string | null }) {
   return (
     <header className="sticky top-0 z-40 border-b border-outline-variant/25 bg-surface-container-lowest/95 shadow-sm backdrop-blur-xl">
-      <div className="flex items-center justify-between gap-4 px-5 py-4 md:px-8">
-        <div>
-          <h2 className="text-2xl font-black text-primary">{title}</h2>
-          <p className="text-sm text-on-surface-variant">{description}</p>
+      <div className="flex items-center justify-between gap-3 px-4 py-3 md:gap-4 md:px-8 md:py-4">
+        <div className="min-w-0 text-right">
+          <h2 className="truncate text-xl font-black text-primary md:text-2xl">{title}</h2>
+          <p className="line-clamp-1 text-xs text-on-surface-variant md:text-sm">{description}</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="hidden text-left sm:block">

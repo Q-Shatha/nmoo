@@ -297,6 +297,26 @@ html {
   box-shadow: 0 10px 28px rgba(23, 28, 31, 0.06);
 }
 
+@media (max-width: 767px) {
+  .dashboard-panel,
+  .dashboard-panel *,
+  .dashboard-panel *::before,
+  .dashboard-panel *::after {
+    min-width: 0;
+  }
+
+  .dashboard-panel {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-panel .primary-button,
+  .dashboard-panel .secondary-button {
+    min-height: 2.75rem;
+    white-space: normal;
+  }
+}
+
 .primary-button {
   display: inline-flex;
   align-items: center;

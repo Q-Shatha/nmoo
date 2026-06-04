@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Dispatch, RefObject, SetStateAction } from "react";
@@ -89,18 +90,22 @@ function MobileAccountMenu({ user, onLogout }: { user: ApiUser | null; onLogout:
       <div className="fixed inset-0 z-[80] hidden h-dvh group-open:block" role="presentation">
         <button className="absolute inset-0 h-full w-full bg-black/35" type="button" aria-label="إغلاق القائمة" data-mobile-menu-close onClick={closeMenu} />
         <aside className="absolute right-0 top-0 flex h-dvh w-[84vw] max-w-80 flex-col overflow-hidden rounded-l-3xl border-l border-outline-variant/40 bg-surface-container-lowest p-4 text-right shadow-2xl" dir="rtl" role="menu">
-          <div className="mb-3 flex items-center justify-between gap-3 border-b border-outline-variant/20 pb-4">
+          <div className="mb-3 flex items-center justify-start border-b border-outline-variant/20 pb-4">
             <button className="icon-button border border-outline-variant bg-surface-container-lowest" type="button" aria-label="إغلاق القائمة" data-mobile-menu-close onClick={closeMenu}>
               <CloseIcon />
             </button>
-            <h2 className="text-xl font-black text-on-surface">القائمة</h2>
           </div>
           <div className="grid gap-1 overflow-y-auto">
             {user ? (
               <>
-                <div className="border-b border-outline-variant/20 px-3 py-3">
-                  <p className="font-black text-on-surface">{user.name}</p>
-                  <p className="mt-1 truncate text-xs text-on-surface-variant">{user.email}</p>
+                <div className="flex items-center gap-3 border-b border-outline-variant/20 px-3 py-3">
+                  <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-sm font-black text-on-primary-container">
+                    {user.avatarUrl ? <Image alt={user.name} className="object-cover" src={user.avatarUrl} fill sizes="48px" unoptimized /> : user.name.trim()[0] ?? "ن"}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-black text-on-surface">{user.name}</p>
+                    <p className="mt-1 truncate text-xs text-on-surface-variant">{user.email}</p>
+                  </div>
                 </div>
                 <MenuLink href="/orders" label="طلباتي" onClick={closeMenu} />
                 <MenuLink href="/account" label="إعدادات الحساب" onClick={closeMenu} />

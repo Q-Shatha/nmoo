@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import Script from "next/script";
 import { getActiveTheme } from "@/lib/api";
@@ -19,6 +19,11 @@ export const metadata: Metadata = {
     shortcut: "/nmoo-logo.png",
     apple: "/nmoo-logo.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export const dynamic = "force-dynamic";

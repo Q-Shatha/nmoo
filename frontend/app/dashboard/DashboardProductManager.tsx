@@ -171,7 +171,7 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
 
       {message ? <p className="mx-5 mt-5 rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface">{message}</p> : null}
 
-      <div className="grid gap-3 p-5">
+      <div className="grid gap-3 p-4 md:p-5">
         {products.length === 0 ? (
           <p className="py-6 text-center font-bold text-on-surface-variant">لا توجد منتجات بعد.</p>
         ) : (
@@ -427,7 +427,7 @@ function ProductRow({ product, onDelete, onEdit }: { product: Product; onDelete:
 
   return (
     <article className="grid gap-4 rounded-lg border border-outline-variant/15 bg-surface-container-lowest p-4 text-right lg:grid-cols-[96px_1fr_auto]">
-      <div className="h-24 overflow-hidden rounded-lg bg-surface-container-low">
+      <div className="h-40 overflow-hidden rounded-lg bg-surface-container-low lg:h-24">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img alt={product.title} className="h-full w-full object-cover" src={imageUrl} />
@@ -451,7 +451,7 @@ function ProductRow({ product, onDelete, onEdit }: { product: Product; onDelete:
           {product.category ? <span className="rounded-full bg-surface-container-low px-3 py-1">{product.category.name}</span> : null}
         </div>
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-2 gap-2 lg:flex lg:flex-col">
         <button className="secondary-button px-5 py-2" type="button" onClick={() => onEdit(product)}>
           تعديل
         </button>

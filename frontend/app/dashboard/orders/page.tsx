@@ -16,7 +16,7 @@ export default async function DashboardOrdersPage() {
     >
       {data.ok ? (
         <section className="dashboard-panel overflow-hidden">
-          <div className="flex items-center justify-between border-b border-outline-variant/15 p-5">
+          <div className="flex items-center justify-between border-b border-outline-variant/15 p-4 md:p-5">
             <h2 className="text-xl font-black text-on-surface">كل الطلبات</h2>
             <span className="text-sm font-bold text-on-surface-variant">{data.orders.length} طلب</span>
           </div>
@@ -31,7 +31,35 @@ export default async function DashboardOrdersPage() {
 
 function OrdersTable({ orders }: { orders: Order[] }) {
   return (
-    <div className="overflow-x-auto">
+    <>
+      <div className="grid gap-3 p-4 md:hidden">
+        {orders.map((order) => (
+          <article key={order.id} className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4 text-right shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClass(order.status)}`}>{formatOrderStatus(order.status)}</span>
+              <span className="font-black text-primary">#{order.id.slice(0, 8)}</span>
+            </div>
+            <div className="mt-4 grid gap-2 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-on-surface-variant">العميل</span>
+                <span className="font-bold text-on-surface">{order.buyer?.name ?? "عميل"}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-on-surface-variant">المبلغ</span>
+                <span className="font-black text-on-surface">{formatDashboardPrice(Number(order.total))}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-on-surface-variant">التاريخ</span>
+                <span className="text-left font-bold text-on-surface">{formatDashboardDate(order.createdAt)}</span>
+              </div>
+            </div>
+            <Link className="secondary-button mt-4 w-full py-3 text-center text-sm" href={`/dashboard/orders/${order.id}`}>
+              التفاصيل
+            </Link>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto md:block">
       <table className="w-full min-w-[760px] text-right">
         <thead>
           <tr className="bg-surface-container-low/60">
@@ -61,7 +89,8 @@ function OrdersTable({ orders }: { orders: Order[] }) {
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
 
