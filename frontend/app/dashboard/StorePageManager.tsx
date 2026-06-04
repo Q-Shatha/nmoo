@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { FiEdit3, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
+import { TbFileSearch } from "react-icons/tb";
 import { ApiError, createStorePage, deleteStorePage, StorePage, updateStorePage } from "@/lib/api";
 
 type StorePageDraft = {
@@ -165,18 +167,18 @@ export function StorePageManager({ initialPages }: { initialPages: StorePage[] }
                 <p className="mt-2 text-sm text-on-surface-variant">الرابط: {page.slug}</p>
                 <p className="mt-3 line-clamp-2 leading-7 text-on-surface-variant">{page.content}</p>
               </div>
-              <div className="flex flex-col gap-2">
-                <a className="secondary-button px-5 py-2 text-center" href={`/store-pages/${page.id}`} target="_blank">
-                  عرض
+              <div className="grid grid-cols-4 gap-2 lg:flex lg:flex-col">
+                <a className="secondary-button flex h-11 w-full items-center justify-center p-0 text-[0px] lg:w-11" href={`/store-pages/${page.id}`} target="_blank" title="عرض" aria-label={`عرض ${page.title}`}>
+                  <TbFileSearch aria-hidden="true" className="h-6 w-6" />
                 </a>
-                <button className="secondary-button px-5 py-2" type="button" onClick={() => startEdit(page)}>
-                  تعديل
+                <button className="secondary-button h-11 w-full p-0 text-[0px] lg:w-11" type="button" title="تعديل" aria-label={`تعديل ${page.title}`} onClick={() => startEdit(page)}>
+                  <FiEdit3 aria-hidden="true" className="h-5 w-5" />
                 </button>
-                <button className="secondary-button px-5 py-2" type="button" onClick={() => togglePublished(page)}>
-                  {page.published ? "إخفاء" : "نشر"}
+                <button className="secondary-button h-11 w-full p-0 text-[0px] lg:w-11" type="button" title={page.published ? "إخفاء" : "نشر"} aria-label={`${page.published ? "إخفاء" : "نشر"} ${page.title}`} onClick={() => togglePublished(page)}>
+                  {page.published ? <FiEyeOff aria-hidden="true" className="h-5 w-5" /> : <FiEye aria-hidden="true" className="h-5 w-5" />}
                 </button>
-                <button className="rounded-lg border border-error/30 px-5 py-2 font-bold text-error hover:bg-error-container/40" type="button" onClick={() => handleDelete(page)}>
-                  حذف
+                <button className="flex h-11 w-full items-center justify-center rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40 lg:w-11" type="button" title="حذف" aria-label={`حذف ${page.title}`} onClick={() => handleDelete(page)}>
+                  <FiTrash2 aria-hidden="true" className="h-5 w-5" />
                 </button>
               </div>
             </article>

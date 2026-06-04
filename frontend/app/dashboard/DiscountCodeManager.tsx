@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useMemo, useState } from "react";
+import { FiEdit3, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 import { ApiError, createDiscountCode, deleteDiscountCode, DiscountCode, DiscountCodeInput, DiscountType, updateDiscountCode } from "@/lib/api";
 
 const emptyForm: DiscountCodeInput = {
@@ -153,9 +154,15 @@ export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCo
               </div>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2">
-              <button className="secondary-button px-3 py-2 text-sm" type="button" onClick={() => startEdit(code)}>تعديل</button>
-              <button className="secondary-button px-3 py-2 text-sm" type="button" onClick={() => toggleEnabled(code)}>{code.enabled ? "إيقاف" : "تفعيل"}</button>
-              <button className="rounded-full bg-red-100 px-3 py-2 text-sm font-bold text-red-700" type="button" onClick={() => removeCode(code)}>حذف</button>
+              <button className="secondary-button h-10 p-0 text-[0px]" type="button" title="تعديل" aria-label={`تعديل ${code.code}`} onClick={() => startEdit(code)}>
+                <FiEdit3 aria-hidden="true" className="h-5 w-5" />
+              </button>
+              <button className="secondary-button h-10 p-0 text-[0px]" type="button" title={code.enabled ? "إيقاف" : "تفعيل"} aria-label={`${code.enabled ? "إيقاف" : "تفعيل"} ${code.code}`} onClick={() => toggleEnabled(code)}>
+                {code.enabled ? <FiEyeOff aria-hidden="true" className="h-5 w-5" /> : <FiEye aria-hidden="true" className="h-5 w-5" />}
+              </button>
+              <button className="flex h-10 items-center justify-center rounded-full bg-red-100 p-0 text-[0px] font-bold text-red-700" type="button" title="حذف" aria-label={`حذف ${code.code}`} onClick={() => removeCode(code)}>
+                <FiTrash2 aria-hidden="true" className="h-5 w-5" />
+              </button>
             </div>
           </article>
         ))}
@@ -181,9 +188,15 @@ export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCo
                 <td className="px-4 py-4 text-on-surface-variant">{code.maxUsesPerUser ?? "بدون حد"}</td>
                 <td className="px-4 py-4">
                   <div className="flex flex-wrap gap-2">
-                    <button className="secondary-button px-3 py-2 text-sm" type="button" onClick={() => startEdit(code)}>تعديل</button>
-                    <button className="secondary-button px-3 py-2 text-sm" type="button" onClick={() => toggleEnabled(code)}>{code.enabled ? "إيقاف" : "تفعيل"}</button>
-                    <button className="rounded-full bg-red-100 px-3 py-2 text-sm font-bold text-red-700" type="button" onClick={() => removeCode(code)}>حذف</button>
+                    <button className="secondary-button h-10 w-10 p-0 text-[0px]" type="button" title="تعديل" aria-label={`تعديل ${code.code}`} onClick={() => startEdit(code)}>
+                      <FiEdit3 aria-hidden="true" className="h-5 w-5" />
+                    </button>
+                    <button className="secondary-button h-10 w-10 p-0 text-[0px]" type="button" title={code.enabled ? "إيقاف" : "تفعيل"} aria-label={`${code.enabled ? "إيقاف" : "تفعيل"} ${code.code}`} onClick={() => toggleEnabled(code)}>
+                      {code.enabled ? <FiEyeOff aria-hidden="true" className="h-5 w-5" /> : <FiEye aria-hidden="true" className="h-5 w-5" />}
+                    </button>
+                    <button className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 p-0 text-[0px] font-bold text-red-700" type="button" title="حذف" aria-label={`حذف ${code.code}`} onClick={() => removeCode(code)}>
+                      <FiTrash2 aria-hidden="true" className="h-5 w-5" />
+                    </button>
                   </div>
                 </td>
               </tr>

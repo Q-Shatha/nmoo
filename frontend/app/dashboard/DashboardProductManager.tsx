@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ChangeEvent, FormEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
+import { FiEdit3, FiTrash2 } from "react-icons/fi";
 import { ApiError, Category, deleteProduct, DiscountType, Product, ProductStatus, updateProduct, uploadProductImage } from "@/lib/api";
 
 type ProductDraft = {
@@ -313,8 +314,8 @@ export function ProductOptionsEditor({ options, onChange }: { options: ProductOp
                   onChange={(event) => updateOption(index, { valuesText: event.target.value })}
                 />
               </label>
-              <button className="self-end rounded-lg border border-error/30 px-5 py-3 font-bold text-error hover:bg-error-container/40" type="button" onClick={() => removeOption(index)}>
-                حذف
+              <button className="flex h-11 w-11 items-center justify-center self-end rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40" type="button" title="حذف" aria-label="حذف النوع" onClick={() => removeOption(index)}>
+                <FiTrash2 aria-hidden="true" className="h-5 w-5" />
               </button>
             </div>
           ))}
@@ -410,7 +411,8 @@ export function ProductImageUploader({
             <div key={url} className="overflow-hidden rounded-xl border border-outline-variant/20 bg-surface-container-lowest">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img alt="صورة المنتج" className="h-28 w-full object-cover" src={url} />
-              <button className="w-full px-3 py-2 text-sm font-bold text-error hover:bg-error-container/40" type="button" onClick={() => onRemoveImage(url)}>
+              <button className="flex w-full items-center justify-center px-3 py-2 text-[0px] font-bold text-error hover:bg-error-container/40" type="button" title="حذف الصورة" aria-label="حذف الصورة" onClick={() => onRemoveImage(url)}>
+                <FiTrash2 aria-hidden="true" className="h-4 w-4" />
                 حذف الصورة
               </button>
             </div>
@@ -452,10 +454,12 @@ function ProductRow({ product, onDelete, onEdit }: { product: Product; onDelete:
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2 lg:flex lg:flex-col">
-        <button className="secondary-button px-5 py-2" type="button" onClick={() => onEdit(product)}>
+        <button className="secondary-button h-11 w-full p-0 text-[0px] lg:w-11" type="button" title="تعديل" aria-label={`تعديل ${product.title}`} onClick={() => onEdit(product)}>
+          <FiEdit3 aria-hidden="true" className="h-5 w-5" />
           تعديل
         </button>
-        <button className="rounded-lg border border-error/30 px-5 py-2 font-bold text-error hover:bg-error-container/40" type="button" onClick={() => onDelete(product)}>
+        <button className="flex h-11 w-full items-center justify-center rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40 lg:w-11" type="button" title="حذف" aria-label={`حذف ${product.title}`} onClick={() => onDelete(product)}>
+          <FiTrash2 aria-hidden="true" className="h-5 w-5" />
           حذف
         </button>
       </div>

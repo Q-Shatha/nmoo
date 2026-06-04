@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { FiEdit3, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 import { ApiError, createShippingMethod, deleteShippingMethod, ShippingMethod, updateShippingMethod } from "@/lib/api";
 
 type ShippingDraft = {
@@ -185,15 +186,15 @@ export function ShippingMethodManager({ initialMethods }: { initialMethods: Ship
                   {method.description ? <span className="rounded-full bg-surface-container-low px-3 py-1">{method.description}</span> : null}
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <button className="secondary-button px-5 py-2" type="button" onClick={() => startEdit(method)}>
-                  تعديل
+              <div className="grid grid-cols-3 gap-2 lg:flex lg:flex-col">
+                <button className="secondary-button h-11 w-full p-0 text-[0px] lg:w-11" type="button" title="تعديل" aria-label={`تعديل ${method.name}`} onClick={() => startEdit(method)}>
+                  <FiEdit3 aria-hidden="true" className="h-5 w-5" />
                 </button>
-                <button className="secondary-button px-5 py-2" type="button" onClick={() => toggleEnabled(method)}>
-                  {method.enabled ? "إيقاف" : "تفعيل"}
+                <button className="secondary-button h-11 w-full p-0 text-[0px] lg:w-11" type="button" title={method.enabled ? "إيقاف" : "تفعيل"} aria-label={`${method.enabled ? "إيقاف" : "تفعيل"} ${method.name}`} onClick={() => toggleEnabled(method)}>
+                  {method.enabled ? <FiEyeOff aria-hidden="true" className="h-5 w-5" /> : <FiEye aria-hidden="true" className="h-5 w-5" />}
                 </button>
-                <button className="rounded-lg border border-error/30 px-5 py-2 font-bold text-error hover:bg-error-container/40" type="button" onClick={() => handleDelete(method)}>
-                  حذف
+                <button className="flex h-11 w-full items-center justify-center rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40 lg:w-11" type="button" title="حذف" aria-label={`حذف ${method.name}`} onClick={() => handleDelete(method)}>
+                  <FiTrash2 aria-hidden="true" className="h-5 w-5" />
                 </button>
               </div>
             </article>
