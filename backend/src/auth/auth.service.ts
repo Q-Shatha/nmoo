@@ -44,6 +44,10 @@ export class AuthService {
       throw new UnauthorizedException("Invalid email or password");
     }
 
+    if (loginDto.expectedRole && user.role !== loginDto.expectedRole) {
+      throw new UnauthorizedException("Account type does not match the selected login tab");
+    }
+
     return this.createAuthResponse(user);
   }
 

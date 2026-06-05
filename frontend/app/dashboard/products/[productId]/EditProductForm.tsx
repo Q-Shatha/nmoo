@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, Category, Product, updateProduct } from "@/lib/api";
 import { DashboardAccordion } from "../../DashboardAccordion";
-import { calculateProductStock, normalizeProductOptions, ProductDraft, ProductFields, ProductImageUploader, ProductOptionsEditor } from "../../DashboardProductManager";
+import { calculateProductStock, normalizeProductAddons, normalizeProductOptions, ProductAddonsEditor, ProductDraft, ProductFields, ProductImageUploader, ProductOptionsEditor } from "../../DashboardProductManager";
 
 type EditProductFormProps = {
   categories: Category[];
@@ -56,6 +56,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
           imageUrl: draft.imageUrls[0] || undefined,
           imageUrls: draft.imageUrls,
           options: normalizeProductOptions(draft.options),
+          addons: normalizeProductAddons(draft.addons),
           status: draft.status,
         },
         token,
@@ -84,6 +85,10 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
 
       <DashboardAccordion title="أنواع وخيارات المنتج" description="الألوان، المقاسات، أو أي خيارات يختارها العميل. كمية المنتج الإجمالية تحسب من كميات القيم.">
         <ProductOptionsEditor options={draft.options} onChange={(options) => setDraft({ ...draft, options })} />
+      </DashboardAccordion>
+
+      <DashboardAccordion title="إضافات المنتج" description="إضافات اختيارية غير إجبارية يختارها العميل وتزيد على سعر المنتج.">
+        <ProductAddonsEditor addons={draft.addons} onChange={(addons) => setDraft({ ...draft, addons })} />
       </DashboardAccordion>
 
       <DashboardAccordion title="صور المنتج" description="ارفع صور المنتج أو أضف روابط الصور.">
@@ -124,6 +129,12 @@ function productToDraft(product: Product): ProductDraft {
           quantity: String(option.valueQuantities?.[value] ?? 0),
           price: String(option.valuePrices?.[value] ?? product.price),
         })),
+      })) ?? [],
+    addons:
+      product.addons?.map((addon) => ({
+        name: addon.name,
+        price: String(addon.price),
+        enabled: addon.enabled,
       })) ?? [],
   };
 }

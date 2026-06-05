@@ -53,7 +53,8 @@ export class OrdersService {
         throw new BadRequestException(`Insufficient stock for product ${product.id}`);
       }
 
-      subtotal = subtotal.add(this.calculateSalePrice(product.price, product.discountType, product.discountValue).mul(item.quantity));
+      const addonTotal = this.getSelectedAddons(product, item.addOnIds).reduce((sum, addon) => sum.add(addon.price), new Prisma.Decimal(0));
+      subtotal = subtotal.add(this.calculateSalePrice(product.price, product.discountType, product.discountValue).add(addonTotal).mul(item.quantity));
     }
 
     const discount = createOrderDto.discountCode
@@ -105,7 +106,14 @@ export class OrdersService {
               return {
                 productId: item.productId,
                 quantity: item.quantity,
-                unitPrice: this.calculateSalePrice(product.price, product.discountType, product.discountValue),
+                unitPrice: this.calculateSalePrice(product.price, product.discountType, product.discountValue).add(
+                  this.getSelectedAddons(product, item.addOnIds).reduce((sum, addon) => sum.add(addon.price), new Prisma.Decimal(0)),
+                ),
+                selectedAddons: this.getSelectedAddons(product, item.addOnIds).map((addon) => ({
+                  id: addon.id,
+                  name: addon.name,
+                  price: addon.price.toFixed(2),
+                })),
               };
             }),
           },
@@ -207,13 +215,37 @@ export class OrdersService {
   }
 
   private mergeDuplicateItems(items: CreateOrderDto["items"]) {
-    const mergedItems = new Map<string, number>();
+    const mergedItems = new Map<string, { productId: string; quantity: number; addOnIds: string[] }>();
 
     for (const item of items) {
-      mergedItems.set(item.productId, (mergedItems.get(item.productId) ?? 0) + item.quantity);
+      const addOnIds = [...new Set(item.addOnIds ?? [])].sort();
+      const key = `${item.productId}::${addOnIds.join("|")}`;
+      const existing = mergedItems.get(key);
+      mergedItems.set(key, {
+        productId: item.productId,
+        addOnIds,
+        quantity: (existing?.quantity ?? 0) + item.quantity,
+      });
     }
 
-    return Array.from(mergedItems.entries()).map(([productId, quantity]) => ({ productId, quantity }));
+    return Array.from(mergedItems.values());
+  }
+
+  private getSelectedAddons(product: { id: string; addons?: Array<{ id: string; name: string; price: Prisma.Decimal; enabled: boolean }> }, addOnIds?: string[]) {
+    const uniqueIds = [...new Set(addOnIds ?? [])];
+
+    if (uniqueIds.length === 0) {
+      return [];
+    }
+
+    const addons = product.addons ?? [];
+    const selectedAddons = uniqueIds.map((id) => addons.find((addon) => addon.id === id && addon.enabled));
+
+    if (selectedAddons.some((addon) => !addon)) {
+      throw new BadRequestException(`Invalid add-on selected for product ${product.id}`);
+    }
+
+    return selectedAddons as Array<{ id: string; name: string; price: Prisma.Decimal; enabled: boolean }>;
   }
 
   private calculateSalePrice(price: Prisma.Decimal, discountType?: DiscountType | null, discountValue?: Prisma.Decimal | null) {

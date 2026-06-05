@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { ApiError, getMe, getMyTheme } from "@/lib/api";
 
 export type VendorDashboardBase =
@@ -14,16 +15,12 @@ export type VendorDashboardBase =
       needsLogin: boolean;
     };
 
-export async function loadVendorDashboardBase(): Promise<VendorDashboardBase> {
+export async function loadVendorDashboardBase(nextPath = "/dashboard"): Promise<VendorDashboardBase> {
   const cookieStore = await cookies();
   const token = cookieStore.get("nmoo_access_token")?.value;
 
   if (!token) {
-    return {
-      ok: false,
-      needsLogin: true,
-      message: "سجل الدخول بحساب التاجر حتى تفتح لوحة التحكم.",
-    };
+    redirect(`/login?next=${encodeURIComponent(nextPath)}`);
   }
 
   try {
@@ -44,9 +41,13 @@ export async function loadVendorDashboardBase(): Promise<VendorDashboardBase> {
       theme,
     };
   } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      redirect(`/login?next=${encodeURIComponent(nextPath)}`);
+    }
+
     return {
       ok: false,
-      needsLogin: error instanceof ApiError && error.status === 401,
+      needsLogin: false,
       message: error instanceof ApiError ? error.message : "تعذر تحميل بيانات لوحة التحكم.",
     };
   }

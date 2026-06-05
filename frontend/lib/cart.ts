@@ -16,6 +16,11 @@ export type CartItem = {
   stock: number;
   quantity: number;
   selectedOptions?: Record<string, string>;
+  selectedAddons?: Array<{
+    id: string;
+    name: string;
+    price: number;
+  }>;
 };
 
 export function readCart(vendorId?: string) {
@@ -126,7 +131,7 @@ function filterCartItems(items: CartItem[], vendorId?: string) {
   return vendorId ? items.filter((item) => item.vendorId === vendorId) : items;
 }
 
-export function getCartItemKey(item: Pick<CartItem, "cartKey" | "productId" | "vendorId" | "selectedOptions">) {
+export function getCartItemKey(item: Pick<CartItem, "cartKey" | "productId" | "vendorId" | "selectedOptions" | "selectedAddons">) {
   if (item.cartKey) {
     return item.cartKey;
   }
@@ -136,6 +141,11 @@ export function getCartItemKey(item: Pick<CartItem, "cartKey" | "productId" | "v
     .sort(([firstKey], [secondKey]) => firstKey.localeCompare(secondKey))
     .map(([key, value]) => `${key}:${value}`)
     .join("|");
+  const addonKey = (item.selectedAddons ?? [])
+    .map((addon) => addon.id)
+    .filter(Boolean)
+    .sort()
+    .join("|");
 
-  return [item.vendorId ?? "", item.productId, optionKey].join("::");
+  return [item.vendorId ?? "", item.productId, optionKey, addonKey].join("::");
 }

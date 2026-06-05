@@ -28,7 +28,12 @@
       .sort(([firstKey], [secondKey]) => firstKey.localeCompare(secondKey))
       .map(([key, value]) => `${key}:${value}`)
       .join("|");
-    return `${item.vendorId || ""}::${item.productId}::${optionKey}`;
+    const addonKey = (item.selectedAddons || [])
+      .map((addon) => addon.id)
+      .filter(Boolean)
+      .sort()
+      .join("|");
+    return `${item.vendorId || ""}::${item.productId}::${optionKey}::${addonKey}`;
   };
   const addItem = (item) => {
     const items = readItems();
@@ -62,6 +67,18 @@
       </div>
     `;
   };
+  const renderSelectedAddons = (item) => {
+    const addons = item.selectedAddons || [];
+    if (!addons.length) return "";
+
+    return `
+      <div class="mt-2 flex flex-wrap justify-end gap-2">
+        ${addons
+          .map((addon) => `<span class="rounded-full bg-primary-container/35 px-3 py-1 text-xs font-bold text-primary">${escapeHtml(addon.name)} + ${formatPrice(addon.price)}</span>`)
+          .join("")}
+      </div>
+    `;
+  };
   const renderMobileCartFallback = () => {
     if (!isMobile() || window.location.pathname !== "/cart") return;
     const root = document.querySelector("[data-mobile-cart-root]");
@@ -90,6 +107,7 @@
                   <div>
                     <a class="text-base font-bold text-on-surface hover:text-primary" href="${getCartItemHref(item)}">${escapeHtml(item.title)}</a>
                     ${renderSelectedOptions(item)}
+                    ${renderSelectedAddons(item)}
                     <p class="mt-2 text-sm text-on-surface-variant">${Number(item.stock || 0)} متوفر</p>
                     <p class="mt-3 text-xl font-black text-primary">${formatPrice(item.price)}</p>
                     <p class="mt-2 text-sm font-bold text-on-surface-variant">الكمية: ${Number(item.quantity || 1)}</p>

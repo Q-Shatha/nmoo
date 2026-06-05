@@ -18,6 +18,7 @@ type ProductDraft = {
   status: ProductStatus;
   imageUrls: string[];
   options: ProductOptionDraft[];
+  addons: ProductAddonDraft[];
 };
 
 type ProductOptionDraft = {
@@ -27,6 +28,12 @@ type ProductOptionDraft = {
     quantity: string;
     price: string;
   }>;
+};
+
+type ProductAddonDraft = {
+  name: string;
+  price: string;
+  enabled: boolean;
 };
 
 export function DashboardProductManager({ categories, initialProducts }: { categories: Category[]; initialProducts: Product[] }) {
@@ -60,6 +67,12 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
             quantity: String(option.valueQuantities?.[value] ?? 0),
             price: String(option.valuePrices?.[value] ?? product.price),
           })),
+        })) ?? [],
+      addons:
+        product.addons?.map((addon) => ({
+          name: addon.name,
+          price: String(addon.price),
+          enabled: addon.enabled,
         })) ?? [],
     });
     setMessage("");
@@ -96,6 +109,7 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
           imageUrl: draft.imageUrls[0] || undefined,
           imageUrls: draft.imageUrls,
           options: normalizeProductOptions(draft.options),
+          addons: normalizeProductAddons(draft.addons),
           status: draft.status,
         },
         token,
@@ -194,6 +208,9 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
           </DashboardAccordion>
           <DashboardAccordion title="أنواع وخيارات المنتج">
             <ProductOptionsEditor options={draft.options} onChange={(options) => setDraft({ ...draft, options })} />
+          </DashboardAccordion>
+          <DashboardAccordion title="إضافات المنتج">
+            <ProductAddonsEditor addons={draft.addons} onChange={(addons) => setDraft({ ...draft, addons })} />
           </DashboardAccordion>
           <DashboardAccordion title="صور المنتج">
             <ProductImageUploader imageUrls={draft.imageUrls} onAddImage={addImageUrl} onRemoveImage={removeImageUrl} />
@@ -579,6 +596,55 @@ export function ProductOptionsEditor({ options, onChange }: { options: ProductOp
   );
 }
 
+export function ProductAddonsEditor({ addons, onChange }: { addons: ProductAddonDraft[]; onChange: (addons: ProductAddonDraft[]) => void }) {
+  function updateAddon(index: number, input: Partial<ProductAddonDraft>) {
+    onChange(addons.map((addon, currentIndex) => (currentIndex === index ? { ...addon, ...input } : addon)));
+  }
+
+  function removeAddon(index: number) {
+    onChange(addons.filter((_, currentIndex) => currentIndex !== index));
+  }
+
+  return (
+    <section className="grid gap-3 rounded-xl bg-surface-container-low p-4 text-right" dir="rtl">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h5 className="font-black text-on-surface">إضافات اختيارية</h5>
+          <p className="mt-1 text-sm leading-6 text-on-surface-variant">إضافات غير إجبارية يختارها العميل، وكل إضافة تزيد على سعر المنتج.</p>
+        </div>
+        <button className="secondary-button px-5 py-3" type="button" onClick={() => onChange([...addons, { name: "", price: "0", enabled: true }])}>
+          إضافة
+        </button>
+      </div>
+
+      {addons.length === 0 ? (
+        <p className="rounded-xl bg-surface-container-lowest p-4 text-sm font-bold text-on-surface-variant">لا توجد إضافات لهذا المنتج.</p>
+      ) : (
+        <div className="grid gap-2">
+          <div className="grid grid-cols-[minmax(0,1fr)_120px_90px_44px] gap-2 rounded-xl bg-surface-container-lowest p-2 text-xs font-black text-on-surface-variant">
+            <span>اسم الإضافة</span>
+            <span className="text-center">السعر الإضافي</span>
+            <span className="text-center">مفعلة</span>
+            <span aria-hidden="true" />
+          </div>
+          {addons.map((addon, index) => (
+            <div key={index} className="grid grid-cols-[minmax(0,1fr)_120px_90px_44px] gap-2 rounded-xl bg-surface-container-lowest p-2">
+              <input className="input-field px-4 py-3 text-right" dir="rtl" placeholder="مثال: تغليف هدية" value={addon.name} onChange={(event) => updateAddon(index, { name: event.target.value })} />
+              <input className="input-field px-4 py-3 text-right" dir="ltr" min="0" step="0.01" type="number" value={addon.price} onChange={(event) => updateAddon(index, { price: event.target.value })} />
+              <label className="flex items-center justify-center rounded-xl border border-outline-variant/30 bg-surface px-3 py-2">
+                <input checked={addon.enabled} type="checkbox" onChange={(event) => updateAddon(index, { enabled: event.target.checked })} />
+              </label>
+              <button className="flex h-11 w-11 items-center justify-center rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40" type="button" title="حذف الإضافة" aria-label="حذف الإضافة" onClick={() => removeAddon(index)}>
+                <FiTrash2 aria-hidden="true" className="h-5 w-5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function ProductImageUploader({
   imageUrls,
   onAddImage,
@@ -699,11 +765,12 @@ function ProductRow({ product, onDelete, onEdit }: { product: Product; onDelete:
         </div>
         <div className="mt-3 flex flex-wrap gap-2 text-sm font-bold text-on-surface-variant">
           <span className="rounded-full bg-surface-container-low px-3 py-1">السعر: {formatPrice(Number(hasDiscount ? product.salePrice : product.price))}</span>
-          {hasDiscount ? <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">خصم من {formatPrice(Number(product.price))}</span> : null}
+          {hasDiscount ? <span className="rounded-full bg-red-100 px-3 py-1 text-red-700">خصم من {formatPrice(Number(product.price))}</span> : null}
           {!hasDiscount && product.badgeLabel ? <span className="rounded-full bg-primary-container/35 px-3 py-1 text-primary">الشارة: {product.badgeLabel}</span> : null}
           <span className="rounded-full bg-surface-container-low px-3 py-1">الكمية: {product.stock}</span>
           <span className="rounded-full bg-surface-container-low px-3 py-1">الصور: {product.images?.length ?? 0}</span>
           <span className="rounded-full bg-surface-container-low px-3 py-1">الأنواع: {product.options?.length ?? 0}</span>
+          <span className="rounded-full bg-surface-container-low px-3 py-1">الإضافات: {product.addons?.length ?? 0}</span>
           {product.category ? <span className="rounded-full bg-surface-container-low px-3 py-1">{product.category.name}</span> : null}
         </div>
       </div>
@@ -868,6 +935,19 @@ function normalizeProductOptions(options: ProductOptionDraft[]) {
     .filter((option) => option.name && option.values.length > 0);
 }
 
+function normalizeProductAddons(addons: ProductAddonDraft[]) {
+  return addons
+    .map((addon) => {
+      const price = Number(addon.price);
+      return {
+        name: addon.name.trim(),
+        price: Number.isFinite(price) && price >= 0 ? Number(price.toFixed(2)) : 0,
+        enabled: addon.enabled,
+      };
+    })
+    .filter((addon) => addon.name);
+}
+
 function calculateOptionsStock(options: ReturnType<typeof normalizeProductOptions>) {
   return options.reduce((total, option) => total + Object.values(option.valueQuantities).reduce((sum, quantity) => sum + quantity, 0), 0);
 }
@@ -909,5 +989,5 @@ function calculateProductStock(draft: ProductDraft) {
   return normalizedOptions.length > 0 ? calculateOptionsStock(normalizedOptions) : calculateDraftOptionsStock(draft.options) || Number(draft.stock);
 }
 
-export { calculateProductStock, normalizeProductOptions };
-export type { ProductDraft, ProductOptionDraft };
+export { calculateProductStock, normalizeProductAddons, normalizeProductOptions };
+export type { ProductAddonDraft, ProductDraft, ProductOptionDraft };

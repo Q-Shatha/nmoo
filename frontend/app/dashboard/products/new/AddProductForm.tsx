@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, Category, createCategory, createProduct, ProductStatus } from "@/lib/api";
 import { DashboardAccordion } from "../../DashboardAccordion";
-import { calculateProductStock, normalizeProductOptions, ProductDraft, ProductFields, ProductImageUploader, ProductOptionsEditor } from "../../DashboardProductManager";
+import { calculateProductStock, normalizeProductAddons, normalizeProductOptions, ProductAddonsEditor, ProductDraft, ProductFields, ProductImageUploader, ProductOptionsEditor } from "../../DashboardProductManager";
 
 const emptyDraft: ProductDraft = {
   title: "",
@@ -18,6 +18,7 @@ const emptyDraft: ProductDraft = {
   status: "ACTIVE" as ProductStatus,
   imageUrls: [],
   options: [],
+  addons: [],
 };
 
 export function AddProductForm({ categories: initialCategories }: { categories: Category[] }) {
@@ -94,6 +95,7 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
           imageUrl: draft.imageUrls[0] || undefined,
           imageUrls: draft.imageUrls,
           options: normalizeProductOptions(draft.options),
+          addons: normalizeProductAddons(draft.addons),
           status: draft.status,
         },
         token,
@@ -122,6 +124,10 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
 
       <DashboardAccordion title="أنواع وخيارات المنتج" description="الألوان، المقاسات، أو أي خيارات يختارها العميل.">
         <ProductOptionsEditor options={draft.options} onChange={(options) => setDraft({ ...draft, options })} />
+      </DashboardAccordion>
+
+      <DashboardAccordion title="إضافات المنتج" description="إضافات اختيارية غير إجبارية يختارها العميل وتزيد على سعر المنتج.">
+        <ProductAddonsEditor addons={draft.addons} onChange={(addons) => setDraft({ ...draft, addons })} />
       </DashboardAccordion>
 
       <section className="grid gap-3 rounded-xl bg-surface-container-low p-4 text-right" dir="rtl">

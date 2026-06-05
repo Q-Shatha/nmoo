@@ -63,6 +63,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
               displayPrice={displayPrice}
               hasDiscount={hasDiscount}
               imageUrl={images[0]}
+              addons={product.addons}
               options={product.options}
               productId={product.id}
               productStock={product.stock}
@@ -83,7 +84,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
 
             <div className="mt-7 flex flex-wrap items-center justify-start gap-4">
               {hasDiscount ? <span className="text-xl font-bold text-on-surface-variant line-through">{formatPrice(product.price)}</span> : null}
-              <span className="text-4xl font-black text-primary">{formatPrice(displayPrice)}</span>
+              <span className={`text-4xl font-black ${hasDiscount ? "text-red-600" : "text-primary"}`}>{formatPrice(displayPrice)}</span>
             </div>
 
             <p className="section-copy mt-6 text-lg">

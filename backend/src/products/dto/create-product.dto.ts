@@ -3,6 +3,7 @@ import { DiscountType, ProductStatus } from "@prisma/client";
 import { Type } from "class-transformer";
 import {
   ArrayMinSize,
+  IsBoolean,
   IsEnum,
   IsArray,
   IsInt,
@@ -42,6 +43,25 @@ export class ProductOptionDto {
   @IsOptional()
   @IsObject()
   valuePrices?: Record<string, number>;
+}
+
+export class ProductAddonDto {
+  @ApiProperty({ example: "تغليف هدية", minLength: 2, maxLength: 80 })
+  @IsString()
+  @MinLength(2)
+  @MaxLength(80)
+  name!: string;
+
+  @ApiProperty({ example: 15, minimum: 0 })
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  price!: number;
+
+  @ApiPropertyOptional({ example: true, default: true })
+  @IsOptional()
+  @IsBoolean()
+  enabled?: boolean;
 }
 
 export class CreateProductDto {
@@ -110,6 +130,13 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => ProductOptionDto)
   options?: ProductOptionDto[];
+
+  @ApiPropertyOptional({ type: [ProductAddonDto], example: [{ name: "تغليف هدية", price: 15 }] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductAddonDto)
+  addons?: ProductAddonDto[];
 
   @ApiPropertyOptional({ enum: ProductStatus, example: ProductStatus.ACTIVE })
   @IsOptional()

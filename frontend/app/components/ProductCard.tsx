@@ -33,7 +33,7 @@ export function ProductCard({ product, fallbackImage = defaultFallbackImage, ind
       <Link href={productHref} className="block">
         <div className="store-product-card-media relative aspect-square overflow-hidden bg-surface-container-low">
           <Image className="object-cover transition duration-500 group-hover:scale-105" alt={product.title} src={imageUrl} fill sizes="(min-width: 1280px) 260px, (min-width: 640px) 45vw, 46vw" unoptimized />
-          {badge ? <span className="absolute right-2 top-2 rounded-full bg-primary px-2.5 py-1 text-[11px] font-black text-on-primary sm:right-4 sm:top-4 sm:px-3 sm:text-xs">{badge}</span> : null}
+          {badge ? <span className={`absolute right-2 top-2 rounded-full px-2.5 py-1 text-[11px] font-black sm:right-4 sm:top-4 sm:px-3 sm:text-xs ${hasDiscount ? "bg-red-600 text-white" : "bg-primary text-on-primary"}`}>{badge}</span> : null}
         </div>
       </Link>
 
@@ -58,6 +58,7 @@ export function ProductCard({ product, fallbackImage = defaultFallbackImage, ind
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:w-11"
             fallbackPrice={Number(displayPrice)}
             fallbackStock={product.stock}
+            addons={product.addons}
             item={{
               productId: product.id,
               vendorId: product.vendorId,
@@ -72,7 +73,7 @@ export function ProductCard({ product, fallbackImage = defaultFallbackImage, ind
           />
           <div className="text-left">
             {hasDiscount ? <p className="text-xs text-on-surface-variant line-through sm:text-sm">{formatPrice(product.price)}</p> : null}
-            <p className="text-base font-black text-primary sm:text-lg">{formatPrice(displayPrice)}</p>
+            <p className={`text-base font-black sm:text-lg ${hasDiscount ? "text-red-600" : "text-primary"}`}>{formatPrice(displayPrice)}</p>
           </div>
         </div>
       </div>

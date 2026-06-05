@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { ProductOption } from "@/lib/api";
+import type { ProductAddon, ProductOption } from "@/lib/api";
 import { AddToCartWithQuantity } from "../../../../components/AddToCartWithQuantity";
 
 type ProductPurchasePanelProps = {
@@ -17,6 +17,7 @@ type ProductPurchasePanelProps = {
   productStock: number;
   storeName: string;
   options?: ProductOption[];
+  addons?: ProductAddon[];
 };
 
 export function ProductPurchasePanel({
@@ -32,10 +33,14 @@ export function ProductPurchasePanel({
   productStock,
   storeName,
   options = [],
+  addons = [],
 }: ProductPurchasePanelProps) {
   const selectableOptions = useMemo(() => options.filter((option) => option.values.length > 0), [options]);
+  const availableAddons = useMemo(() => addons.filter((addon) => addon.enabled), [addons]);
   const [selectedValues, setSelectedValues] = useState<Record<string, string>>({});
-  const selectedPrice = findSelectedOptionPrice(selectableOptions, selectedValues, Number(displayPrice));
+  const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
+  const selectedAddons = useMemo(() => availableAddons.filter((addon) => selectedAddonIds.includes(addon.id)).map((addon) => ({ id: addon.id, name: addon.name, price: Number(addon.price) })), [availableAddons, selectedAddonIds]);
+  const selectedPrice = findSelectedOptionPrice(selectableOptions, selectedValues, Number(displayPrice)) + selectedAddons.reduce((sum, addon) => sum + addon.price, 0);
   const selectedStock = findSelectedOptionStock(selectableOptions, selectedValues, productStock);
   const hasOptionPrice = Math.abs(selectedPrice - Number(displayPrice)) > 0.009;
   const selectedOptions = useMemo(() => buildSelectedOptions(selectableOptions, selectedValues), [selectableOptions, selectedValues]);
@@ -60,7 +65,7 @@ export function ProductPurchasePanel({
 
       <div className="mt-7 flex flex-wrap items-center justify-start gap-4">
         {hasDiscount && !hasOptionPrice ? <span className="text-xl font-bold text-on-surface-variant line-through">{formatPrice(basePrice)}</span> : null}
-        <span className="text-4xl font-black text-primary">{formatPrice(String(selectedPrice))}</span>
+        <span className={`text-4xl font-black ${hasDiscount ? "text-red-600" : "text-primary"}`}>{formatPrice(String(selectedPrice))}</span>
       </div>
 
       <p className="section-copy mt-6 text-lg">
@@ -98,6 +103,30 @@ export function ProductPurchasePanel({
         </div>
       ) : null}
 
+      {availableAddons.length > 0 ? (
+        <div className="store-product-options mt-5 grid gap-4 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5 text-right" dir="rtl">
+          <h2 className="text-xl font-black text-on-surface">إضافات اختيارية</h2>
+          <div className="grid gap-2">
+            {availableAddons.map((addon) => {
+              const checked = selectedAddonIds.includes(addon.id);
+              return (
+                <label key={addon.id} className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-4 py-3 font-bold transition ${checked ? "border-primary bg-primary-container/35 text-primary" : "border-outline-variant/40 bg-surface-container-lowest text-on-surface"}`}>
+                  <span>{addon.name}</span>
+                  <span className="text-sm">+ {formatPrice(String(addon.price))}</span>
+                  <input
+                    checked={checked}
+                    type="checkbox"
+                    onChange={(event) =>
+                      setSelectedAddonIds((current) => (event.target.checked ? [...current, addon.id] : current.filter((id) => id !== addon.id)))
+                    }
+                  />
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
       <div className="store-product-actions mt-8 w-full max-w-2xl">
         <AddToCartWithQuantity
           buttonClassName="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
@@ -113,6 +142,7 @@ export function ProductPurchasePanel({
             stock: selectedStock,
             quantity: 1,
             selectedOptions: selectionComplete ? selectedOptions : {},
+            selectedAddons,
           }}
           layout="inline"
         />

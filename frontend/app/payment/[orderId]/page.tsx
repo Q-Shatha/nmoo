@@ -74,17 +74,30 @@ function PaymentSummary({ order, paymentStatus }: { order: Order; paymentStatus?
         ) : null}
 
         <div className="mt-8 grid gap-4">
-          {order.items.map((item) => (
+          {order.items.map((item) => {
+            const selectedAddons = item.selectedAddons ?? [];
+
+            return (
             <article key={item.id} className="rounded-2xl border border-outline-variant/20 bg-white p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-lg font-black text-on-surface">{item.product?.title ?? "منتج"}</h2>
                   <p className="mt-1 text-sm text-on-surface-variant">الكمية: {item.quantity}</p>
+                  {selectedAddons.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {selectedAddons.map((addon) => (
+                        <span key={addon.id} className="rounded-full bg-primary-container/35 px-3 py-1 text-xs font-black text-primary">
+                          {addon.name} + {formatPrice(Number(addon.price))}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
                 <strong className="text-lg text-primary">{formatPrice(Number(item.unitPrice) * item.quantity)}</strong>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -95,7 +108,7 @@ function PaymentSummary({ order, paymentStatus }: { order: Order; paymentStatus?
           <SummaryRow label="طريقة الدفع" value={isCashOnDelivery ? "الدفع عند الاستلام" : "الدفع الإلكتروني"} />
           <SummaryRow label="المجموع الفرعي" value={formatPrice(itemsSubtotal)} />
           <SummaryRow label={`الشحن (${formatShippingCarrier(order.shippingCarrier)})`} value={formatPrice(shippingFee)} />
-          {discountAmount > 0 ? <SummaryRow label={`الخصم (${order.discountCode ?? "كود تخفيض"})`} value={`- ${formatPrice(discountAmount)}`} /> : null}
+          {discountAmount > 0 ? <SummaryRow label={`الخصم (${order.discountCode ?? "كود تخفيض"})`} value={`- ${formatPrice(discountAmount)}`} valueClassName="text-red-600" /> : null}
           <div className="flex items-center justify-between rounded-2xl bg-primary-container/30 p-4">
             <span className="font-black text-on-surface">الإجمالي</span>
             <span className="text-2xl font-black text-primary">{formatPrice(Number(order.total))}</span>
@@ -113,11 +126,11 @@ function PaymentSummary({ order, paymentStatus }: { order: Order; paymentStatus?
   );
 }
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+function SummaryRow({ label, value, valueClassName = "text-on-surface" }: { label: string; value: string; valueClassName?: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <span className="font-bold text-on-surface-variant">{label}</span>
-      <span className="font-black text-on-surface">{value}</span>
+      <span className={`font-black ${valueClassName}`}>{value}</span>
     </div>
   );
 }

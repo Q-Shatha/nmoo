@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import type { ProductOption } from "@/lib/api";
+import type { ProductAddon, ProductOption } from "@/lib/api";
 import { addCartItem, type CartItem } from "@/lib/cart";
 import { CartIcon } from "./CartIcon";
 
 type ProductCardCartButtonProps = {
   item: CartItem;
   options?: ProductOption[];
+  addons?: ProductAddon[];
   fallbackPrice: number;
   fallbackStock: number;
   className?: string;
@@ -17,21 +18,26 @@ type ProductCardCartButtonProps = {
 export function ProductCardCartButton({
   item,
   options = [],
+  addons = [],
   fallbackPrice,
   fallbackStock,
   className = "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:w-11",
 }: ProductCardCartButtonProps) {
   const selectableOptions = options.filter((option) => option.values.length > 0);
+  const availableAddons = addons.filter((addon) => addon.enabled);
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [selectedValues, setSelectedValues] = useState<Record<string, string>>({});
+  const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
   const [status, setStatus] = useState<"idle" | "added">("idle");
   const selectedOptions = useMemo(() => buildSelectedOptions(selectableOptions, selectedValues), [selectableOptions, selectedValues]);
+  const selectedAddons = useMemo(() => availableAddons.filter((addon) => selectedAddonIds.includes(addon.id)).map((addon) => ({ id: addon.id, name: addon.name, price: Number(addon.price) })), [availableAddons, selectedAddonIds]);
   const selectionComplete = selectableOptions.every((option) => Boolean(selectedValues[option.id]));
-  const selectedPrice = findSelectedOptionPrice(selectableOptions, selectedValues, fallbackPrice);
+  const selectedPrice = findSelectedOptionPrice(selectableOptions, selectedValues, fallbackPrice) + selectedAddons.reduce((sum, addon) => sum + addon.price, 0);
   const selectedStock = findSelectedOptionStock(selectableOptions, selectedValues, fallbackStock);
   const unavailable = selectedStock <= 0;
   const hasOptions = selectableOptions.length > 0;
+  const hasChoices = hasOptions || availableAddons.length > 0;
   const label = unavailable ? "غير متوفر" : status === "added" ? "تمت الإضافة" : hasOptions ? "اختيار النوع" : "أضف إلى السلة";
 
   useEffect(() => {
@@ -53,6 +59,7 @@ export function ProductCardCartButton({
       stock: selectedStock,
       quantity: 1,
       selectedOptions,
+      selectedAddons,
     });
     setStatus("added");
     setIsOpen(false);
@@ -64,12 +71,12 @@ export function ProductCardCartButton({
       <button
         aria-label={label}
         className={className}
-        data-cart-button={!hasOptions ? true : undefined}
-        data-cart-item={!hasOptions ? JSON.stringify(item) : undefined}
-        disabled={!hasOptions && unavailable}
+        data-cart-button={!hasChoices ? true : undefined}
+        data-cart-item={!hasChoices ? JSON.stringify(item) : undefined}
+        disabled={!hasChoices && unavailable}
         title={label}
         type="button"
-        onClick={hasOptions ? handleOpenSelector : handleDirectAdd}
+        onClick={hasChoices ? handleOpenSelector : handleDirectAdd}
       >
         <CartIcon />
       </button>
@@ -115,6 +122,29 @@ export function ProductCardCartButton({
                   </div>
                 </div>
               ))}
+              {availableAddons.length > 0 ? (
+                <div className="grid gap-2">
+                  <p className="font-black text-on-surface">إضافات اختيارية</p>
+                  <div className="grid gap-2">
+                    {availableAddons.map((addon) => {
+                      const checked = selectedAddonIds.includes(addon.id);
+                      return (
+                        <label key={addon.id} className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-4 py-3 font-bold transition ${checked ? "border-primary bg-primary-container/35 text-primary" : "border-outline-variant/40 bg-surface-container-lowest text-on-surface"}`}>
+                          <span>{addon.name}</span>
+                          <span className="text-sm">+ {formatPrice(Number(addon.price))}</span>
+                          <input
+                            checked={checked}
+                            type="checkbox"
+                            onChange={(event) =>
+                              setSelectedAddonIds((current) => (event.target.checked ? [...current, addon.id] : current.filter((id) => id !== addon.id)))
+                            }
+                          />
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             <div className="mt-5 rounded-2xl bg-surface-container-low p-4">

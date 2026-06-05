@@ -88,6 +88,7 @@ export class ProductsService {
 
     const discountData = this.buildDiscountData(createProductDto.price, createProductDto.discountType, createProductDto.discountValue);
     const optionCreates = this.buildOptionsCreate(createProductDto.options ?? [], createProductDto.price);
+    const addonCreates = this.buildAddonsCreate(createProductDto.addons ?? []);
     const stock = optionCreates.length > 0 ? this.calculateOptionsStock(optionCreates) : (createProductDto.stock ?? 0);
 
     const product = await this.prisma.product.create({
@@ -109,6 +110,9 @@ export class ProductsService {
         },
         options: {
           create: optionCreates,
+        },
+        addons: {
+          create: addonCreates,
         },
       },
       include: this.productIncludes(),
@@ -164,6 +168,7 @@ export class ProductsService {
     }
 
     const optionCreates = updateProductDto.options ? this.buildOptionsCreate(updateProductDto.options, typeof updateProductDto.price === "number" ? updateProductDto.price : Number(product.price)) : undefined;
+    const addonCreates = updateProductDto.addons ? this.buildAddonsCreate(updateProductDto.addons) : undefined;
 
     if (optionCreates) {
       data.stock = optionCreates.length > 0 ? this.calculateOptionsStock(optionCreates) : updateProductDto.stock;
@@ -186,6 +191,14 @@ export class ProductsService {
               options: {
                 deleteMany: {},
                 create: optionCreates,
+              },
+            }
+          : {}),
+        ...(updateProductDto.addons
+          ? {
+              addons: {
+                deleteMany: {},
+                create: addonCreates,
               },
             }
           : {}),
@@ -442,6 +455,17 @@ export class ProductsService {
       .filter((option) => option.name && option.values.length > 0);
   }
 
+  private buildAddonsCreate(addons: CreateProductDto["addons"]): Prisma.ProductAddonCreateWithoutProductInput[] {
+    return (addons ?? [])
+      .map((addon, index) => ({
+        name: addon.name.trim(),
+        price: new Prisma.Decimal(addon.price),
+        enabled: addon.enabled ?? true,
+        sortOrder: index,
+      }))
+      .filter((addon) => addon.name && addon.price.greaterThanOrEqualTo(0));
+  }
+
   private normalizeOptionalText(value: string | undefined) {
     if (value === undefined) {
       return undefined;
@@ -530,6 +554,11 @@ export class ProductsService {
         },
       },
       options: {
+        orderBy: {
+          sortOrder: "asc" as const,
+        },
+      },
+      addons: {
         orderBy: {
           sortOrder: "asc" as const,
         },

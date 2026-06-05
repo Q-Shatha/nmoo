@@ -12,6 +12,12 @@ export class CreateOrderItemDto {
   @IsInt()
   @Min(1)
   quantity!: number;
+
+  @ApiPropertyOptional({ type: [String], example: ["550e8400-e29b-41d4-a716-446655440001"] })
+  @IsOptional()
+  @IsArray()
+  @IsUUID("4", { each: true })
+  addOnIds?: string[];
 }
 
 export class CreateOrderDto {

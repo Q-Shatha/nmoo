@@ -68,6 +68,15 @@ export type ProductOption = {
   sortOrder: number;
 };
 
+export type ProductAddon = {
+  id: string;
+  productId: string;
+  name: string;
+  price: string;
+  enabled: boolean;
+  sortOrder: number;
+};
+
 export type Product = {
   id: string;
   vendorId: string;
@@ -91,6 +100,7 @@ export type Product = {
   vendor?: ApiUser;
   images?: ProductImage[];
   options?: ProductOption[];
+  addons?: ProductAddon[];
 };
 
 export type Review = {
@@ -170,6 +180,7 @@ export type ProfileInput = {
 export type LoginInput = {
   email: string;
   password: string;
+  expectedRole?: Extract<UserRole, "BUYER" | "VENDOR">;
 };
 
 export type ProductInput = {
@@ -188,6 +199,11 @@ export type ProductInput = {
     values: string[];
     valueQuantities?: Record<string, number>;
     valuePrices?: Record<string, number>;
+  }>;
+  addons?: Array<{
+    name: string;
+    price: number;
+    enabled?: boolean;
   }>;
   status?: ProductStatus;
 };
@@ -389,6 +405,7 @@ export type CreateOrderInput = {
   items: Array<{
     productId: string;
     quantity: number;
+    addOnIds?: string[];
   }>;
   discountCode?: string;
 };
@@ -399,6 +416,11 @@ export type OrderItem = {
   productId: string;
   quantity: number;
   unitPrice: string;
+  selectedAddons?: Array<{
+    id: string;
+    name: string;
+    price: string;
+  }>;
   product?: Product;
 };
 
@@ -463,6 +485,8 @@ async function apiRequest<T>(path: string, options: RequestOptions = {}) {
   const payload = contentType.includes("application/json") ? await response.json() : await response.text();
 
   if (!response.ok) {
+    handleUnauthorizedResponse(response.status);
+
     const message =
       typeof payload === "object" && payload !== null && "message" in payload
         ? String((payload as { message: unknown }).message)
@@ -471,6 +495,21 @@ async function apiRequest<T>(path: string, options: RequestOptions = {}) {
   }
 
   return payload as T;
+}
+
+function handleUnauthorizedResponse(status: number) {
+  if (status !== 401 || typeof window === "undefined") {
+    return;
+  }
+
+  document.cookie = "nmoo_access_token=; path=/; max-age=0; samesite=lax";
+
+  const nextPath = `${window.location.pathname}${window.location.search}`;
+  const loginUrl = `/login?next=${encodeURIComponent(nextPath)}`;
+
+  if (window.location.pathname !== "/login") {
+    window.location.href = loginUrl;
+  }
 }
 
 export function getProducts(query: ProductQuery = {}) {

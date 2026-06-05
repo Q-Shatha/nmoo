@@ -168,6 +168,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
           items: items.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
+            addOnIds: item.selectedAddons?.map((addon) => addon.id),
           })),
         },
         token,
@@ -212,6 +213,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
           items: items.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
+            addOnIds: item.selectedAddons?.map((addon) => addon.id),
           })),
           discountCode: appliedDiscount?.code,
         },
@@ -368,7 +370,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
             </div>
             {discountMessage ? <p className={`mt-2 text-sm font-bold ${appliedDiscount ? "text-green-700" : "text-error"}`}>{discountMessage}</p> : null}
           </div>
-          {appliedDiscount ? <SummaryRow label={`الخصم (${appliedDiscount.code})`} value={`- ${formatPrice(discountAmount)}`} /> : null}
+          {appliedDiscount ? <SummaryRow label={`الخصم (${appliedDiscount.code})`} value={`- ${formatPrice(discountAmount)}`} valueClassName="text-red-600" /> : null}
           <div className="flex items-center justify-between rounded-2xl bg-primary-container/30 p-4">
             <span className="font-black text-on-surface">الإجمالي قبل الدفع</span>
             <span className="text-2xl font-black text-primary">{formatPrice(payableTotal)}</span>
@@ -407,6 +409,7 @@ function PaymentOption({ checked, description, label, onChange }: { checked: boo
 
 function CheckoutLine({ item }: { item: CartItem }) {
   const selectedOptions = Object.entries(item.selectedOptions ?? {});
+  const selectedAddons = item.selectedAddons ?? [];
 
   return (
     <div className="flex items-center justify-between gap-4 py-4">
@@ -417,6 +420,15 @@ function CheckoutLine({ item }: { item: CartItem }) {
             {selectedOptions.map(([name, value]) => (
               <span key={`${name}-${value}`} className="rounded-full bg-surface-container-low px-3 py-1 text-xs font-bold text-on-surface-variant">
                 {name}: {value}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        {selectedAddons.length > 0 ? (
+          <div className="mt-2 flex flex-wrap justify-end gap-2">
+            {selectedAddons.map((addon) => (
+              <span key={addon.id} className="rounded-full bg-primary-container/35 px-3 py-1 text-xs font-bold text-primary">
+                {addon.name} + {formatPrice(addon.price)}
               </span>
             ))}
           </div>
@@ -468,11 +480,11 @@ function Info({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+function SummaryRow({ label, value, valueClassName = "text-on-surface" }: { label: string; value: string; valueClassName?: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <span className="font-bold text-on-surface-variant">{label}</span>
-      <span className="font-black text-on-surface">{value}</span>
+      <span className={`font-black ${valueClassName}`}>{value}</span>
     </div>
   );
 }

@@ -122,6 +122,7 @@ function CartLine({
 }) {
   const cartKey = getCartItemKey(item);
   const selectedOptions = Object.entries(item.selectedOptions ?? {});
+  const selectedAddons = item.selectedAddons ?? [];
 
   return (
     <article className="grid grid-cols-[auto_minmax(0,1fr)] gap-4 p-5 text-right sm:grid-cols-[auto_minmax(0,1fr)_auto]" dir="rtl">
@@ -137,6 +138,15 @@ function CartLine({
             {selectedOptions.map(([name, value]) => (
               <span key={`${name}-${value}`} className="rounded-full bg-surface-container-low px-3 py-1 text-xs font-bold text-on-surface-variant">
                 {name}: {value}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        {selectedAddons.length > 0 ? (
+          <div className="mt-2 flex w-fit max-w-full flex-wrap justify-start gap-2 self-start">
+            {selectedAddons.map((addon) => (
+              <span key={addon.id} className="rounded-full bg-primary-container/35 px-3 py-1 text-xs font-bold text-primary">
+                {addon.name} + {formatPrice(addon.price)}
               </span>
             ))}
           </div>

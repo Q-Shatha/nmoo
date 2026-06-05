@@ -143,7 +143,7 @@ export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCo
               <span className={`rounded-full px-3 py-1 text-xs font-bold ${code.enabled ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-700"}`}>{code.enabled ? "نشط" : "متوقف"}</span>
               <div>
                 <h4 className="text-lg font-black text-on-surface">{code.code}</h4>
-                <p className="mt-1 text-sm font-bold text-primary">{formatDiscount(code)}</p>
+                <p className="mt-1 text-sm font-bold text-red-600">{formatDiscount(code)}</p>
               </div>
             </div>
             <div className="mt-4 grid gap-2 text-sm">
@@ -185,7 +185,7 @@ export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCo
             {codes.map((code) => (
               <tr key={code.id}>
                 <td className="px-4 py-4 font-black text-on-surface">{code.code}</td>
-                <td className="px-4 py-4 font-bold text-primary">{formatDiscount(code)}</td>
+                <td className="px-4 py-4 font-bold text-red-600">{formatDiscount(code)}</td>
                 <td className="px-4 py-4"><span className={`rounded-full px-3 py-1 text-sm font-bold ${code.enabled ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-700"}`}>{code.enabled ? "نشط" : "متوقف"}</span></td>
                 <td className="px-4 py-4 text-on-surface-variant">{code._count?.redemptions ?? 0} / {code.maxUses ?? "بدون حد"}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{code.maxUsesPerUser ?? "بدون حد"}</td>

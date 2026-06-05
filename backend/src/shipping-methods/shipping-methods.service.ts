@@ -241,6 +241,16 @@ export class ShippingMethodsService {
           OR: [{ theme: null }, { theme: { storeStatus: "ACTIVE" } }],
         },
       },
+      include: {
+        addons: {
+          where: {
+            enabled: true,
+          },
+          orderBy: {
+            sortOrder: "asc",
+          },
+        },
+      },
     });
 
     if (products.length !== productIds.length) {
