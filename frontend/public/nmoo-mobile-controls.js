@@ -21,11 +21,21 @@
     event.stopPropagation();
     event.stopImmediatePropagation?.();
   };
+  const getCartItemKey = (item) => {
+    if (item.cartKey) return item.cartKey;
+    const optionKey = Object.entries(item.selectedOptions || {})
+      .filter(([, value]) => Boolean(value))
+      .sort(([firstKey], [secondKey]) => firstKey.localeCompare(secondKey))
+      .map(([key, value]) => `${key}:${value}`)
+      .join("|");
+    return `${item.vendorId || ""}::${item.productId}::${optionKey}`;
+  };
   const addItem = (item) => {
     const items = readItems();
-    const existing = items.find((cartItem) => cartItem.vendorId === item.vendorId && cartItem.productId === item.productId);
-    if (existing) existing.quantity = Math.min(existing.stock, existing.quantity + item.quantity);
-    else items.push(item);
+    const normalizedItem = { ...item, cartKey: getCartItemKey(item) };
+    const existing = items.find((cartItem) => getCartItemKey(cartItem) === normalizedItem.cartKey);
+    if (existing) existing.quantity = Math.min(existing.stock, existing.quantity + normalizedItem.quantity);
+    else items.push(normalizedItem);
     writeItems(items);
   };
   const escapeHtml = (value) =>
@@ -39,6 +49,18 @@
     if (item.vendorUsername) return `/${encodeURIComponent(item.vendorUsername)}/products/${encodeURIComponent(item.productId)}`;
     if (item.vendorId) return `/vendors/${encodeURIComponent(item.vendorId)}/products/${encodeURIComponent(item.productId)}`;
     return "/";
+  };
+  const renderSelectedOptions = (item) => {
+    const entries = Object.entries(item.selectedOptions || {});
+    if (!entries.length) return "";
+
+    return `
+      <div class="mt-2 flex flex-wrap justify-end gap-2">
+        ${entries
+          .map(([name, value]) => `<span class="rounded-full bg-surface-container-low px-3 py-1 text-xs font-bold text-on-surface-variant">${escapeHtml(name)}: ${escapeHtml(value)}</span>`)
+          .join("")}
+      </div>
+    `;
   };
   const renderMobileCartFallback = () => {
     if (!isMobile() || window.location.pathname !== "/cart") return;
@@ -67,6 +89,7 @@
                   </a>
                   <div>
                     <a class="text-base font-bold text-on-surface hover:text-primary" href="${getCartItemHref(item)}">${escapeHtml(item.title)}</a>
+                    ${renderSelectedOptions(item)}
                     <p class="mt-2 text-sm text-on-surface-variant">${Number(item.stock || 0)} متوفر</p>
                     <p class="mt-3 text-xl font-black text-primary">${formatPrice(item.price)}</p>
                     <p class="mt-2 text-sm font-bold text-on-surface-variant">الكمية: ${Number(item.quantity || 1)}</p>

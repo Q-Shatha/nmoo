@@ -68,21 +68,20 @@ function Storefront({ data }: { data: Extract<StorefrontData, { ok: true }> }) {
   const profileHref = data.vendor.storeUsername ? `/${data.vendor.storeUsername}` : `/vendors/${data.vendor.id}`;
   const storefrontHref = `${profileHref}/storefront`;
   const storefrontImage = data.theme.storefrontImageUrl || data.theme.bannerUrl || data.products[0]?.imageUrl || data.products[0]?.images?.[0]?.url || fallbackStorefrontImage;
-  const storefrontTitle = data.theme.storefrontTitle?.trim() || `واجهة متجر ${data.vendor.name}`;
+  const storeName = data.theme.storeName?.trim() || data.vendor.name;
+  const storefrontTitle = data.theme.storefrontTitle?.trim() || `واجهة ${storeName}`;
   const storefrontDescription = data.theme.storefrontDescription?.trim() || "اكتشف منتجات المتجر واختر ما يناسبك من التصنيفات المتاحة.";
   const template = getStoreTemplate(data.theme.templateId);
 
   return (
     <div className={`min-h-screen text-on-surface ${template.className}`} dir="rtl" style={{ ...themeToStyle(data.theme), backgroundColor: "var(--color-background)" }}>
-      <PublicHeader active="store" storeHref={storefrontHref} profileHref={profileHref} vendorId={data.vendor.id} storeLogoUrl={data.theme.logoUrl} />
+      <PublicHeader active="store" storeHref={storefrontHref} profileHref={profileHref} vendorId={data.vendor.id} storeLogoUrl={data.theme.logoUrl} storeName={storeName} />
 
       <main className="min-h-screen pb-20">
         <section className="app-container pt-8">
-          <LocationUnsupportedNotice coverage={data.coverage} />
-
           <div className="storefront-hero grid gap-6 rounded-[24px] bg-surface-container-lowest p-4 shadow-sm md:grid-cols-[minmax(0,0.95fr)_minmax(320px,1.05fr)] md:items-center md:p-6">
             <div className="relative h-48 overflow-hidden rounded-[20px] bg-surface-container md:h-64">
-              <Image className="object-cover" alt={`واجهة متجر ${data.vendor.name}`} src={storefrontImage} fill priority sizes="(min-width: 1280px) 540px, 94vw" unoptimized />
+              <Image className="object-cover" alt={`واجهة ${storeName}`} src={storefrontImage} fill priority sizes="(min-width: 1280px) 540px, 94vw" unoptimized />
             </div>
             <div className="grid gap-4 text-right">
               <Link className="w-fit rounded-full bg-primary-container px-4 py-2 text-sm font-black text-on-primary-container" href={profileHref}>

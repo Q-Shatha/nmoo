@@ -31,7 +31,9 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
             <Link className="text-sm font-bold text-primary underline-offset-4 hover:underline" href="/dashboard/orders">
               العودة للطلبات
             </Link>
-            <h1 className="mt-2 text-3xl font-black text-on-surface">تفاصيل الطلب #{order.id.slice(0, 8)}</h1>
+            <h1 className="mt-2 text-3xl font-black text-on-surface">
+              تفاصيل الطلب <span className="order-code">#{order.id.slice(0, 8)}</span>
+            </h1>
             <p className="mt-1 text-sm text-on-surface-variant">آخر تحديث: {formatDate(order.updatedAt)}</p>
           </div>
           <span className={`w-fit rounded-full px-4 py-2 text-sm font-bold ${statusClass(order.status)}`}>{formatOrderStatus(order.status)}</span>

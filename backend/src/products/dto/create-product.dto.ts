@@ -7,6 +7,7 @@ import {
   IsArray,
   IsInt,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   IsUrl,
@@ -31,6 +32,16 @@ export class ProductOptionDto {
   @MinLength(1, { each: true })
   @MaxLength(80, { each: true })
   values!: string[];
+
+  @ApiPropertyOptional({ example: { "أحمر": 8, "أزرق": 5 } })
+  @IsOptional()
+  @IsObject()
+  valueQuantities?: Record<string, number>;
+
+  @ApiPropertyOptional({ example: { "ط£ط­ظ…ط±": 149.99, "ط£ط²ط±ظ‚": 159.99 } })
+  @IsOptional()
+  @IsObject()
+  valuePrices?: Record<string, number>;
 }
 
 export class CreateProductDto {

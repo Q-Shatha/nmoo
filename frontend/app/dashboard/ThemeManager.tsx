@@ -6,6 +6,7 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { ApiError, updateMyTheme, uploadProductImage, VendorTheme } from "@/lib/api";
 import { getStoreTemplate, StoreTemplate, storeTemplates, StoreTemplateId } from "@/lib/store-templates";
 import { applyThemeTokens } from "@/lib/theme";
+import { DashboardAccordion } from "./DashboardAccordion";
 
 type ImageField = "logoUrl" | "bannerUrl" | "storefrontImageUrl";
 type SocialField = "whatsappUrl" | "instagramUrl" | "tiktokUrl" | "lineUrl" | "telegramUrl" | "xUrl" | "snapchatUrl" | "youtubeUrl" | "contactEmail" | "websiteUrl";
@@ -58,6 +59,7 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
   const [primaryColor, setPrimaryColor] = useState(initialTheme.primaryColor);
   const [secondaryColor, setSecondaryColor] = useState(initialTheme.secondaryColor);
   const [textColor, setTextColor] = useState(initialTheme.textColor ?? initialTheme.secondaryColor);
+  const [storeName, setStoreName] = useState(initialTheme.storeName ?? "");
   const [logoUrl, setLogoUrl] = useState(initialTheme.logoUrl ?? "");
   const [bannerUrl, setBannerUrl] = useState(initialTheme.bannerUrl ?? "");
   const [storefrontImageUrl, setStorefrontImageUrl] = useState(initialTheme.storefrontImageUrl ?? "");
@@ -132,6 +134,7 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
           primaryColor,
           secondaryColor,
           textColor,
+          storeName,
           logoUrl,
           bannerUrl,
           storefrontImageUrl,
@@ -164,41 +167,54 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
 
       <form className="grid gap-5 p-5 text-right lg:grid-cols-[1fr_360px]" dir="rtl" onSubmit={handleSubmit}>
         <div className="grid gap-5">
+          <label className="grid gap-2 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
+            <span className="text-sm font-bold text-on-surface">اسم المتجر</span>
+            <input
+              className="input-field px-4 py-3 text-right"
+              maxLength={70}
+              placeholder="مثال: متجر نمو"
+              value={storeName}
+              onChange={(event) => setStoreName(event.target.value)}
+            />
+            <span className="text-xs font-bold leading-5 text-on-surface-variant">هذا الاسم يظهر للعميل في بروفايل المتجر، واجهة المتجر، وصفحات المنتجات.</span>
+          </label>
+
           <div className="grid gap-4 md:grid-cols-3">
             <ColorField label="اللون الأساسي" value={primaryColor} onChange={setPrimaryColor} />
             <ColorField label="اللون الثانوي" value={secondaryColor} onChange={setSecondaryColor} />
             <ColorField label="لون الخط" value={textColor} onChange={setTextColor} />
           </div>
 
-          <TemplateSelector primaryColor={primaryColor} secondaryColor={secondaryColor} textColor={textColor} selectedTemplateId={templateId} onChange={setTemplateId} />
-<div className="grid gap-4 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
-            <label className="grid gap-2">
-              <span className="text-sm font-bold text-on-surface">عنوان واجهة المتجر</span>
-              <input
-                className="input-field px-4 py-3 text-right"
-                maxLength={80}
-                placeholder="مثال: أحدث منتجات متجرنا"
-                value={storefrontTitle}
-                onChange={(event) => setStorefrontTitle(event.target.value)}
-              />
-            </label>
-            <label className="grid gap-2">
-              <span className="text-sm font-bold text-on-surface">وصف واجهة المتجر</span>
-              <textarea
-                className="input-field min-h-28 resize-y px-4 py-3 text-right leading-8"
-                maxLength={220}
-                placeholder="اكتب النص الذي يظهر للعملاء في واجهة المتجر."
-                value={storefrontDescription}
-                onChange={(event) => setStorefrontDescription(event.target.value)}
-              />
-            </label>
-          </div>
+          <DashboardAccordion title="قالب تصميم المتجر" description="اختر الشكل العام لواجهة المتجر وصفحة المنتج والقوائم." defaultOpen>
+            <TemplateSelector primaryColor={primaryColor} secondaryColor={secondaryColor} textColor={textColor} selectedTemplateId={templateId} onChange={setTemplateId} />
+          </DashboardAccordion>
 
-          <div className="grid gap-4 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
-            <div>
-              <h5 className="font-black text-on-surface">روابط التواصل</h5>
-              <p className="mt-1 text-sm leading-6 text-on-surface-variant">أضف القنوات التي تريد ظهورها في أسفل صفحات متجرك. اترك أي خانة فارغة لإخفائها.</p>
+          <DashboardAccordion title="نص واجهة المتجر" description="العنوان والوصف الذي يظهر للمشتري في صفحة واجهة المتجر.">
+            <div className="grid gap-4">
+              <label className="grid gap-2">
+                <span className="text-sm font-bold text-on-surface">عنوان واجهة المتجر</span>
+                <input
+                  className="input-field px-4 py-3 text-right"
+                  maxLength={80}
+                  placeholder="مثال: أحدث منتجات متجرنا"
+                  value={storefrontTitle}
+                  onChange={(event) => setStorefrontTitle(event.target.value)}
+                />
+              </label>
+              <label className="grid gap-2">
+                <span className="text-sm font-bold text-on-surface">وصف واجهة المتجر</span>
+                <textarea
+                  className="input-field min-h-28 resize-y px-4 py-3 text-right leading-8"
+                  maxLength={220}
+                  placeholder="اكتب النص الذي يظهر للعملاء في واجهة المتجر."
+                  value={storefrontDescription}
+                  onChange={(event) => setStorefrontDescription(event.target.value)}
+                />
+              </label>
             </div>
+          </DashboardAccordion>
+
+          <DashboardAccordion title="روابط التواصل" description="القنوات التي تظهر في أسفل صفحات المتجر.">
             <div className="grid gap-3 md:grid-cols-2">
               {socialFields.map((field) => (
                 <label key={field.key} className="grid gap-2">
@@ -219,23 +235,25 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
                 </label>
               ))}
             </div>
-          </div>
+          </DashboardAccordion>
 
-          <div className="grid gap-4">
-            {imageFields.map((field) => (
-              <ImageUploadField
-                key={field.key}
-                field={field.key}
-                helper={field.helper}
-                label={field.label}
-                ratio={field.ratio}
-                uploading={uploadingField === field.key}
-                value={imageState[field.key]}
-                onChange={setImageValue}
-                onUpload={handleImageUpload}
-              />
-            ))}
-          </div>
+          <DashboardAccordion title="صور المتجر" description="أيقونة المتجر، البانر، وصورة واجهة المتجر.">
+            <div className="grid gap-4">
+              {imageFields.map((field) => (
+                <ImageUploadField
+                  key={field.key}
+                  field={field.key}
+                  helper={field.helper}
+                  label={field.label}
+                  ratio={field.ratio}
+                  uploading={uploadingField === field.key}
+                  value={imageState[field.key]}
+                  onChange={setImageValue}
+                  onUpload={handleImageUpload}
+                />
+              ))}
+            </div>
+          </DashboardAccordion>
 
           {message ? <p className="rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface">{message}</p> : null}
 
@@ -286,7 +304,7 @@ function TemplateSelector({
         <h5 className="font-black text-on-surface">قالب تصميم المتجر</h5>
         <p className="mt-1 text-sm leading-6 text-on-surface-variant">اختر شكل واجهة المتجر. كل قالب يستخدم اللون الأساسي والثانوي الخاصين بمتجرك في كل الصفحات.</p>
       </div>
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {storeTemplates.map((template) => (
           <TemplateOption
             key={template.id}
@@ -319,10 +337,17 @@ function TemplateOption({
   onChange: (value: StoreTemplateId) => void;
 }) {
   return (
-    <label className={`cursor-pointer overflow-hidden rounded-2xl border bg-white text-right transition ${selected ? "border-primary shadow-md ring-2 ring-primary-container" : "border-outline-variant/25 hover:border-primary/50"}`} onClick={() => onChange(template.id)}>
+    <label
+      className={`template-option-card group cursor-pointer overflow-hidden rounded-[1.6rem] border bg-white text-right transition duration-300 ${
+        selected
+          ? "is-selected border-primary shadow-[0_18px_42px_rgba(23,28,31,0.12)] ring-2 ring-primary-container"
+          : "border-outline-variant/25 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_14px_34px_rgba(23,28,31,0.10)]"
+      }`}
+      onClick={() => onChange(template.id)}
+    >
       <input checked={selected} className="sr-only" name="store-template" type="radio" value={template.id} onChange={() => onChange(template.id)} />
       <TemplatePreview primaryColor={primaryColor} secondaryColor={secondaryColor} textColor={textColor} templateId={template.id} />
-      <div className="grid gap-1 p-4">
+      <div className="grid gap-2 p-5">
         <span className="text-base font-black text-on-surface">{template.name}</span>
         <span className="text-sm leading-6 text-on-surface-variant">{template.description}</span>
         <span className="mt-2 w-fit rounded-full px-3 py-1 text-xs font-black" style={{ backgroundColor: primaryColor, color: readablePreviewText(primaryColor) }}>
@@ -336,23 +361,61 @@ function TemplateOption({
 function TemplatePreview({ primaryColor, secondaryColor, textColor, templateId }: { primaryColor: string; secondaryColor: string; textColor: string; templateId: StoreTemplateId }) {
   const isBoutique = templateId === "boutique";
   const isGallery = templateId === "gallery";
+  const isMinimal = templateId === "minimal";
+  const isMarket = templateId === "market";
+  const heroBg = isGallery ? secondaryColor : primaryColor;
+  const heroText = readablePreviewText(heroBg);
+  const productCount = isGallery ? 5 : isBoutique ? 3 : isMarket ? 4 : 3;
 
   return (
-    <div className={`h-36 border-b border-outline-variant/20 p-3 ${isGallery ? "bg-slate-50" : "bg-surface-container-low"}`}>
-      <div className={`h-full overflow-hidden ${isBoutique ? "rounded-[28px]" : isGallery ? "rounded-md" : "rounded-xl"}`} style={{ backgroundColor: "#ffffff" }}>
-        <div className={`flex h-14 items-center gap-2 px-3 ${isGallery ? "justify-between" : "justify-end"}`} style={{ backgroundColor: isGallery ? secondaryColor : primaryColor }}>
-          <span className="h-5 w-12 rounded-full" style={{ backgroundColor: readablePreviewText(isGallery ? secondaryColor : primaryColor), opacity: 0.9 }} />
-          <span className="h-5 w-5 rounded-full" style={{ backgroundColor: readablePreviewText(isGallery ? secondaryColor : primaryColor), opacity: 0.75 }} />
+    <div className="template-store-preview relative h-52 overflow-hidden border-b border-outline-variant/20 bg-[linear-gradient(135deg,#fff_0%,#f8f4f6_100%)] p-3">
+      <div
+        className={`template-store-screen h-full overflow-hidden border border-outline-variant/15 bg-white shadow-sm ${
+          isBoutique ? "rounded-[2rem]" : isGallery ? "rounded-lg" : isMinimal ? "rounded-3xl" : "rounded-2xl"
+        }`}
+      >
+        <div className="template-preview-nav flex h-9 items-center justify-between px-3" style={{ backgroundColor: isMinimal ? "#ffffff" : heroBg }}>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3.5 w-3.5 rounded-full" style={{ backgroundColor: isMinimal ? primaryColor : heroText, opacity: 0.85 }} />
+            <span className="h-3.5 w-9 rounded-full" style={{ backgroundColor: isMinimal ? colorMix(primaryColor, "#ffffff", 0.72) : heroText, opacity: 0.9 }} />
+          </div>
+          <span className="h-4 w-10 rounded-full" style={{ backgroundColor: isMinimal ? colorMix(secondaryColor, "#ffffff", 0.82) : heroText, opacity: 0.8 }} />
         </div>
-        <div className={`grid gap-2 p-3 ${isGallery ? "grid-cols-3" : "grid-cols-2"}`}>
-          <span className="col-span-full h-3 w-3/4 rounded-full" style={{ backgroundColor: textColor }} />
-          {[0, 1, 2].map((item) => (
-            <span
-              key={item}
-              className={`${isBoutique ? "rounded-2xl" : isGallery ? "rounded-md" : "rounded-xl"} block h-12`}
-              style={{ backgroundColor: item === 0 ? primaryColor : item === 1 ? secondaryColor : colorMix(primaryColor, "#ffffff", 0.72) }}
-            />
-          ))}
+
+        <div className={`template-preview-hero relative overflow-hidden ${isBoutique ? "mx-3 mt-2 rounded-[1.7rem]" : isGallery ? "m-2 rounded-md" : "m-2 rounded-2xl"}`} style={{ backgroundColor: colorMix(heroBg, "#ffffff", isMinimal ? 0.88 : 0.35) }}>
+          <div className={`${isGallery ? "h-16" : "h-20"} px-4 py-3`}>
+            <span className="block h-2.5 w-20 rounded-full" style={{ backgroundColor: textColor, opacity: 0.85 }} />
+            <span className="mt-2 block h-2 w-32 rounded-full" style={{ backgroundColor: textColor, opacity: 0.35 }} />
+            <span className="mt-2 block h-5 w-16 rounded-full" style={{ backgroundColor: primaryColor, opacity: 0.9 }} />
+          </div>
+          <span className="template-preview-orb absolute -bottom-4 -left-4 h-16 w-16 rounded-full" style={{ backgroundColor: secondaryColor, opacity: 0.55 }} />
+        </div>
+
+        <div className="px-3 pb-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <span className="h-6 flex-1 rounded-full bg-surface-container-low" />
+            <span className="h-6 w-16 rounded-full" style={{ backgroundColor: colorMix(primaryColor, "#ffffff", 0.76) }} />
+          </div>
+          <div className={`template-preview-products grid gap-2 ${isGallery ? "grid-cols-5" : isMarket ? "grid-cols-4" : "grid-cols-3"}`}>
+            {Array.from({ length: productCount }).map((_, index) => (
+              <div
+                key={index}
+                className={`template-preview-product overflow-hidden border border-outline-variant/10 bg-white ${
+                  isBoutique ? "rounded-2xl" : isGallery ? "rounded-md" : "rounded-xl"
+                }`}
+                style={{ animationDelay: `${index * 80}ms` }}
+              >
+                <span
+                  className="block h-9"
+                  style={{
+                    backgroundColor: index % 3 === 0 ? colorMix(primaryColor, "#ffffff", 0.68) : index % 3 === 1 ? colorMix(secondaryColor, "#ffffff", 0.76) : colorMix(textColor, "#ffffff", 0.82),
+                  }}
+                />
+                <span className="mx-2 mt-2 block h-1.5 rounded-full" style={{ backgroundColor: textColor, opacity: 0.72 }} />
+                <span className="mx-2 mt-1.5 block h-1.5 w-1/2 rounded-full" style={{ backgroundColor: primaryColor, opacity: 0.65 }} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

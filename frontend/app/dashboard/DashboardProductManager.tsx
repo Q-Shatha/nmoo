@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { ChangeEvent, FormEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
 import { FiEdit3, FiTrash2 } from "react-icons/fi";
-import { ApiError, Category, deleteProduct, DiscountType, Product, ProductStatus, updateProduct, uploadProductImage } from "@/lib/api";
+import { ApiError, Category, deleteCategory, deleteProduct, DiscountType, Product, ProductStatus, restoreProduct, updateCategory, updateProduct, uploadProductImage } from "@/lib/api";
+import { DashboardAccordion } from "./DashboardAccordion";
 
 type ProductDraft = {
   title: string;
@@ -21,15 +22,22 @@ type ProductDraft = {
 
 type ProductOptionDraft = {
   name: string;
-  valuesText: string;
+  values: Array<{
+    value: string;
+    quantity: string;
+    price: string;
+  }>;
 };
 
 export function DashboardProductManager({ categories, initialProducts }: { categories: Category[]; initialProducts: Product[] }) {
+  const [categoryList, setCategoryList] = useState(categories);
   const [products, setProducts] = useState(initialProducts);
   const [draft, setDraft] = useState<ProductDraft | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const activeProducts = products.filter((product) => product.status !== "ARCHIVED");
+  const deletedProducts = products.filter((product) => product.status === "ARCHIVED");
 
   function startEdit(product: Product) {
     setEditingProduct(product);
@@ -44,7 +52,15 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
       categoryId: product.categoryId ?? "",
       status: product.status,
       imageUrls: product.images?.map((image) => image.url) ?? (product.imageUrl ? [product.imageUrl] : []),
-      options: product.options?.map((option) => ({ name: option.name, valuesText: option.values.join("، ") })) ?? [],
+      options:
+        product.options?.map((option) => ({
+          name: option.name,
+          values: option.values.map((value) => ({
+            value,
+            quantity: String(option.valueQuantities?.[value] ?? 0),
+            price: String(option.valuePrices?.[value] ?? product.price),
+          })),
+        })) ?? [],
     });
     setMessage("");
   }
@@ -75,7 +91,7 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
           price: Number(draft.price),
           discountType: draft.discountType || undefined,
           discountValue: draft.discountType ? Number(draft.discountValue || 0) : 0,
-          stock: Number(draft.stock),
+          stock: calculateProductStock(draft),
           categoryId: draft.categoryId || undefined,
           imageUrl: draft.imageUrls[0] || undefined,
           imageUrls: draft.imageUrls,
@@ -106,14 +122,27 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
 
     try {
       const token = readCookie("nmoo_access_token");
-      await deleteProduct(product.id, token);
-      setProducts((current) => current.filter((item) => item.id !== product.id));
+      const archivedProduct = await deleteProduct(product.id, token);
+      setProducts((current) => current.map((item) => (item.id === archivedProduct.id ? archivedProduct : item)));
       if (editingProduct?.id === product.id) {
         resetEdit();
       }
       setMessage("تم حذف المنتج من القائمة.");
     } catch (error) {
       setMessage(error instanceof ApiError ? error.message : "تعذر حذف المنتج.");
+    }
+  }
+
+  async function handleRestore(product: Product) {
+    setMessage("");
+
+    try {
+      const token = readCookie("nmoo_access_token");
+      const restoredProduct = await restoreProduct(product.id, token);
+      setProducts((current) => current.map((item) => (item.id === restoredProduct.id ? restoredProduct : item)));
+      setMessage("تم استرجاع المنتج. راجعه ثم فعّله إذا كان جاهزا للعرض.");
+    } catch (error) {
+      setMessage(error instanceof ApiError ? error.message : "تعذر استرجاع المنتج.");
     }
   }
 
@@ -160,9 +189,15 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
             </button>
           </div>
 
-          <ProductFields categories={categories} draft={draft} setDraft={setDraft} />
-          <ProductOptionsEditor options={draft.options} onChange={(options) => setDraft({ ...draft, options })} />
-          <ProductImageUploader imageUrls={draft.imageUrls} onAddImage={addImageUrl} onRemoveImage={removeImageUrl} />
+          <DashboardAccordion title="حقول المنتج الأساسية" defaultOpen>
+            <ProductFields categories={categoryList} draft={draft} setDraft={setDraft} />
+          </DashboardAccordion>
+          <DashboardAccordion title="أنواع وخيارات المنتج">
+            <ProductOptionsEditor options={draft.options} onChange={(options) => setDraft({ ...draft, options })} />
+          </DashboardAccordion>
+          <DashboardAccordion title="صور المنتج">
+            <ProductImageUploader imageUrls={draft.imageUrls} onAddImage={addImageUrl} onRemoveImage={removeImageUrl} />
+          </DashboardAccordion>
 
           <button className="primary-button w-full py-4 disabled:opacity-60 sm:w-fit sm:px-8" disabled={isSaving} type="submit">
             {isSaving ? "جاري الحفظ..." : "حفظ التعديل"}
@@ -172,14 +207,155 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
 
       {message ? <p className="mx-5 mt-5 rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface">{message}</p> : null}
 
+      <CategoryManager
+        categories={categoryList}
+        onCategoriesChange={setCategoryList}
+        onCategoryDeleted={(categoryId) => {
+          setProducts((current) => current.map((product) => (product.categoryId === categoryId ? { ...product, categoryId: null, category: null } : product)));
+          if (draft?.categoryId === categoryId) {
+            setDraft({ ...draft, categoryId: "" });
+          }
+        }}
+      />
+
       <div className="grid gap-3 p-4 md:p-5">
-        {products.length === 0 ? (
+        {activeProducts.length === 0 ? (
           <p className="py-6 text-center font-bold text-on-surface-variant">لا توجد منتجات بعد.</p>
         ) : (
-          products.map((product) => <ProductRow key={product.id} product={product} onDelete={handleDelete} onEdit={startEdit} />)
+          activeProducts.map((product) => <ProductRow key={product.id} product={product} onDelete={handleDelete} onEdit={startEdit} />)
         )}
       </div>
+
+      <DeletedProductsSection products={deletedProducts} onRestore={handleRestore} />
     </section>
+  );
+}
+
+function CategoryManager({
+  categories,
+  onCategoriesChange,
+  onCategoryDeleted,
+}: {
+  categories: Category[];
+  onCategoriesChange: (categories: Category[]) => void;
+  onCategoryDeleted: (categoryId: string) => void;
+}) {
+  const vendorCategories = categories.filter((category) => category.vendorId);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftName, setDraftName] = useState("");
+  const [message, setMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  function startEdit(category: Category) {
+    setEditingId(category.id);
+    setDraftName(category.name);
+    setMessage("");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setDraftName("");
+    setMessage("");
+  }
+
+  async function handleUpdate(category: Category) {
+    const name = draftName.trim();
+
+    if (name.length < 2) {
+      setMessage("اسم التصنيف لازم يكون حرفين على الأقل.");
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const token = readCookie("nmoo_access_token");
+      const updated = await updateCategory(category.id, { name }, token);
+      onCategoriesChange(categories.map((item) => (item.id === updated.id ? updated : item)).sort(sortCategories));
+      cancelEdit();
+      setMessage("تم تحديث التصنيف.");
+    } catch (error) {
+      setMessage(error instanceof ApiError ? error.message : "تعذر تحديث التصنيف.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDelete(category: Category) {
+    const confirmed = window.confirm(`حذف التصنيف "${category.name}"؟ المنتجات المرتبطة به ستصبح بدون تصنيف.`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const token = readCookie("nmoo_access_token");
+      await deleteCategory(category.id, token);
+      onCategoriesChange(categories.filter((item) => item.id !== category.id));
+      onCategoryDeleted(category.id);
+      if (editingId === category.id) {
+        cancelEdit();
+      }
+      setMessage("تم حذف التصنيف.");
+    } catch (error) {
+      setMessage(error instanceof ApiError ? error.message : "تعذر حذف التصنيف.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <DashboardAccordion title="إدارة التصنيفات" description="عدّل أو احذف التصنيفات التي أضفتها لمتجرك. التصنيفات العامة متاحة للاختيار فقط." defaultOpen>
+      <section className="grid gap-4 text-right" dir="rtl">
+        {message ? <p className="rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface">{message}</p> : null}
+
+        <div className="grid gap-3">
+          <h5 className="font-black text-on-surface">تصنيفات متجرك</h5>
+          {vendorCategories.length === 0 ? (
+            <p className="rounded-xl bg-surface-container-low p-4 text-sm font-bold text-on-surface-variant">لا توجد تصنيفات أضفتها بعد.</p>
+          ) : (
+            vendorCategories.map((category) => (
+              <article key={category.id} className="grid gap-3 rounded-xl border border-outline-variant/20 bg-surface-container-lowest p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                {editingId === category.id ? (
+                  <input className="input-field px-4 py-3 text-right" value={draftName} onChange={(event) => setDraftName(event.target.value)} />
+                ) : (
+                  <div>
+                    <p className="font-black text-on-surface">{category.name}</p>
+                    <p className="mt-1 text-xs font-bold text-on-surface-variant">{category._count?.products ?? 0} منتج</p>
+                  </div>
+                )}
+                <div className="flex gap-2 sm:justify-end">
+                  {editingId === category.id ? (
+                    <>
+                      <button className="primary-button min-w-20 px-4 py-2 text-sm" disabled={isSaving} type="button" onClick={() => handleUpdate(category)}>
+                        حفظ
+                      </button>
+                      <button className="secondary-button min-w-20 px-4 py-2 text-sm" disabled={isSaving} type="button" onClick={cancelEdit}>
+                        إلغاء
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="secondary-button h-10 w-10 p-0 text-[0px]" type="button" title="تعديل التصنيف" aria-label={`تعديل ${category.name}`} onClick={() => startEdit(category)}>
+                        <FiEdit3 aria-hidden="true" className="h-4 w-4" />
+                      </button>
+                      <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40" type="button" title="حذف التصنيف" aria-label={`حذف ${category.name}`} onClick={() => handleDelete(category)}>
+                        <FiTrash2 aria-hidden="true" className="h-4 w-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+
+      </section>
+    </DashboardAccordion>
   );
 }
 
@@ -192,6 +368,9 @@ export function ProductFields({
   draft: ProductDraft;
   setDraft: (draft: ProductDraft) => void;
 }) {
+  const optionsStock = calculateDraftOptionsStock(draft.options);
+  const hasOptionQuantities = hasDraftOptionQuantities(draft.options);
+
   return (
     <>
       <div className="grid gap-4 text-right lg:grid-cols-6" dir="rtl">
@@ -243,15 +422,29 @@ export function ProductFields({
         </label>
         <label className="grid gap-2">
           <RequiredLabel>الكمية</RequiredLabel>
-          <input className="input-field px-4 py-3 text-right" dir="ltr" min="0" required type="number" value={draft.stock} onChange={(event) => setDraft({ ...draft, stock: event.target.value })} />
+          <input
+            className="input-field px-4 py-3 text-right read-only:bg-surface-container-low read-only:text-on-surface"
+            dir="ltr"
+            min="0"
+            readOnly={hasOptionQuantities}
+            required
+            type="number"
+            value={hasOptionQuantities ? String(optionsStock) : draft.stock}
+            onChange={(event) => setDraft({ ...draft, stock: event.target.value })}
+          />
+          {hasOptionQuantities ? (
+            <span className="text-xs font-bold text-on-surface-variant">
+              المجموع الحالي: {formatStockBreakdown(draft.options)} = {optionsStock}
+            </span>
+          ) : null}
         </label>
         <label className="grid gap-2 lg:col-span-2">
           <span className="text-sm font-bold text-on-surface">التصنيف</span>
           <select className="input-field px-4 py-3 text-right" dir="rtl" value={draft.categoryId} onChange={(event) => setDraft({ ...draft, categoryId: event.target.value })}>
             <option value="">بدون تصنيف</option>
-            {categories.map((category) => (
+            {categories.filter((category) => category.vendorId).map((category) => (
               <option key={category.id} value={category.id}>
-                {category.vendorId ? `${category.name} - خاص` : category.name}
+                {category.name}
               </option>
             ))}
           </select>
@@ -278,6 +471,27 @@ export function ProductOptionsEditor({ options, onChange }: { options: ProductOp
     onChange(options.map((option, optionIndex) => (optionIndex === index ? { ...option, ...input } : option)));
   }
 
+  function updateOptionValue(optionIndex: number, valueIndex: number, input: Partial<ProductOptionDraft["values"][number]>) {
+    onChange(
+      options.map((option, currentOptionIndex) =>
+        currentOptionIndex === optionIndex
+          ? {
+              ...option,
+              values: option.values.map((value, currentValueIndex) => (currentValueIndex === valueIndex ? { ...value, ...input } : value)),
+            }
+          : option,
+      ),
+    );
+  }
+
+  function addOptionValue(optionIndex: number) {
+    onChange(options.map((option, currentOptionIndex) => (currentOptionIndex === optionIndex ? { ...option, values: [...option.values, { value: "", quantity: "0", price: "" }] } : option)));
+  }
+
+  function removeOptionValue(optionIndex: number, valueIndex: number) {
+    onChange(options.map((option, currentOptionIndex) => (currentOptionIndex === optionIndex ? { ...option, values: option.values.filter((_, currentValueIndex) => currentValueIndex !== valueIndex) } : option)));
+  }
+
   function removeOption(index: number) {
     onChange(options.filter((_, optionIndex) => optionIndex !== index));
   }
@@ -289,7 +503,7 @@ export function ProductOptionsEditor({ options, onChange }: { options: ProductOp
           <h3 className="text-lg font-black text-on-surface">أنواع المنتج</h3>
           <p className="mt-1 text-sm leading-6 text-on-surface-variant">أضف خيارات يختار منها العميل، مثل اللون أو الحجم. اكتب القيم مفصولة بفواصل.</p>
         </div>
-        <button className="secondary-button px-5 py-3" type="button" onClick={() => onChange([...options, { name: "", valuesText: "" }])}>
+        <button className="secondary-button px-5 py-3" type="button" onClick={() => onChange([...options, { name: "", values: [{ value: "", quantity: "0", price: "" }] }])}>
           إضافة نوع
         </button>
       </div>
@@ -299,23 +513,63 @@ export function ProductOptionsEditor({ options, onChange }: { options: ProductOp
       ) : (
         <div className="grid gap-3">
           {options.map((option, index) => (
-            <div key={index} className="grid gap-3 rounded-xl bg-surface-container-lowest p-3 lg:grid-cols-[180px_1fr_auto]">
+            <div key={index} className="grid gap-4 rounded-xl bg-surface-container-lowest p-3">
               <label className="grid gap-2">
                 <span className="text-sm font-bold text-on-surface">اسم النوع</span>
                 <input className="input-field px-4 py-3 text-right" dir="rtl" placeholder="مثال: اللون" value={option.name} onChange={(event) => updateOption(index, { name: event.target.value })} />
               </label>
-              <label className="grid gap-2">
-                <span className="text-sm font-bold text-on-surface">القيم</span>
-                <input
-                  className="input-field px-4 py-3 text-right"
-                  dir="rtl"
-                  placeholder="أحمر، أزرق، أسود"
-                  value={option.valuesText}
-                  onChange={(event) => updateOption(index, { valuesText: event.target.value })}
-                />
-              </label>
-              <button className="flex h-11 w-11 items-center justify-center self-end rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40" type="button" title="حذف" aria-label="حذف النوع" onClick={() => removeOption(index)}>
+              <div className="grid gap-2">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-bold text-on-surface">القيم والكميات</span>
+                  <button className="secondary-button px-4 py-2 text-sm" type="button" onClick={() => addOptionValue(index)}>
+                    إضافة قيمة
+                  </button>
+                </div>
+                <div className="grid gap-2">
+                  <div className="grid grid-cols-[minmax(0,1fr)_112px_112px_44px] gap-2 rounded-xl bg-surface-container-low p-2 text-xs font-black text-on-surface-variant">
+                    <span>القيمة التي يختارها العميل</span>
+                    <span className="text-center">الكمية المتوفرة</span>
+                    <span className="text-center">سعر هذه القيمة</span>
+                    <span aria-hidden="true" />
+                  </div>
+                  {option.values.map((item, valueIndex) => (
+                    <div key={valueIndex} className="grid grid-cols-[minmax(0,1fr)_112px_112px_44px] gap-2 rounded-xl bg-surface-container-low p-2">
+                      <input
+                        className="input-field px-4 py-3 text-right"
+                        dir="rtl"
+                        placeholder="مثال: أحمر"
+                        value={item.value}
+                        onChange={(event) => updateOptionValue(index, valueIndex, { value: event.target.value })}
+                      />
+                      <input
+                        className="input-field px-4 py-3 text-right"
+                        dir="ltr"
+                        min="0"
+                        placeholder="الكمية"
+                        type="number"
+                        value={item.quantity}
+                        onChange={(event) => updateOptionValue(index, valueIndex, { quantity: event.target.value })}
+                      />
+                      <input
+                        className="input-field px-4 py-3 text-right"
+                        dir="ltr"
+                        min="0"
+                        placeholder="السعر"
+                        step="0.01"
+                        type="number"
+                        value={item.price}
+                        onChange={(event) => updateOptionValue(index, valueIndex, { price: event.target.value })}
+                      />
+                      <button className="flex h-11 w-11 items-center justify-center rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40" type="button" title="حذف القيمة" aria-label="حذف القيمة" onClick={() => removeOptionValue(index, valueIndex)}>
+                        <FiTrash2 aria-hidden="true" className="h-5 w-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button className="flex h-11 w-fit items-center gap-2 rounded-lg border border-error/30 px-4 py-2 text-sm font-bold text-error hover:bg-error-container/40" type="button" onClick={() => removeOption(index)}>
                 <FiTrash2 aria-hidden="true" className="h-5 w-5" />
+                حذف النوع
               </button>
             </div>
           ))}
@@ -454,15 +708,71 @@ function ProductRow({ product, onDelete, onEdit }: { product: Product; onDelete:
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2 lg:flex lg:flex-col">
-        <button className="secondary-button h-11 w-full p-0 text-[0px] lg:w-11" type="button" title="تعديل" aria-label={`تعديل ${product.title}`} onClick={() => onEdit(product)}>
+        <Link className="secondary-button h-11 w-full p-0 text-[0px] lg:w-11" title="تعديل" aria-label={`تعديل ${product.title}`} href={`/dashboard/products/${product.id}`}>
           <FiEdit3 aria-hidden="true" className="h-5 w-5" />
           تعديل
-        </button>
+        </Link>
         <button className="flex h-11 w-full items-center justify-center rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40 lg:w-11" type="button" title="حذف" aria-label={`حذف ${product.title}`} onClick={() => onDelete(product)}>
           <FiTrash2 aria-hidden="true" className="h-5 w-5" />
           حذف
         </button>
       </div>
+    </article>
+  );
+}
+
+function DeletedProductsSection({ products, onRestore }: { products: Product[]; onRestore: (product: Product) => void }) {
+  if (products.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="border-t border-outline-variant/15 p-4 text-right md:p-5" dir="rtl">
+      <DashboardAccordion
+        title="المنتجات المحذوفة"
+        description={`${products.length} منتج. يمكنك استرجاع المنتج خلال 30 يوم من وقت الحذف، وبعد انتهاء المدة يحذف نهائيا إذا لم يكن مرتبطا بطلبات محفوظة.`}
+      >
+      <div className="grid gap-3">
+        {products.map((product) => (
+          <DeletedProductRow key={product.id} product={product} onRestore={onRestore} />
+        ))}
+      </div>
+      </DashboardAccordion>
+    </div>
+  );
+}
+
+function DeletedProductRow({ product, onRestore }: { product: Product; onRestore: (product: Product) => void }) {
+  const imageUrl = product.images?.[0]?.url ?? product.imageUrl;
+  const remaining = getArchiveRemaining(product.archivedAt);
+
+  return (
+    <article className="grid gap-4 rounded-lg border border-red-200 bg-red-50/60 p-4 text-right lg:grid-cols-[88px_1fr_auto]">
+      <div className="h-28 overflow-hidden rounded-lg bg-surface-container-low lg:h-20">
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img alt={product.title} className="h-full w-full object-cover opacity-75 grayscale" src={imageUrl} />
+        ) : null}
+      </div>
+      <div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h5 className="font-black text-on-surface">{product.title}</h5>
+            <p className="mt-1 text-sm text-on-surface-variant">{product.description ?? "لا يوجد وصف."}</p>
+          </div>
+          <StatusBadge status={product.status} />
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2 text-sm font-bold text-on-surface-variant">
+          <span className="rounded-full bg-white px-3 py-1">الكمية: {product.stock}</span>
+          <span className="rounded-full bg-white px-3 py-1">السعر: {formatPrice(Number(product.salePrice ?? product.price))}</span>
+          <span className={`rounded-full px-3 py-1 ${remaining.days <= 5 ? "bg-red-100 text-red-800" : "bg-white text-on-surface-variant"}`}>
+            {remaining.expired ? "انتهت مدة الاسترجاع" : `متبقي ${remaining.days} يوم`}
+          </span>
+        </div>
+      </div>
+      <button className="secondary-button h-11 px-5 py-2" type="button" onClick={() => onRestore(product)}>
+        استرجاع
+      </button>
     </article>
   );
 }
@@ -509,17 +819,95 @@ function formatPrice(value: number) {
   })} ر.س`;
 }
 
+function getArchiveRemaining(archivedAt?: string | null) {
+  const archivedTime = archivedAt ? new Date(archivedAt).getTime() : Date.now();
+  const expiresAt = archivedTime + 30 * 24 * 60 * 60 * 1000;
+  const remainingMs = expiresAt - Date.now();
+  const days = Math.max(0, Math.ceil(remainingMs / (24 * 60 * 60 * 1000)));
+
+  return {
+    days,
+    expired: remainingMs <= 0,
+  };
+}
+
+function sortCategories(first: Category, second: Category) {
+  if (Boolean(first.vendorId) !== Boolean(second.vendorId)) {
+    return first.vendorId ? 1 : -1;
+  }
+
+  return first.name.localeCompare(second.name, "ar");
+}
+
 function normalizeProductOptions(options: ProductOptionDraft[]) {
   return options
-    .map((option) => ({
-      name: option.name.trim(),
-      values: option.valuesText
-        .split(/[,،\n]/)
-        .map((value) => value.trim())
-        .filter(Boolean),
-    }))
+    .map((option) => {
+      const values = Array.from(new Set(option.values.map((item) => item.value.trim()).filter(Boolean)));
+      const valueQuantities = values.reduce<Record<string, number>>((result, value) => {
+        const source = option.values.find((item) => item.value.trim() === value);
+        const quantity = Number(source?.quantity ?? 0);
+        result[value] = Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 0;
+        return result;
+      }, {});
+      const valuePrices = values.reduce<Record<string, number>>((result, value) => {
+        const source = option.values.find((item) => item.value.trim() === value);
+        const price = Number(source?.price);
+        if (Number.isFinite(price) && price >= 0) {
+          result[value] = Number(price.toFixed(2));
+        }
+        return result;
+      }, {});
+
+      return {
+        name: option.name.trim(),
+        values,
+        valueQuantities,
+        valuePrices,
+      };
+    })
     .filter((option) => option.name && option.values.length > 0);
 }
 
-export { normalizeProductOptions };
+function calculateOptionsStock(options: ReturnType<typeof normalizeProductOptions>) {
+  return options.reduce((total, option) => total + Object.values(option.valueQuantities).reduce((sum, quantity) => sum + quantity, 0), 0);
+}
+
+function calculateDraftOptionsStock(options: ProductOptionDraft[]) {
+  return options.reduce(
+    (total, option) =>
+      total +
+      option.values.reduce((sum, item) => {
+        const quantity = Number(item.quantity);
+        return sum + (Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 0);
+      }, 0),
+    0,
+  );
+}
+
+function hasDraftOptionQuantities(options: ProductOptionDraft[]) {
+  return options.some((option) =>
+    option.values.some((item) => {
+      const quantity = Number(item.quantity);
+      return Number.isFinite(quantity) && quantity > 0;
+    }),
+  );
+}
+
+function formatStockBreakdown(options: ProductOptionDraft[]) {
+  const quantities = options.flatMap((option) =>
+    option.values
+      .map((item) => Number(item.quantity))
+      .filter((quantity) => Number.isFinite(quantity) && quantity > 0)
+      .map((quantity) => Math.floor(quantity)),
+  );
+
+  return quantities.length > 0 ? quantities.join(" + ") : "0";
+}
+
+function calculateProductStock(draft: ProductDraft) {
+  const normalizedOptions = normalizeProductOptions(draft.options);
+  return normalizedOptions.length > 0 ? calculateOptionsStock(normalizedOptions) : calculateDraftOptionsStock(draft.options) || Number(draft.stock);
+}
+
+export { calculateProductStock, normalizeProductOptions };
 export type { ProductDraft, ProductOptionDraft };

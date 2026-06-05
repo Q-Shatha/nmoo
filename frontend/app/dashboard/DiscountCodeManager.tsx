@@ -4,6 +4,7 @@ import type React from "react";
 import { useMemo, useState } from "react";
 import { FiEdit3, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 import { ApiError, createDiscountCode, deleteDiscountCode, DiscountCode, DiscountCodeInput, DiscountType, updateDiscountCode } from "@/lib/api";
+import { DashboardAccordion } from "./DashboardAccordion";
 
 const emptyForm: DiscountCodeInput = {
   code: "",
@@ -87,7 +88,8 @@ export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCo
         <span className="chip px-4 py-2 text-sm">{activeCount} كود مفعل</span>
       </div>
 
-      <form className="mt-6 grid gap-4 lg:grid-cols-12" onSubmit={handleSubmit}>
+      <DashboardAccordion className="mt-6" title={editingId ? "تعديل كود التخفيض" : "إضافة كود تخفيض"} description="حدد قيمة الخصم، مدة الصلاحية، وحدود الاستخدام." defaultOpen>
+      <form className="grid gap-4 lg:grid-cols-12" onSubmit={handleSubmit}>
         <Field label="الكود" className="lg:col-span-3">
           <input className="input-field" required value={form.code} onChange={(event) => setForm((current) => ({ ...current, code: event.target.value.toUpperCase() }))} />
         </Field>
@@ -130,6 +132,7 @@ export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCo
           ) : null}
         </div>
       </form>
+      </DashboardAccordion>
 
       {message ? <p className="mt-4 rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface-variant">{message}</p> : null}
 

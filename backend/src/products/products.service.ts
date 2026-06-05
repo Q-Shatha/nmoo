@@ -53,6 +53,9 @@ export class ProductsService {
         status: {
           not: ProductStatus.ARCHIVED,
         },
+        vendor: {
+          OR: [{ theme: null }, { theme: { storeStatus: "ACTIVE" } }],
+        },
       },
       include: this.productIncludes(),
     });
@@ -65,6 +68,8 @@ export class ProductsService {
   }
 
   async findMine(user: AuthenticatedUser) {
+    await this.deleteExpiredArchivedProducts(user);
+
     const products = await this.prisma.product.findMany({
       where: user.role === UserRole.ADMIN ? {} : { vendorId: user.id },
       orderBy: {
@@ -82,6 +87,8 @@ export class ProductsService {
     }
 
     const discountData = this.buildDiscountData(createProductDto.price, createProductDto.discountType, createProductDto.discountValue);
+    const optionCreates = this.buildOptionsCreate(createProductDto.options ?? [], createProductDto.price);
+    const stock = optionCreates.length > 0 ? this.calculateOptionsStock(optionCreates) : (createProductDto.stock ?? 0);
 
     const product = await this.prisma.product.create({
       data: {
@@ -92,7 +99,7 @@ export class ProductsService {
         price: new Prisma.Decimal(createProductDto.price),
         discountType: discountData.discountType,
         discountValue: discountData.discountValue,
-        stock: createProductDto.stock ?? 0,
+        stock,
         categoryId: createProductDto.categoryId,
         imageUrl: createProductDto.imageUrl,
         status: createProductDto.status ?? ProductStatus.DRAFT,
@@ -101,7 +108,7 @@ export class ProductsService {
           create: this.buildImagesCreate(createProductDto.imageUrls ?? (createProductDto.imageUrl ? [createProductDto.imageUrl] : []), createProductDto.title),
         },
         options: {
-          create: this.buildOptionsCreate(createProductDto.options ?? []),
+          create: optionCreates,
         },
       },
       include: this.productIncludes(),
@@ -156,6 +163,12 @@ export class ProductsService {
       data.slug = await this.createUniqueSlug(updateProductDto.title, id);
     }
 
+    const optionCreates = updateProductDto.options ? this.buildOptionsCreate(updateProductDto.options, typeof updateProductDto.price === "number" ? updateProductDto.price : Number(product.price)) : undefined;
+
+    if (optionCreates) {
+      data.stock = optionCreates.length > 0 ? this.calculateOptionsStock(optionCreates) : updateProductDto.stock;
+    }
+
     const updatedProduct = await this.prisma.product.update({
       where: { id },
       data: {
@@ -172,7 +185,7 @@ export class ProductsService {
           ? {
               options: {
                 deleteMany: {},
-                create: this.buildOptionsCreate(updateProductDto.options),
+                create: optionCreates,
               },
             }
           : {}),
@@ -190,6 +203,7 @@ export class ProductsService {
       where: { id },
       data: {
         status: ProductStatus.ARCHIVED,
+        archivedAt: new Date(),
       },
       include: this.productIncludes(),
     });
@@ -197,11 +211,38 @@ export class ProductsService {
     return this.serializeProduct(removedProduct);
   }
 
+  async restore(id: string, user: AuthenticatedUser) {
+    const product = await this.findOwnedProduct(id, user);
+
+    if (product.status !== ProductStatus.ARCHIVED) {
+      return this.serializeProduct(
+        await this.prisma.product.findUniqueOrThrow({
+          where: { id },
+          include: this.productIncludes(),
+        }),
+      );
+    }
+
+    const restoredProduct = await this.prisma.product.update({
+      where: { id },
+      data: {
+        status: ProductStatus.DRAFT,
+        archivedAt: null,
+      },
+      include: this.productIncludes(),
+    });
+
+    return this.serializeProduct(restoredProduct);
+  }
+
   private buildListWhere(query: ProductQueryDto): Prisma.ProductWhereInput {
     const andFilters: Prisma.ProductWhereInput[] = [];
     const where: Prisma.ProductWhereInput = {
       status: {
         not: ProductStatus.ARCHIVED,
+      },
+      vendor: {
+        OR: [{ theme: null }, { theme: { storeStatus: "ACTIVE" } }],
       },
     };
 
@@ -271,6 +312,37 @@ export class ProductsService {
     }
 
     return product;
+  }
+
+  private async findOwnedProduct(id: string, user: AuthenticatedUser) {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+
+    if (!product) {
+      throw new NotFoundException("Product not found");
+    }
+
+    if (user.role !== UserRole.ADMIN && product.vendorId !== user.id) {
+      throw new ForbiddenException("You cannot edit this product");
+    }
+
+    return product;
+  }
+
+  private async deleteExpiredArchivedProducts(user: AuthenticatedUser) {
+    const expiresBefore = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    await this.prisma.product.deleteMany({
+      where: {
+        ...(user.role === UserRole.ADMIN ? {} : { vendorId: user.id }),
+        status: ProductStatus.ARCHIVED,
+        archivedAt: {
+          lt: expiresBefore,
+        },
+        orderItems: {
+          none: {},
+        },
+      },
+    });
   }
 
   private async ensureCategoryExists(categoryId: string, user: AuthenticatedUser) {
@@ -358,11 +430,13 @@ export class ProductsService {
     };
   }
 
-  private buildOptionsCreate(options: CreateProductDto["options"]): Prisma.ProductOptionCreateWithoutProductInput[] {
+  private buildOptionsCreate(options: CreateProductDto["options"], fallbackPrice: number): Prisma.ProductOptionCreateWithoutProductInput[] {
     return (options ?? [])
       .map((option, index) => ({
         name: option.name.trim(),
         values: Array.from(new Set(option.values.map((value) => value.trim()).filter(Boolean))),
+        valueQuantities: this.normalizeOptionQuantities(option.values, option.valueQuantities),
+        valuePrices: this.normalizeOptionPrices(option.values, option.valuePrices, fallbackPrice),
         sortOrder: index,
       }))
       .filter((option) => option.name && option.values.length > 0);
@@ -375,6 +449,49 @@ export class ProductsService {
 
     const trimmedValue = value.trim();
     return trimmedValue.length > 0 ? trimmedValue : null;
+  }
+
+  private normalizeOptionQuantities(values: string[], quantities: Record<string, number> | undefined) {
+    const normalized: Record<string, number> = {};
+
+    for (const value of values) {
+      const key = value.trim();
+      const quantity = Number(quantities?.[key] ?? 0);
+      normalized[key] = Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 0;
+    }
+
+    return normalized;
+  }
+
+  private normalizeOptionPrices(values: string[], prices: Record<string, number> | undefined, fallbackPrice: number) {
+    const normalized: Record<string, number> = {};
+    const defaultPrice = Number.isFinite(fallbackPrice) && fallbackPrice >= 0 ? Number(fallbackPrice.toFixed(2)) : 0;
+
+    for (const value of values) {
+      const key = value.trim();
+      const price = Number(prices?.[key]);
+      normalized[key] = Number.isFinite(price) && price >= 0 ? Number(price.toFixed(2)) : defaultPrice;
+    }
+
+    return normalized;
+  }
+
+  private calculateOptionsStock(options: Prisma.ProductOptionCreateWithoutProductInput[]) {
+    return options.reduce((total, option) => {
+      const quantities = option.valueQuantities;
+
+      if (!quantities || typeof quantities !== "object" || Array.isArray(quantities)) {
+        return total;
+      }
+
+      return (
+        total +
+        Object.values(quantities).reduce((optionTotal, quantity) => {
+          const value = Number(quantity);
+          return optionTotal + (Number.isFinite(value) && value > 0 ? Math.floor(value) : 0);
+        }, 0)
+      );
+    }, 0);
   }
 
   private productIncludes() {
@@ -394,12 +511,15 @@ export class ProductsService {
               primaryColor: true,
               secondaryColor: true,
               textColor: true,
+              storeName: true,
               logoUrl: true,
               bannerUrl: true,
               storefrontImageUrl: true,
               storefrontTitle: true,
               storefrontDescription: true,
               templateId: true,
+              storeStatus: true,
+              storeDeletedAt: true,
             },
           },
         },

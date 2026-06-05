@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
@@ -6,6 +6,7 @@ import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { AuthenticatedUser } from "../common/types/authenticated-user";
 import { UpdateAddressDto } from "./dto/update-address.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { UpdateStoreStatusDto } from "./dto/update-store-status.dto";
 import { UpdateStoreUsernameDto } from "./dto/update-store-username.dto";
 import { UsersService } from "./users.service";
 
@@ -40,6 +41,22 @@ export class UsersController {
   @ApiOperation({ summary: "Update the authenticated vendor store username" })
   updateMyStoreUsername(@Body() updateStoreUsernameDto: UpdateStoreUsernameDto, @CurrentUser() user: AuthenticatedUser) {
     return this.usersService.updateStoreUsername(user.id, updateStoreUsernameDto);
+  }
+
+  @Patch("me/store-status")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Pause or reactivate the authenticated vendor store" })
+  updateMyStoreStatus(@Body() updateStoreStatusDto: UpdateStoreStatusDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.updateStoreStatus(user.id, updateStoreStatusDto);
+  }
+
+  @Delete("me/store")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Permanently delete the authenticated vendor store" })
+  deleteMyStore(@CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.deleteStore(user.id);
   }
 
   @Patch("me/address")

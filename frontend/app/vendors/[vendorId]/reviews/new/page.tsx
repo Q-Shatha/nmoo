@@ -36,10 +36,11 @@ export default async function NewVendorReviewPage({ params }: ReviewPageProps) {
   const profileHref = data.ok ? (data.vendor.storeUsername ? `/${data.vendor.storeUsername}` : `/vendors/${data.vendor.id}`) : data.profileHref ?? `/vendors/${vendorId}`;
   const storeHref = data.ok ? `${profileHref}/storefront` : data.storeHref ?? `${profileHref}/storefront`;
   const theme = data.ok ? data.theme : data.theme;
+  const storeName = theme?.storeName?.trim() || (data.ok ? data.vendor.name : null);
 
   return (
     <div className="min-h-screen text-on-surface" dir="rtl" style={theme ? { ...themeToStyle(theme), backgroundColor: "var(--color-background)" } : undefined}>
-      <PublicHeader active="store" storeHref={storeHref} profileHref={profileHref} vendorId={vendorId} storeLogoUrl={theme?.logoUrl} />
+      <PublicHeader active="store" storeHref={storeHref} profileHref={profileHref} vendorId={vendorId} storeLogoUrl={theme?.logoUrl} storeName={storeName} />
       <main className="mx-auto min-h-screen w-full max-w-[1180px] px-4 py-10 sm:px-6 lg:px-8">
         {data.ok ? (
           <ReviewForm products={data.products} profileHref={profileHref} />

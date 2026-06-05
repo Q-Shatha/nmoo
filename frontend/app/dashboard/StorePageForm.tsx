@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, createStorePage, StorePage, updateStorePage } from "@/lib/api";
+import { DashboardAccordion } from "./DashboardAccordion";
 
 export function StorePageForm({ page }: { page?: StorePage }) {
   const router = useRouter();
@@ -61,10 +62,12 @@ export function StorePageForm({ page }: { page?: StorePage }) {
           </label>
         </div>
 
+        <DashboardAccordion title="محتوى الصفحة" description="اكتب النص الطويل الذي يظهر في صفحة المتجر." defaultOpen>
         <label className="grid gap-2">
           <RequiredLabel>المحتوى</RequiredLabel>
           <textarea className="input-field min-h-60 px-4 py-3 text-right leading-8" required value={content} onChange={(event) => setContent(event.target.value)} />
         </label>
+        </DashboardAccordion>
 
         <label className="flex items-center justify-end gap-2 text-sm font-bold text-on-surface">
           <span>منشورة في الفوتر</span>

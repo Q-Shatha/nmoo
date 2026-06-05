@@ -131,12 +131,15 @@ model VendorTheme {
   primaryColor   String   @default("#884a70")
   secondaryColor String   @default("#1e293b")
   textColor      String   @default("#1e293b")
+  storeName      String?
   logoUrl        String?
   bannerUrl      String?
   storefrontImageUrl String?
   storefrontTitle String?
   storefrontDescription String?
   templateId     String   @default("classic")
+  storeStatus    String   @default("ACTIVE")
+  storeDeletedAt DateTime?
   cashOnDeliveryEnabled Boolean @default(false)
   whatsappUrl    String?
   instagramUrl   String?
@@ -211,6 +214,7 @@ model Product {
   stock       Int           @default(0)
   status      ProductStatus @default(DRAFT)
   imageUrl    String?
+  archivedAt  DateTime?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -233,6 +237,8 @@ model ProductOption {
   productId String
   name      String
   values    String[]
+  valueQuantities Json @default("{}")
+  valuePrices Json @default("{}")
   sortOrder Int      @default(0)
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)

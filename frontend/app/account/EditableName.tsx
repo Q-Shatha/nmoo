@@ -47,12 +47,12 @@ export function EditableName({ user }: EditableNameProps) {
 
   if (isEditing) {
     return (
-      <form className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center" onSubmit={handleSubmit}>
+      <form className="mt-1 grid w-full min-w-0 gap-2 sm:flex sm:flex-row sm:items-center" onSubmit={handleSubmit}>
         <label className="sr-only" htmlFor="account-name">
           الاسم
         </label>
         <input
-          className="min-h-12 rounded-2xl border border-outline-variant bg-surface px-4 text-right text-xl font-black text-on-surface outline-none transition focus:border-primary"
+          className="min-h-12 w-full min-w-0 rounded-2xl border border-outline-variant bg-surface px-4 text-right text-xl font-black text-on-surface outline-none transition focus:border-primary sm:w-auto sm:min-w-72"
           disabled={isPending}
           id="account-name"
           maxLength={120}
@@ -60,11 +60,11 @@ export function EditableName({ user }: EditableNameProps) {
           onChange={(event) => setDraftName(event.target.value)}
           value={draftName}
         />
-        <div className="flex gap-2">
-          <button className="primary-button px-4 py-2 text-sm" disabled={isPending} type="submit">
+        <div className="flex w-full justify-end gap-2 sm:w-auto">
+          <button className="primary-button min-w-20 px-4 py-2 text-sm" disabled={isPending} type="submit">
             حفظ
           </button>
-          <button className="secondary-button px-4 py-2 text-sm" disabled={isPending} onClick={cancelEdit} type="button">
+          <button className="secondary-button min-w-20 px-4 py-2 text-sm" disabled={isPending} onClick={cancelEdit} type="button">
             إلغاء
           </button>
         </div>

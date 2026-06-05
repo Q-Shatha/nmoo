@@ -51,7 +51,9 @@ function OrdersList({ orders }: { orders: Order[] }) {
       {orders.map((order) => (
         <article key={order.id} className="panel grid gap-4 p-5 text-right md:grid-cols-[1fr_auto]">
           <div>
-            <h2 className="text-xl font-black text-on-surface">طلب #{order.id.slice(0, 8)}</h2>
+            <h2 className="text-xl font-black text-on-surface">
+              طلب <span className="order-code">#{order.id.slice(0, 8)}</span>
+            </h2>
             <p className="mt-2 text-sm text-on-surface-variant">{formatDate(order.createdAt)}</p>
             <p className="mt-3 text-on-surface-variant">عدد المنتجات: {order.items.length}</p>
           </div>

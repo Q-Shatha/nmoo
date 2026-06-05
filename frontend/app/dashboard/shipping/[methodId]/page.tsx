@@ -1,6 +1,6 @@
 import { ApiError, getMyShippingMethods } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable } from "../../DashboardShell";
-import { loadVendorDashboardBase } from "../../dashboard-data";
+import { getVendorStoreHref, loadVendorDashboardBase } from "../../dashboard-data";
 import { ShippingMethodForm } from "../../ShippingMethodForm";
 
 type PageProps = {
@@ -18,6 +18,7 @@ export default async function EditShippingMethodPage({ params }: PageProps) {
       description="عدّل بيانات شركة الشحن ومناطق التوصيل وخيار الدفع عند الاستلام"
       userName={data.ok ? data.userName : "التاجر"}
       logoUrl={data.ok ? data.logoUrl : null}
+      storeHref={data.ok ? data.storeHref : undefined}
     >
       {data.ok ? <ShippingMethodForm method={data.method} /> : <DashboardUnavailable message={data.message} needsLogin={data.needsLogin} />}
     </DashboardShell>
@@ -47,6 +48,7 @@ async function loadPageData(methodId: string) {
       ok: true as const,
       userName: base.user.name,
       logoUrl: base.theme.logoUrl,
+      storeHref: getVendorStoreHref(base.user),
       method,
     };
   } catch (error) {

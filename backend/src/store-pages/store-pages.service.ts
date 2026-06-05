@@ -11,7 +11,12 @@ export class StorePagesService {
 
   findPublished() {
     return this.prisma.storePage.findMany({
-      where: { published: true },
+      where: {
+        published: true,
+        vendor: {
+          OR: [{ theme: null }, { theme: { storeStatus: "ACTIVE" } }],
+        },
+      },
       orderBy: { updatedAt: "desc" },
       include: this.includes(),
     });
@@ -27,7 +32,13 @@ export class StorePagesService {
 
   findPublishedByVendor(vendorId: string) {
     return this.prisma.storePage.findMany({
-      where: { vendorId, published: true },
+      where: {
+        vendorId,
+        published: true,
+        vendor: {
+          OR: [{ theme: null }, { theme: { storeStatus: "ACTIVE" } }],
+        },
+      },
       orderBy: { updatedAt: "desc" },
       include: this.includes(),
     });
@@ -35,7 +46,13 @@ export class StorePagesService {
 
   async findOnePublished(id: string) {
     const page = await this.prisma.storePage.findFirst({
-      where: { id, published: true },
+      where: {
+        id,
+        published: true,
+        vendor: {
+          OR: [{ theme: null }, { theme: { storeStatus: "ACTIVE" } }],
+        },
+      },
       include: this.includes(),
     });
 

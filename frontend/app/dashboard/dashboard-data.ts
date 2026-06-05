@@ -51,3 +51,7 @@ export async function loadVendorDashboardBase(): Promise<VendorDashboardBase> {
     };
   }
 }
+
+export function getVendorStoreHref(user: Awaited<ReturnType<typeof getMe>>) {
+  return user.storeUsername ? `/${user.storeUsername}` : `/vendors/${user.id}`;
+}

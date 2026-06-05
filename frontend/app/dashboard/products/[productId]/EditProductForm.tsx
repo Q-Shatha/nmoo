@@ -2,32 +2,20 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ApiError, Category, createCategory, createProduct, ProductStatus } from "@/lib/api";
+import { ApiError, Category, Product, updateProduct } from "@/lib/api";
 import { DashboardAccordion } from "../../DashboardAccordion";
 import { calculateProductStock, normalizeProductOptions, ProductDraft, ProductFields, ProductImageUploader, ProductOptionsEditor } from "../../DashboardProductManager";
 
-const emptyDraft: ProductDraft = {
-  title: "",
-  description: "",
-  badgeLabel: "",
-  price: "",
-  discountType: "",
-  discountValue: "",
-  stock: "0",
-  categoryId: "",
-  status: "ACTIVE" as ProductStatus,
-  imageUrls: [],
-  options: [],
+type EditProductFormProps = {
+  categories: Category[];
+  product: Product;
 };
 
-export function AddProductForm({ categories: initialCategories }: { categories: Category[] }) {
+export function EditProductForm({ categories, product }: EditProductFormProps) {
   const router = useRouter();
-  const [categories, setCategories] = useState(initialCategories);
-  const [draft, setDraft] = useState<ProductDraft>(emptyDraft);
-  const [newCategoryName, setNewCategoryName] = useState("");
+  const [draft, setDraft] = useState<ProductDraft>(() => productToDraft(product));
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
   function addImageUrl(url: string) {
     if (!url || draft.imageUrls.includes(url)) {
@@ -47,33 +35,6 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
     });
   }
 
-  async function handleCreateCategory() {
-    const name = newCategoryName.trim();
-
-    if (!name) {
-      return;
-    }
-
-    setMessage("");
-    setIsCreatingCategory(true);
-
-    try {
-      const token = readCookie("nmoo_access_token");
-      const category = await createCategory({ name }, token);
-      setCategories((current) => [...current.filter((item) => item.vendorId), category].sort((first, second) => first.name.localeCompare(second.name, "ar")));
-      setDraft((current) => ({
-        ...current,
-        categoryId: category.id,
-      }));
-      setNewCategoryName("");
-      setMessage("تمت إضافة التصنيف واختياره للمنتج.");
-    } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر إضافة التصنيف.");
-    } finally {
-      setIsCreatingCategory(false);
-    }
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
@@ -81,7 +42,8 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
 
     try {
       const token = readCookie("nmoo_access_token");
-      await createProduct(
+      await updateProduct(
+        product.id,
         {
           title: draft.title,
           description: draft.description,
@@ -102,7 +64,7 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
       router.push("/dashboard/products");
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر إضافة المنتج.");
+      setMessage(error instanceof ApiError ? error.message : "تعذر تحديث المنتج.");
     } finally {
       setIsSaving(false);
     }
@@ -113,35 +75,16 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
       <section className="grid gap-5 rounded-xl bg-surface-container-low p-4 text-right" dir="rtl">
         <div>
           <h2 className="text-lg font-black text-on-surface">بيانات المنتج</h2>
-          <p className="mt-1 text-sm leading-6 text-on-surface-variant">اكتب بيانات واضحة تساعد العميل على فهم المنتج قبل الشراء.</p>
+          <p className="mt-1 text-sm leading-6 text-on-surface-variant">عدّل بيانات المنتج الأساسية والكميات والتصنيف.</p>
         </div>
         <DashboardAccordion title="حقول المنتج الأساسية" defaultOpen>
           <ProductFields categories={categories} draft={draft} setDraft={setDraft} />
         </DashboardAccordion>
       </section>
 
-      <DashboardAccordion title="أنواع وخيارات المنتج" description="الألوان، المقاسات، أو أي خيارات يختارها العميل.">
+      <DashboardAccordion title="أنواع وخيارات المنتج" description="الألوان، المقاسات، أو أي خيارات يختارها العميل. كمية المنتج الإجمالية تحسب من كميات القيم.">
         <ProductOptionsEditor options={draft.options} onChange={(options) => setDraft({ ...draft, options })} />
       </DashboardAccordion>
-
-      <section className="grid gap-3 rounded-xl bg-surface-container-low p-4 text-right" dir="rtl">
-        <div>
-          <h2 className="text-lg font-black text-on-surface">تصنيف جديد</h2>
-          <p className="mt-1 text-sm leading-6 text-on-surface-variant">إذا لم تجد التصنيف المناسب، أضف تصنيفا لمتجرك وسيظهر في قائمة التصنيفات.</p>
-        </div>
-        <div className="grid gap-3 md:grid-cols-[1fr_auto]">
-          <input
-            className="input-field px-4 py-3 text-right"
-            dir="rtl"
-            placeholder="مثال: عطور منزلية"
-            value={newCategoryName}
-            onChange={(event) => setNewCategoryName(event.target.value)}
-          />
-          <button className="secondary-button px-5 py-3 disabled:opacity-60" disabled={isCreatingCategory || !newCategoryName.trim()} type="button" onClick={handleCreateCategory}>
-            {isCreatingCategory ? "جاري الإضافة..." : "إضافة التصنيف"}
-          </button>
-        </div>
-      </section>
 
       <DashboardAccordion title="صور المنتج" description="ارفع صور المنتج أو أضف روابط الصور.">
         <ProductImageUploader imageUrls={draft.imageUrls} onAddImage={addImageUrl} onRemoveImage={removeImageUrl} />
@@ -151,7 +94,7 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <button className="primary-button px-8 py-4 disabled:opacity-60" disabled={isSaving} type="submit">
-          {isSaving ? "جاري إضافة المنتج..." : "إضافة المنتج"}
+          {isSaving ? "جاري حفظ التعديل..." : "حفظ التعديل"}
         </button>
         <button className="secondary-button px-8 py-4" type="button" onClick={() => router.push("/dashboard/products")}>
           رجوع للمنتجات
@@ -159,6 +102,30 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
       </div>
     </form>
   );
+}
+
+function productToDraft(product: Product): ProductDraft {
+  return {
+    title: product.title,
+    description: product.description ?? "",
+    badgeLabel: product.badgeLabel ?? "",
+    price: String(product.price),
+    discountType: product.discountType ?? "",
+    discountValue: product.discountValue ? String(product.discountValue) : "",
+    stock: String(product.stock),
+    categoryId: product.categoryId ?? "",
+    status: product.status,
+    imageUrls: product.images?.map((image) => image.url) ?? (product.imageUrl ? [product.imageUrl] : []),
+    options:
+      product.options?.map((option) => ({
+        name: option.name,
+        values: option.values.map((value) => ({
+          value,
+          quantity: String(option.valueQuantities?.[value] ?? 0),
+          price: String(option.valuePrices?.[value] ?? product.price),
+        })),
+      })) ?? [],
+  };
 }
 
 function readCookie(name: string) {

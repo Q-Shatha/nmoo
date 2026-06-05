@@ -240,6 +240,22 @@ html {
   background-color: color-mix(in oklab, var(--color-primary-container) 30%, transparent) !important;
 }
 
+.dashboard-panel label:has(> input[readonly][type="number"]) {
+  align-self: start;
+}
+
+.dashboard-panel label:has(> input[readonly][type="number"]) > .text-xs {
+  display: none;
+}
+
+.has-interactive-purchase > .mt-5,
+.has-interactive-purchase > .mt-7,
+.has-interactive-purchase > .section-copy,
+.has-interactive-purchase > .store-product-options,
+.has-interactive-purchase > .store-product-actions {
+  display: none !important;
+}
+
 .store-template-classic {
   --store-card-radius: 18px;
   --store-hero-radius: 28px;
@@ -1450,6 +1466,59 @@ html {
   min-width: 0;
 }
 
+.storefront-products-grid .store-product-card h3,
+.store-profile-products-grid .store-product-card h3,
+.store-related-products-grid .store-product-card h3 {
+  font-size: clamp(1rem, 1.25vw, 1.18rem) !important;
+  line-height: 1.55 !important;
+}
+
+.storefront-products-grid .store-product-card .store-product-card-rating,
+.store-profile-products-grid .store-product-card .store-product-card-rating,
+.store-related-products-grid .store-product-card .store-product-card-rating {
+  font-size: clamp(0.9rem, 1vw, 1rem) !important;
+}
+
+.storefront-products-grid .store-product-card-body > div:last-child p:last-child,
+.store-profile-products-grid .store-product-card-body > div:last-child p:last-child,
+.store-related-products-grid .store-product-card-body > div:last-child p:last-child {
+  font-size: clamp(1.12rem, 1.35vw, 1.3rem) !important;
+  line-height: 1.35 !important;
+}
+
+.storefront-products-grid .store-product-card-body > div:first-child p,
+.store-profile-products-grid .store-product-card-body > div:first-child p,
+.store-related-products-grid .store-product-card-body > div:first-child p {
+  font-size: clamp(0.82rem, 0.95vw, 0.92rem) !important;
+}
+
+.product-option-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100vw !important;
+  min-width: 100vw !important;
+  min-height: 100vh !important;
+  padding: 1rem !important;
+}
+
+.product-option-modal-panel {
+  width: min(92vw, 30rem) !important;
+  min-width: min(92vw, 30rem) !important;
+  max-width: min(92vw, 30rem) !important;
+  max-height: min(86vh, 42rem) !important;
+  overflow-y: auto !important;
+  border-radius: 1.25rem !important;
+  padding: 1.25rem !important;
+}
+
+.product-option-modal-panel button {
+  white-space: normal !important;
+}
+
 .glass-card {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
@@ -1485,6 +1554,159 @@ html {
   border: 1px solid color-mix(in oklab, var(--color-outline-variant) 45%, transparent);
   border-radius: 1rem;
   box-shadow: 0 10px 28px rgba(23, 28, 31, 0.06);
+}
+
+.dashboard-accordion > summary::-webkit-details-marker {
+  display: none;
+}
+
+.dashboard-accordion[open] {
+  box-shadow: 0 10px 28px rgba(23, 28, 31, 0.04);
+}
+
+.template-option-card .template-store-screen {
+  transform: translateY(0) scale(1);
+  transition: transform 280ms ease, box-shadow 280ms ease;
+}
+
+.template-option-card:hover .template-store-screen,
+.template-option-card.is-selected .template-store-screen {
+  transform: translateY(-0.25rem) scale(1.015);
+}
+
+.template-option-card .template-preview-nav {
+  animation: templateNavFloat 4s ease-in-out infinite;
+}
+
+.template-option-card .template-preview-hero {
+  animation: templateHeroPulse 5s ease-in-out infinite;
+}
+
+.template-option-card .template-preview-orb {
+  animation: templateOrbDrift 5.5s ease-in-out infinite;
+}
+
+.template-option-card .template-preview-product {
+  transform: translateY(0);
+  animation: templateProductRise 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.template-option-card:hover .template-preview-product {
+  transform: translateY(-0.2rem);
+}
+
+.template-option-card.is-selected {
+  animation: templateSelectedGlow 1.5s ease-in-out;
+}
+
+@keyframes templateNavFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(1px);
+  }
+}
+
+@keyframes templateHeroPulse {
+  0%,
+  100% {
+    filter: saturate(1);
+  }
+
+  50% {
+    filter: saturate(1.15);
+  }
+}
+
+@keyframes templateOrbDrift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(0.6rem, -0.35rem) scale(1.08);
+  }
+}
+
+@keyframes templateProductRise {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes templateSelectedGlow {
+  0%,
+  100% {
+    box-shadow: 0 18px 42px rgba(23, 28, 31, 0.12);
+  }
+
+  45% {
+    box-shadow: 0 22px 54px color-mix(in oklab, var(--color-primary) 24%, rgba(23, 28, 31, 0.1));
+  }
+}
+
+.dashboard-bar-chart {
+  isolation: isolate;
+}
+
+.dashboard-bar-fill,
+.dashboard-bar-ghost {
+  transform-origin: bottom;
+  animation: dashboardBarRise 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dashboard-bar-value {
+  animation: dashboardValuePop 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes dashboardBarRise {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes dashboardValuePop {
+  from {
+    transform: translateY(0.75rem) scale(0.92);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(-0.5rem) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-bar-fill,
+  .dashboard-bar-ghost,
+  .dashboard-bar-value,
+  .template-option-card,
+  .template-option-card *,
+  .template-preview-nav,
+  .template-preview-hero,
+  .template-preview-orb,
+  .template-preview-product {
+    animation: none;
+    transition: none;
+  }
 }
 
 @media (max-width: 767px) {
@@ -1574,6 +1796,56 @@ html {
   font-weight: 700;
 }
 
+.status-pending,
+.status-paid,
+.status-processing,
+.status-shipped,
+.status-completed,
+.status-cancelled {
+  border: 1px solid transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 12%, transparent);
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-paid {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-processing {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.status-shipped {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.status-completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.order-code {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .icon-button {
   display: inline-flex;
   height: 2.5rem;
@@ -1596,6 +1868,19 @@ html {
   color: var(--color-on-surface);
   font-weight: 800;
   line-height: 1.25;
+}
+
+.store-product-info > h1.section-title {
+  max-width: 18ch !important;
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem) !important;
+  line-height: 1.18 !important;
+}
+
+@media (max-width: 767px) {
+  .store-product-info > h1.section-title {
+    max-width: 16ch !important;
+    font-size: clamp(1.75rem, 8vw, 2.35rem) !important;
+  }
 }
 
 .section-copy {

@@ -52,6 +52,7 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
   const storefrontImage = data.theme.storefrontImageUrl || data.products[0]?.imageUrl || data.products[0]?.images?.[0]?.url || fallbackHeroImage;
   const heroImage = data.theme.bannerUrl || storefrontImage;
   const logoImage = data.theme.logoUrl || "/nmoo-logo.png";
+  const storeName = data.theme.storeName?.trim() || data.vendor.name;
   const returnPolicy = findPage(data.storePages, ["return", "استرجاع", "سياسة"]);
   const rating = data.reviews.length > 0 ? averageRating(data.reviews) : data.total > 20 ? "4.9" : "4.8";
   const profileHref = data.vendor.storeUsername ? `/${data.vendor.storeUsername}` : `/vendors/${data.vendor.id}`;
@@ -60,15 +61,13 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
 
   return (
     <div className={`min-h-screen text-on-surface ${template.className}`} dir="rtl" style={{ ...themeToStyle(data.theme), backgroundColor: "var(--color-background)" }}>
-      <PublicHeader active="store" storeHref={storefrontHref} profileHref={profileHref} vendorId={data.vendor.id} storeLogoUrl={data.theme.logoUrl} />
+      <PublicHeader active="store" storeHref={storefrontHref} profileHref={profileHref} vendorId={data.vendor.id} storeLogoUrl={data.theme.logoUrl} storeName={storeName} />
 
       <main className="min-h-screen text-on-surface" style={{ backgroundColor: "var(--color-background)" }}>
         <div className="mx-auto w-full max-w-[1180px] px-4 pb-20 pt-8 sm:px-6 lg:px-8">
-          <LocationUnsupportedNotice coverage={data.coverage} />
-
           <section className="store-profile-hero relative">
             <div className="store-profile-banner relative h-[230px] overflow-hidden rounded-[28px] bg-surface-container shadow-sm md:h-[310px]">
-              <Image className="scale-105 object-cover blur-[3px]" alt={data.vendor.name} src={heroImage} fill priority sizes="(min-width: 1180px) 1180px, 94vw" unoptimized />
+              <Image className="scale-105 object-cover blur-[3px]" alt={storeName} src={heroImage} fill priority sizes="(min-width: 1180px) 1180px, 94vw" unoptimized />
               <div className="absolute inset-0 bg-gradient-to-t from-black/18 via-white/8 to-white/5" />
             </div>
 
@@ -84,7 +83,7 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
                     </Link>
                   ) : null}
                 </div>
-                <h1 className="text-2xl font-black text-on-surface md:text-3xl">متجر {data.vendor.name}</h1>
+                <h1 className="text-2xl font-black text-on-surface md:text-3xl">{storeName}</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-on-surface-variant md:text-base">
                   نقدم لك تجربة تسوق مختارة بعناية تجمع بين جودة المنتجات، سهولة الطلب، وخيارات متجر واضحة تساعدك على الشراء بثقة.
                 </p>
@@ -92,7 +91,7 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
 
               <div className="store-profile-logo order-1 justify-self-end md:order-2">
                 <div className="store-profile-logo-frame flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-[10px] border-surface-container-lowest bg-surface-container-lowest shadow-xl md:h-36 md:w-36">
-                  <Image className="h-full w-full object-cover" alt={`شعار ${data.vendor.name}`} src={logoImage} width={144} height={144} unoptimized />
+                  <Image className="h-full w-full object-cover" alt={`شعار ${storeName}`} src={logoImage} width={144} height={144} unoptimized />
                 </div>
               </div>
             </div>
@@ -142,7 +141,7 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
             )}
           </section>
 
-          <ReviewsSection profileHref={profileHref} reviews={data.reviews} vendor={data.vendor} />
+          <ReviewsSection profileHref={profileHref} reviews={data.reviews} storeName={storeName} />
         </div>
       </main>
 
@@ -175,7 +174,7 @@ function LocationUnsupportedNotice({ coverage }: { coverage: StoreCoverage }) {
   );
 }
 
-function ReviewsSection({ profileHref, reviews, vendor }: { profileHref: string; reviews: Review[]; vendor: ApiUser }) {
+function ReviewsSection({ profileHref, reviews, storeName }: { profileHref: string; reviews: Review[]; storeName: string }) {
   const visibleReviews = reviews.length > 0 ? reviews : fallbackReviews;
   const carouselReviews = [...visibleReviews, ...visibleReviews];
 
@@ -187,11 +186,11 @@ function ReviewsSection({ profileHref, reviews, vendor }: { profileHref: string;
         </Link>
         <div className="text-right [&>p]:hidden">
           <h2 className="text-2xl font-black text-on-surface">آراء العملاء</h2>
-          <p className="mt-2 text-on-surface-variant">ماذا يقول المتسوقون عن تجربتهم مع متجر {vendor.name}</p>
+          <p className="mt-2 text-on-surface-variant">ماذا يقول المتسوقون عن تجربتهم مع {storeName}</p>
         </div>
       </div>
 
-      <ReviewsCarousel fallbackContext={`متجر ${vendor.name}`} fallbackReviews={fallbackReviews} reviews={visibleReviews} />
+      <ReviewsCarousel fallbackContext={storeName} fallbackReviews={fallbackReviews} reviews={visibleReviews} />
 
       <div className="mt-8 flex justify-start">
         <Link className="primary-button px-7 py-3" href={`${profileHref}/reviews/new`}>

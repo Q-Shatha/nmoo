@@ -1,7 +1,7 @@
 ﻿import Link from "next/link";
 import { ApiError, getOrders, Order } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable, EmptyPanel, formatDashboardDate, formatDashboardPrice, formatOrderStatus, statusClass } from "../DashboardShell";
-import { loadVendorDashboardBase } from "../dashboard-data";
+import { getVendorStoreHref, loadVendorDashboardBase } from "../dashboard-data";
 
 type DashboardOrdersPageProps = {
   searchParams?: Promise<{ q?: string }>;
@@ -20,6 +20,7 @@ export default async function DashboardOrdersPage({ searchParams }: DashboardOrd
       description="متابعة طلبات العملاء وتحديث حالاتها"
       userName={data.ok ? data.userName : "التاجر"}
       logoUrl={data.ok ? data.logoUrl : null}
+      storeHref={data.ok ? data.storeHref : undefined}
     >
       {data.ok ? (
         <section className="dashboard-panel overflow-hidden">
@@ -49,7 +50,7 @@ function OrdersTable({ orders }: { orders: Order[] }) {
           <article key={order.id} className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4 text-right shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClass(order.status)}`}>{formatOrderStatus(order.status)}</span>
-              <span className="font-black text-primary">#{order.id.slice(0, 8)}</span>
+              <span className="order-code font-black text-primary">#{order.id.slice(0, 8)}</span>
             </div>
             <div className="mt-4 grid gap-2 text-sm">
               <div className="flex items-center justify-between gap-3">
@@ -85,7 +86,7 @@ function OrdersTable({ orders }: { orders: Order[] }) {
         <tbody className="divide-y divide-outline-variant/15">
           {orders.map((order) => (
             <tr key={order.id} className="hover:bg-surface-container-low/60">
-              <td className="px-5 py-4 font-bold text-primary">#{order.id.slice(0, 8)}</td>
+              <td className="px-5 py-4 font-bold text-primary"><span className="order-code">#{order.id.slice(0, 8)}</span></td>
               <td className="px-5 py-4 font-semibold">{order.buyer?.name ?? "عميل"}</td>
               <td className="px-5 py-4 text-on-surface-variant">{formatDashboardDate(order.createdAt)}</td>
               <td className="px-5 py-4 font-bold text-on-surface">{formatDashboardPrice(Number(order.total))}</td>
@@ -143,6 +144,7 @@ async function loadPageData() {
       ok: true as const,
       userName: base.user.name,
       logoUrl: base.theme.logoUrl,
+      storeHref: getVendorStoreHref(base.user),
       orders: await getOrders(base.token),
     };
   } catch (error) {
@@ -153,4 +155,3 @@ async function loadPageData() {
     };
   }
 }
-

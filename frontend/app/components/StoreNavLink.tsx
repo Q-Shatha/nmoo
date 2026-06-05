@@ -10,9 +10,10 @@ type StoreNavLinkProps = {
   active: boolean;
   href?: string;
   logoUrl?: string | null;
+  label?: string | null;
 };
 
-export function StoreNavLink({ active, href, logoUrl }: StoreNavLinkProps) {
+export function StoreNavLink({ active, href, logoUrl, label }: StoreNavLinkProps) {
   const [resolvedHref, setResolvedHref] = useState(href ?? "/");
   const [resolvedLogoUrl, setResolvedLogoUrl] = useState<string | null>(logoUrl ?? null);
 
@@ -59,13 +60,20 @@ export function StoreNavLink({ active, href, logoUrl }: StoreNavLinkProps) {
 
   return (
     <Link
-      className={`flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border transition ${
-        active ? "border-primary bg-primary-container/35 shadow-sm" : "border-transparent text-primary hover:bg-primary-container/30"
+      className={`group flex min-w-20 flex-col items-center justify-center gap-1 text-center transition ${
+        active ? "text-primary" : "text-on-surface hover:text-primary"
       }`}
       href={resolvedHref}
       aria-label="بروفايل التاجر"
     >
-      {resolvedLogoUrl ? <Image className="h-full w-full object-cover" alt="أيقونة التاجر" src={resolvedLogoUrl} width={44} height={44} unoptimized /> : <StoreIcon />}
+      <span
+        className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border bg-surface-container-lowest transition group-hover:border-primary ${
+          active ? "border-primary bg-primary-container/35 shadow-sm" : "border-outline-variant/40"
+        }`}
+      >
+        {resolvedLogoUrl ? <Image className="h-full w-full object-cover" alt="أيقونة التاجر" src={resolvedLogoUrl} width={48} height={48} unoptimized /> : <StoreIcon />}
+      </span>
+      {label ? <span className="max-w-28 truncate text-xs font-black leading-4">{label}</span> : null}
     </Link>
   );
 }

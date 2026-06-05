@@ -1,0 +1,3 @@
+ALTER TABLE "vendor_themes"
+ADD COLUMN "storeStatus" TEXT NOT NULL DEFAULT 'ACTIVE',
+ADD COLUMN "storeDeletedAt" TIMESTAMP(3);

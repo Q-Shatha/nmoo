@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, ApiUser, CheckoutShippingOption, createOrder, DiscountValidationResult, getCheckoutShippingOptions, getMe, ShippingCarrier, validateDiscountCode } from "@/lib/api";
 import { getCountryLabel } from "@/lib/location-data";
-import { CartItem, clearVendorCart, getCartSummary, readCart, subscribeToCart } from "@/lib/cart";
+import { CartItem, clearVendorCart, getCartItemKey, getCartSummary, readCart, subscribeToCart } from "@/lib/cart";
 
 export function CheckoutView({ vendorId }: { vendorId?: string }) {
   const items = useCartItems(vendorId);
@@ -331,6 +331,9 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
         <h2 className="text-xl font-black text-on-surface">مراجعة الطلب</h2>
         <div className="mt-5 divide-y divide-outline-variant/15">
           {items.map((item) => (
+            <CheckoutLine key={getCartItemKey(item)} item={item} />
+          ))}
+          {false ? items.map((item) => (
             <div key={item.productId} className="flex items-center justify-between gap-4 py-4">
               <div>
                 <h3 className="font-bold text-on-surface">{item.title}</h3>
@@ -338,7 +341,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
               </div>
               <span className="font-black text-primary">{formatPrice(item.price * item.quantity)}</span>
             </div>
-          ))}
+          )) : null}
         </div>
         <div className="mt-5 grid gap-3 border-t border-outline-variant/20 pt-5">
           <SummaryRow label="المجموع الفرعي" value={formatPrice(summary.subtotal)} />
@@ -399,6 +402,29 @@ function PaymentOption({ checked, description, label, onChange }: { checked: boo
       <h3 className="font-black text-on-surface">{label}</h3>
       <p className="mt-2 text-sm leading-6 text-on-surface-variant">{description}</p>
     </label>
+  );
+}
+
+function CheckoutLine({ item }: { item: CartItem }) {
+  const selectedOptions = Object.entries(item.selectedOptions ?? {});
+
+  return (
+    <div className="flex items-center justify-between gap-4 py-4">
+      <div>
+        <h3 className="font-bold text-on-surface">{item.title}</h3>
+        {selectedOptions.length > 0 ? (
+          <div className="mt-2 flex flex-wrap justify-end gap-2">
+            {selectedOptions.map(([name, value]) => (
+              <span key={`${name}-${value}`} className="rounded-full bg-surface-container-low px-3 py-1 text-xs font-bold text-on-surface-variant">
+                {name}: {value}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <p className="mt-1 text-sm text-on-surface-variant">الكمية: {item.quantity}</p>
+      </div>
+      <span className="font-black text-primary">{formatPrice(item.price * item.quantity)}</span>
+    </div>
   );
 }
 

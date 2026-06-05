@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/api";
 import { themeToStyle } from "@/lib/theme";
-import { AddToCartButton } from "./AddToCartButton";
+import { ProductCardCartButton } from "./ProductCardCartButton";
 
 const defaultFallbackImage =
   "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=1200&q=80";
@@ -23,6 +23,7 @@ export function ProductCard({ product, fallbackImage = defaultFallbackImage, ind
   const themeStyle = product.vendor?.theme ? themeToStyle(product.vendor.theme) : undefined;
   const vendorHref = product.vendor?.storeUsername ? `/${product.vendor.storeUsername}` : product.vendor ? `/vendors/${product.vendor.id}` : `/vendors/${product.vendorId}`;
   const productHref = `${vendorHref}/products/${product.id}`;
+  const storeName = product.vendor?.theme?.storeName?.trim() || product.vendor?.name || "متجر التاجر";
 
   return (
     <article
@@ -41,7 +42,7 @@ export function ProductCard({ product, fallbackImage = defaultFallbackImage, ind
           <p className="text-xs font-bold text-primary">{product.category?.name ?? "منتج"}</p>
           {showVendor && product.vendor ? (
             <Link className="text-xs font-bold text-on-surface-variant underline-offset-4 hover:text-primary hover:underline" href={vendorHref}>
-              متجر التاجر
+              {storeName}
             </Link>
           ) : null}
         </div>
@@ -53,8 +54,10 @@ export function ProductCard({ product, fallbackImage = defaultFallbackImage, ind
         <p className="store-product-card-rating mt-2 text-sm font-bold text-on-surface">★ {rating}</p>
 
         <div className="mt-auto flex items-center justify-between gap-2 pt-4 sm:gap-3 sm:pt-5">
-          <AddToCartButton
+          <ProductCardCartButton
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:w-11"
+            fallbackPrice={Number(displayPrice)}
+            fallbackStock={product.stock}
             item={{
               productId: product.id,
               vendorId: product.vendorId,
@@ -65,6 +68,7 @@ export function ProductCard({ product, fallbackImage = defaultFallbackImage, ind
               stock: product.stock,
               quantity: 1,
             }}
+            options={product.options}
           />
           <div className="text-left">
             {hasDiscount ? <p className="text-xs text-on-surface-variant line-through sm:text-sm">{formatPrice(product.price)}</p> : null}

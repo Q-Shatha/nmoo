@@ -43,7 +43,7 @@ function AccountDetails({ user }: { user: Awaited<ReturnType<typeof getMe>> }) {
 
   return (
     <section className="panel p-6 text-right">
-      <div className="flex items-center gap-4 border-b border-outline-variant/20 pb-6">
+      <div className="flex min-w-0 items-center gap-4 border-b border-outline-variant/20 pb-6">
         <AccountAvatar user={user} />
         <span className="hidden h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-primary-container text-2xl font-black text-on-primary-container">
           {user.avatarUrl ? (
@@ -53,7 +53,7 @@ function AccountDetails({ user }: { user: Awaited<ReturnType<typeof getMe>> }) {
             user.name.trim()[0] ?? "ن"
           )}
         </span>
-        <div>
+        <div className="min-w-0 flex-1">
           <EditableName user={user} />
           <p className="mt-1 text-on-surface-variant">{formatRole(user.role)}</p>
         </div>

@@ -1,6 +1,6 @@
 import { ApiError, getMyStorePages } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable } from "../../../DashboardShell";
-import { loadVendorDashboardBase } from "../../../dashboard-data";
+import { getVendorStoreHref, loadVendorDashboardBase } from "../../../dashboard-data";
 import { StorePageForm } from "../../../StorePageForm";
 
 type PageProps = {
@@ -18,6 +18,7 @@ export default async function EditStorePagePage({ params }: PageProps) {
       description="عدّل محتوى الصفحة وحالة النشر"
       userName={data.ok ? data.userName : "التاجر"}
       logoUrl={data.ok ? data.logoUrl : null}
+      storeHref={data.ok ? data.storeHref : undefined}
     >
       {data.ok ? <StorePageForm page={data.page} /> : <DashboardUnavailable message={data.message} needsLogin={data.needsLogin} />}
     </DashboardShell>
@@ -47,6 +48,7 @@ async function loadPageData(pageId: string) {
       ok: true as const,
       userName: base.user.name,
       logoUrl: base.theme.logoUrl,
+      storeHref: getVendorStoreHref(base.user),
       page,
     };
   } catch (error) {

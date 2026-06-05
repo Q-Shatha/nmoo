@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { addCartItem, CartItem } from "@/lib/cart";
 import { CartIcon } from "./CartIcon";
 
@@ -43,6 +43,10 @@ export function AddToCartWithQuantity({
 
   const quantityWidth = isInline ? "10rem" : "100%";
   const fallbackItem = JSON.stringify({ ...item, quantity });
+
+  useEffect(() => {
+    setQuantity((current) => clampQuantity(current, maxQuantity));
+  }, [maxQuantity]);
 
   return (
     <div className={className} data-cart-form dir="rtl" style={{ width: "100%" }}>

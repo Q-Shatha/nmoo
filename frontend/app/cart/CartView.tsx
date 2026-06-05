@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   CartItem,
   clearVendorCart,
+  getCartItemKey,
   getCartSummary,
   readCart,
   removeVendorCartItem,
@@ -17,12 +18,12 @@ export function CartView({ vendorId }: { vendorId?: string }) {
   const items = useCartItems(vendorId);
   const summary = useMemo(() => getCartSummary(items), [items]);
 
-  function handleQuantityChange(productId: string, quantity: number) {
-    updateCartItemQuantity(productId, quantity, vendorId);
+  function handleQuantityChange(cartKey: string, quantity: number) {
+    updateCartItemQuantity(cartKey, quantity, vendorId);
   }
 
-  function handleRemove(productId: string) {
-    removeVendorCartItem(vendorId, productId);
+  function handleRemove(cartKey: string) {
+    removeVendorCartItem(vendorId, cartKey);
   }
 
   function handleClearCart() {
@@ -52,6 +53,9 @@ export function CartView({ vendorId }: { vendorId?: string }) {
         </div>
         <div className="divide-y divide-outline-variant/15">
           {items.map((item) => (
+            <CartLine key={getCartItemKey(item)} item={item} onQuantityChange={handleQuantityChange} onRemove={handleRemove} />
+          ))}
+          {false ? items.map((item) => (
             <article key={item.productId} className="grid grid-cols-[92px_1fr] gap-4 p-5 text-right sm:grid-cols-[120px_1fr_auto]">
               <div className="relative h-24 w-24 overflow-hidden rounded-xl sm:h-28 sm:w-28">
                 <Image className="object-cover" alt={item.title} src={item.imageUrl || "/nmoo-logo.png"} fill sizes="112px" unoptimized />
@@ -86,7 +90,7 @@ export function CartView({ vendorId }: { vendorId?: string }) {
                 </button>
               </div>
             </article>
-          ))}
+          )) : null}
         </div>
       </section>
 
@@ -105,6 +109,57 @@ function useCartItems(vendorId?: string) {
   }, [vendorId]);
 
   return items;
+}
+
+function CartLine({
+  item,
+  onQuantityChange,
+  onRemove,
+}: {
+  item: CartItem;
+  onQuantityChange: (cartKey: string, quantity: number) => void;
+  onRemove: (cartKey: string) => void;
+}) {
+  const cartKey = getCartItemKey(item);
+  const selectedOptions = Object.entries(item.selectedOptions ?? {});
+
+  return (
+    <article className="grid grid-cols-[auto_minmax(0,1fr)] gap-4 p-5 text-right sm:grid-cols-[auto_minmax(0,1fr)_auto]" dir="rtl">
+      <div className="relative col-start-1 h-24 w-24 overflow-hidden rounded-xl bg-surface-container-low sm:h-28 sm:w-28">
+        <Image className="object-cover" alt={item.title} src={item.imageUrl || "/nmoo-logo.png"} fill sizes="112px" unoptimized />
+      </div>
+      <div className="col-start-2 flex min-w-0 flex-col items-start text-right" dir="rtl">
+        <Link className="text-lg font-bold text-on-surface hover:text-primary" href={getCartItemHref(item)}>
+          {item.title}
+        </Link>
+        {selectedOptions.length > 0 ? (
+          <div className="mt-2 flex w-fit max-w-full flex-wrap justify-start gap-2 self-start">
+            {selectedOptions.map(([name, value]) => (
+              <span key={`${name}-${value}`} className="rounded-full bg-surface-container-low px-3 py-1 text-xs font-bold text-on-surface-variant">
+                {name}: {value}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <p className="mt-2 text-sm text-on-surface-variant">{item.stock} متوفر</p>
+        <p className="mt-3 text-xl font-black text-primary">{formatPrice(item.price)}</p>
+      </div>
+      <div className="col-span-2 flex items-center justify-between gap-4 sm:col-span-1 sm:col-start-3 sm:flex-col sm:items-end">
+        <div className="flex h-11 items-center rounded-xl border border-outline-variant bg-white">
+          <button className="h-11 w-11 font-black text-primary" onClick={() => onQuantityChange(cartKey, item.quantity - 1)} type="button">
+            -
+          </button>
+          <span className="min-w-10 text-center font-bold">{item.quantity}</span>
+          <button className="h-11 w-11 font-black text-primary" onClick={() => onQuantityChange(cartKey, item.quantity + 1)} type="button">
+            +
+          </button>
+        </div>
+        <button className="text-sm font-bold text-error hover:underline" onClick={() => onRemove(cartKey)} type="button">
+          حذف
+        </button>
+      </div>
+    </article>
+  );
 }
 
 function CartSummary({ subtotal, count, vendorId }: { subtotal: number; count: number; vendorId?: string }) {

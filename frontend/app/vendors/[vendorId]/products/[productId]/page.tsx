@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
@@ -10,6 +9,8 @@ import { ProductCard } from "../../../../components/ProductCard";
 import { PublicFooter } from "../../../../components/PublicFooter";
 import { PublicHeader } from "../../../../components/PublicHeader";
 import { ReviewsCarousel } from "../../ReviewsCarousel";
+import { ProductGallery } from "./ProductGallery";
+import { ProductPurchasePanel } from "./ProductPurchasePanel";
 
 const fallbackProductImage =
   "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=1200&q=80";
@@ -33,15 +34,16 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
   const profileHref = product.vendor?.storeUsername ? `/${product.vendor.storeUsername}` : `/vendors/${vendorId}`;
   const storeHref = `${profileHref}/storefront`;
   const template = getStoreTemplate(theme?.templateId);
+  const storeName = theme?.storeName?.trim() || product.vendor?.name || "متجر التاجر";
 
   return (
     <div className={`min-h-screen text-on-surface ${template.className}`} dir="rtl" style={theme ? { ...themeToStyle(theme), backgroundColor: "var(--color-background)" } : undefined}>
-      <PublicHeader active="store" storeHref={storeHref} profileHref={profileHref} vendorId={product.vendorId} storeLogoUrl={theme?.logoUrl} />
+      <PublicHeader active="store" storeHref={storeHref} profileHref={profileHref} vendorId={product.vendorId} storeLogoUrl={theme?.logoUrl} storeName={storeName} />
 
       <main className="store-product-page app-container pt-8" style={theme ? { backgroundColor: "var(--color-background)" } : undefined}>
         <nav className="mb-8 flex flex-wrap gap-2 text-sm text-on-surface-variant">
           <Link className="muted-link" href={storeHref}>
-            متجر {product.vendor?.name ?? "التاجر"}
+            {storeName}
           </Link>
           <span>/</span>
           <Link className="muted-link" href={`${storeHref}${product.category?.slug ? `?category=${product.category.slug}` : ""}#products`}>
@@ -52,20 +54,34 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
         </nav>
 
         <section className={`store-product-detail store-product-detail-${template.id} grid grid-cols-1 gap-12 lg:grid-cols-2`}>
-          <div className="store-product-info order-2 text-right lg:order-1">
+          <div className="store-product-info has-interactive-purchase order-2 text-right lg:order-1">
             <span className="chip mb-4 px-4 py-2 text-sm">{product.category?.name ?? "منتج"}</span>
-            <h1 className="section-title text-4xl md:text-5xl">{product.title}</h1>
+            <h1 className="section-title text-2xl leading-tight md:text-3xl">{product.title}</h1>
+            <ProductPurchasePanel
+              basePrice={product.price}
+              description={product.description}
+              displayPrice={displayPrice}
+              hasDiscount={hasDiscount}
+              imageUrl={images[0]}
+              options={product.options}
+              productId={product.id}
+              productStock={product.stock}
+              storeName={storeName}
+              title={product.title}
+              vendorId={product.vendorId}
+              vendorUsername={product.vendor?.storeUsername}
+            />
 
-            <div className="mt-5 flex flex-wrap items-center justify-end gap-3">
+            <div className="mt-5 flex flex-wrap items-center justify-start gap-3">
               <span className="rounded-full bg-secondary-container px-4 py-2 text-sm font-bold text-on-secondary-container">
                 {product.stock > 0 ? `${product.stock} متوفر` : "غير متوفر"}
               </span>
               <span className="rounded-full border border-outline-variant/40 px-4 py-2 text-sm font-bold text-on-surface-variant">
-                {product.vendor?.name ?? "متجر نمو"}
+                {storeName}
               </span>
             </div>
 
-            <div className="mt-7 flex flex-wrap items-center justify-end gap-4">
+            <div className="mt-7 flex flex-wrap items-center justify-start gap-4">
               {hasDiscount ? <span className="text-xl font-bold text-on-surface-variant line-through">{formatPrice(product.price)}</span> : null}
               <span className="text-4xl font-black text-primary">{formatPrice(displayPrice)}</span>
             </div>
@@ -84,8 +100,10 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
                       {option.values.map((value, index) => (
                         <label key={`${option.id}-${value}`} className="cursor-pointer">
                           <input className="peer sr-only" defaultChecked={index === 0} name={`option-${option.id}`} type="radio" value={value} />
-                          <span className="inline-flex min-h-10 items-center rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-2 font-bold text-on-surface-variant transition-colors peer-checked:border-primary peer-checked:bg-primary-container/35 peer-checked:text-primary">
-                            {value}
+                          <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-2 font-bold text-on-surface-variant transition-colors peer-checked:border-primary peer-checked:bg-primary-container/35 peer-checked:text-primary">
+                            <span>{value}</span>
+                            <span className="text-xs opacity-75">{option.valueQuantities?.[value] ?? 0} متوفر</span>
+                            <span className="text-xs opacity-75">{formatPrice(String(option.valuePrices?.[value] ?? displayPrice))}</span>
                           </span>
                         </label>
                       ))}
@@ -102,7 +120,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
                 label="التاجر"
                 value={
                   <Link className="text-primary underline-offset-4 hover:underline" href={storeHref}>
-                    {product.vendor?.name ?? "متجر التاجر"}
+                    {storeName}
                   </Link>
                 }
               />
@@ -128,18 +146,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
             </div>
           </div>
 
-          <div className="store-product-gallery order-1 lg:order-2">
-            <div className="store-product-main-image panel relative aspect-[3/4] overflow-hidden">
-              <Image className="object-cover" alt={product.title} src={images[0]} fill priority sizes="(min-width: 1024px) 46vw, 92vw" unoptimized />
-            </div>
-            <div className="store-product-thumbnails mt-4 grid grid-cols-4 gap-3">
-              {images.slice(0, 4).map((src, index) => (
-                <div key={`${src}-${index}`} className={`relative aspect-square overflow-hidden rounded-xl border-2 ${index === 0 ? "border-primary" : "border-transparent"}`}>
-                  <Image className="object-cover" alt={`${product.title} ${index + 1}`} src={src} fill sizes="25vw" unoptimized />
-                </div>
-              ))}
-            </div>
-          </div>
+          <ProductGallery images={images} title={product.title} />
         </section>
 
         <section id="reviews" className="store-product-reviews mt-16 rounded-[28px] border border-outline-variant/25 bg-surface-container-lowest px-5 py-10 shadow-sm md:px-12 md:py-12">
@@ -232,7 +239,8 @@ async function loadProductTheme(product: Product): Promise<VendorTheme | null> {
 
 function getProductImages(product: Product) {
   const images = [product.imageUrl, ...(product.images?.map((image) => image.url) ?? [])].filter(Boolean) as string[];
-  return images.length > 0 ? images : [fallbackProductImage];
+  const uniqueImages = Array.from(new Set(images));
+  return uniqueImages.length > 0 ? uniqueImages : [fallbackProductImage];
 }
 
 function InfoRow({ label, value }: { label: string; value: ReactNode }) {

@@ -1,6 +1,6 @@
 import { ApiError, getMyShippingMethods } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable } from "../DashboardShell";
-import { loadVendorDashboardBase } from "../dashboard-data";
+import { getVendorStoreHref, loadVendorDashboardBase } from "../dashboard-data";
 import { ShippingMethodManager } from "../ShippingMethodManager";
 
 export default async function DashboardShippingPage() {
@@ -13,6 +13,7 @@ export default async function DashboardShippingPage() {
       description="إدارة شركات الشحن المتاحة لمتجرك"
       userName={data.ok ? data.userName : "التاجر"}
       logoUrl={data.ok ? data.logoUrl : null}
+      storeHref={data.ok ? data.storeHref : undefined}
     >
       {data.ok ? <ShippingMethodManager initialMethods={data.shippingMethods} /> : <DashboardUnavailable message={data.message} needsLogin={data.needsLogin} />}
     </DashboardShell>
@@ -31,6 +32,7 @@ async function loadPageData() {
       ok: true as const,
       userName: base.user.name,
       logoUrl: base.theme.logoUrl,
+      storeHref: getVendorStoreHref(base.user),
       shippingMethods: await getMyShippingMethods(base.token),
     };
   } catch (error) {

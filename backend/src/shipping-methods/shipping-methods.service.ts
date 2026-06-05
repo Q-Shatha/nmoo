@@ -205,6 +205,18 @@ export class ShippingMethodsService {
   }
 
   async checkVendorCoverage(vendorId: string, destination: ShippingDestination = {}) {
+    const activeVendor = await this.prisma.user.findFirst({
+      where: {
+        id: vendorId,
+        OR: [{ theme: null }, { theme: { storeStatus: "ACTIVE" } }],
+      },
+      select: { id: true },
+    });
+
+    if (!activeVendor) {
+      return { supported: false };
+    }
+
     const methods = await this.prisma.vendorShippingMethod.findMany({
       where: {
         vendorId,
@@ -225,6 +237,9 @@ export class ShippingMethodsService {
           in: productIds,
         },
         status: ProductStatus.ACTIVE,
+        vendor: {
+          OR: [{ theme: null }, { theme: { storeStatus: "ACTIVE" } }],
+        },
       },
     });
 

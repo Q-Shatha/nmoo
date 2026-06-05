@@ -16,6 +16,11 @@ export class UpdateThemeDto {
   @Matches(hexColorPattern, { message: "textColor must be a valid hex color like #1e293b" })
   textColor!: string;
 
+  @ApiProperty({ example: "متجر نمو", required: false })
+  @IsOptional()
+  @IsString()
+  storeName?: string;
+
   @ApiProperty({ example: "https://cdn.example.com/store-logo.png", required: false })
   @IsOptional()
   @IsString()

@@ -10,6 +10,7 @@ export type ProductStatus = "DRAFT" | "ACTIVE" | "ARCHIVED";
 export type OrderStatus = "PENDING" | "PAID" | "PROCESSING" | "SHIPPED" | "COMPLETED" | "CANCELLED";
 export type DiscountType = "FIXED" | "PERCENTAGE";
 export type ShippingCarrier = string;
+export type StoreStatus = "ACTIVE" | "PAUSED" | "DELETED";
 
 export type ApiUser = {
   id: string;
@@ -62,6 +63,8 @@ export type ProductOption = {
   productId: string;
   name: string;
   values: string[];
+  valueQuantities?: Record<string, number>;
+  valuePrices?: Record<string, number>;
   sortOrder: number;
 };
 
@@ -81,6 +84,7 @@ export type Product = {
   stock: number;
   status: ProductStatus;
   imageUrl?: string | null;
+  archivedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   category?: Category | null;
@@ -182,6 +186,8 @@ export type ProductInput = {
   options?: Array<{
     name: string;
     values: string[];
+    valueQuantities?: Record<string, number>;
+    valuePrices?: Record<string, number>;
   }>;
   status?: ProductStatus;
 };
@@ -290,12 +296,15 @@ export type VendorTheme = {
   primaryColor: string;
   secondaryColor: string;
   textColor: string;
+  storeName?: string | null;
   logoUrl?: string | null;
   bannerUrl?: string | null;
   storefrontImageUrl?: string | null;
   storefrontTitle?: string | null;
   storefrontDescription?: string | null;
   templateId?: string | null;
+  storeStatus?: StoreStatus;
+  storeDeletedAt?: string | null;
   cashOnDeliveryEnabled?: boolean;
   whatsappUrl?: string | null;
   instagramUrl?: string | null;
@@ -314,6 +323,7 @@ export type ThemeInput = {
   primaryColor: string;
   secondaryColor: string;
   textColor: string;
+  storeName?: string;
   logoUrl?: string;
   bannerUrl?: string;
   storefrontImageUrl?: string;
@@ -553,6 +563,21 @@ export function updateMyStoreUsername(storeUsername: string, token: string) {
   });
 }
 
+export function updateMyStoreStatus(status: Exclude<StoreStatus, "DELETED">, token: string) {
+  return apiRequest<VendorTheme>("/users/me/store-status", {
+    method: "PATCH",
+    token,
+    body: { status },
+  });
+}
+
+export function deleteMyStore(token: string) {
+  return apiRequest<{ deleted: boolean }>("/users/me/store", {
+    method: "DELETE",
+    token,
+  });
+}
+
 export function getCategories() {
   return apiRequest<Category[]>("/categories", {
     cache: "no-store",
@@ -571,6 +596,21 @@ export function createCategory(input: { name: string; slug?: string }, token: st
     method: "POST",
     token,
     body: input,
+  });
+}
+
+export function updateCategory(id: string, input: { name?: string; slug?: string }, token: string) {
+  return apiRequest<Category>(`/categories/${id}`, {
+    method: "PATCH",
+    token,
+    body: input,
+  });
+}
+
+export function deleteCategory(id: string, token: string) {
+  return apiRequest<Category>(`/categories/${id}`, {
+    method: "DELETE",
+    token,
   });
 }
 
@@ -593,6 +633,13 @@ export function updateProduct(id: string, input: Partial<ProductInput>, token: s
 export function deleteProduct(id: string, token: string) {
   return apiRequest<Product>(`/products/${id}`, {
     method: "DELETE",
+    token,
+  });
+}
+
+export function restoreProduct(id: string, token: string) {
+  return apiRequest<Product>(`/products/${id}/restore`, {
+    method: "PATCH",
     token,
   });
 }

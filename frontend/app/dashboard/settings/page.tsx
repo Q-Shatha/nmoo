@@ -1,7 +1,8 @@
 import { ApiError, getMyStorePages } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable } from "../DashboardShell";
-import { loadVendorDashboardBase } from "../dashboard-data";
+import { getVendorStoreHref, loadVendorDashboardBase } from "../dashboard-data";
 import { StorePageManager } from "../StorePageManager";
+import { StoreLifecycleManager } from "../StoreLifecycleManager";
 import { StoreUsernameManager } from "../StoreUsernameManager";
 import { ThemeManager } from "../ThemeManager";
 
@@ -15,12 +16,14 @@ export default async function DashboardSettingsPage() {
       description="رابط المتجر، الهوية البصرية، وصفحات المتجر"
       userName={data.ok ? data.user.name : "التاجر"}
       logoUrl={data.ok ? data.theme.logoUrl : null}
+      storeHref={data.ok ? getVendorStoreHref(data.user) : undefined}
     >
       {data.ok ? (
         <>
           <StoreUsernameManager initialUsername={data.user.storeUsername} />
           <ThemeManager initialTheme={data.theme} />
           <StorePageManager initialPages={data.storePages} />
+          <StoreLifecycleManager initialStatus={data.theme.storeStatus} />
         </>
       ) : (
         <DashboardUnavailable message={data.message} needsLogin={data.needsLogin} />

@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, createShippingMethod, ShippingDeliveryLocation, ShippingMethod, updateShippingMethod } from "@/lib/api";
 import { countries, saRegions } from "@/lib/location-data";
+import { DashboardAccordion } from "./DashboardAccordion";
 
 type Draft = {
   code: string;
@@ -129,12 +130,14 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
           <input className="input-field px-4 py-3 text-right" value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
         </Field>
 
-        <div className="grid gap-3 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4 md:grid-cols-2">
+        <DashboardAccordion title="خيارات الشركة والدفع" defaultOpen>
+        <div className="grid gap-3 md:grid-cols-2">
           <Toggle label="مفعلة للعملاء" checked={draft.enabled} onChange={(enabled) => setDraft({ ...draft, enabled })} />
           <Toggle label="توفير الدفع عند الاستلام لهذه الشركة" checked={draft.cashOnDeliveryEnabled} onChange={(cashOnDeliveryEnabled) => setDraft({ ...draft, cashOnDeliveryEnabled })} />
         </div>
+        </DashboardAccordion>
 
-        <section className="grid gap-4 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
+        <DashboardAccordion title="مناطق التوصيل المتاحة" description="اختر الدول والمناطق والمدن التي تدعمها شركة الشحن.">
           <div>
             <h5 className="font-black text-on-surface">مناطق التوصيل المتاحة</h5>
             <p className="mt-1 text-sm leading-6 text-on-surface-variant">اترك المنطقة فارغة لتغطية الدولة كاملة، واترك المدينة فارغة لتغطية المنطقة كاملة.</p>
@@ -154,7 +157,7 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
           ) : (
             <p className="rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface-variant">بدون تحديد مناطق، ستكون الشركة متاحة لكل المواقع.</p>
           )}
-        </section>
+        </DashboardAccordion>
 
         {message ? <p className="rounded-xl bg-error-container/60 px-4 py-3 text-sm font-bold text-error">{message}</p> : null}
 

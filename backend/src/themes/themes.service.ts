@@ -9,12 +9,15 @@ const defaultTheme = {
   primaryColor: "#884a70",
   secondaryColor: "#1e293b",
   textColor: "#1e293b",
+  storeName: null,
   logoUrl: null,
   bannerUrl: null,
   storefrontImageUrl: null,
   storefrontTitle: null,
   storefrontDescription: null,
   templateId: "classic",
+  storeStatus: "ACTIVE",
+  storeDeletedAt: null,
   cashOnDeliveryEnabled: false,
   whatsappUrl: null,
   instagramUrl: null,
@@ -37,6 +40,9 @@ export class ThemesService {
 
   async findActive() {
     const theme = await this.prisma.vendorTheme.findFirst({
+      where: {
+        storeStatus: "ACTIVE",
+      },
       orderBy: { updatedAt: "desc" },
       include: {
         vendor: {
@@ -93,6 +99,7 @@ export class ThemesService {
         primaryColor: dto.primaryColor,
         secondaryColor: dto.secondaryColor,
         textColor: dto.textColor,
+        storeName: normalizeOptionalText(dto.storeName),
         logoUrl: normalizeOptionalUrl(dto.logoUrl),
         bannerUrl: normalizeOptionalUrl(dto.bannerUrl),
         storefrontImageUrl: normalizeOptionalUrl(dto.storefrontImageUrl),
@@ -116,6 +123,7 @@ export class ThemesService {
         primaryColor: dto.primaryColor,
         secondaryColor: dto.secondaryColor,
         textColor: dto.textColor,
+        storeName: normalizeOptionalText(dto.storeName),
         logoUrl: normalizeOptionalUrl(dto.logoUrl),
         bannerUrl: normalizeOptionalUrl(dto.bannerUrl),
         storefrontImageUrl: normalizeOptionalUrl(dto.storefrontImageUrl),
@@ -158,12 +166,15 @@ export class ThemesService {
       primaryColor,
       secondaryColor,
       textColor,
+      storeName: theme.storeName ?? defaultTheme.storeName,
       logoUrl,
       bannerUrl,
       storefrontImageUrl,
       storefrontTitle: theme.storefrontTitle ?? defaultTheme.storefrontTitle,
       storefrontDescription: theme.storefrontDescription ?? defaultTheme.storefrontDescription,
       templateId: normalizeTemplateId(theme.templateId),
+      storeStatus: normalizeStoreStatus(theme.storeStatus),
+      storeDeletedAt: theme.storeDeletedAt ?? defaultTheme.storeDeletedAt,
       cashOnDeliveryEnabled: theme.cashOnDeliveryEnabled ?? defaultTheme.cashOnDeliveryEnabled,
       whatsappUrl: theme.whatsappUrl ?? defaultTheme.whatsappUrl,
       instagramUrl: theme.instagramUrl ?? defaultTheme.instagramUrl,
@@ -219,6 +230,10 @@ function normalizeOptionalText(value: string | undefined) {
 
 function normalizeTemplateId(value: string | null | undefined) {
   return value === "boutique" || value === "gallery" || value === "minimal" || value === "market" ? value : "classic";
+}
+
+function normalizeStoreStatus(value: string | null | undefined) {
+  return value === "PAUSED" || value === "DELETED" ? value : "ACTIVE";
 }
 
 function readableTextColor(background: string) {

@@ -6,6 +6,7 @@ let cachedCartText = "";
 let cachedCartItems: CartItem[] = [];
 
 export type CartItem = {
+  cartKey?: string;
   productId: string;
   vendorId?: string;
   vendorUsername?: string | null;
@@ -14,6 +15,7 @@ export type CartItem = {
   imageUrl?: string | null;
   stock: number;
   quantity: number;
+  selectedOptions?: Record<string, string>;
 };
 
 export function readCart(vendorId?: string) {
@@ -54,30 +56,34 @@ export function writeCart(items: CartItem[]) {
 
 export function addCartItem(item: CartItem) {
   const items = readAllCartItems();
-  const existingItem = items.find((cartItem) => cartItem.vendorId === item.vendorId && cartItem.productId === item.productId);
+  const normalizedItem = {
+    ...item,
+    cartKey: getCartItemKey(item),
+  };
+  const existingItem = items.find((cartItem) => getCartItemKey(cartItem) === normalizedItem.cartKey);
 
   if (existingItem) {
-    existingItem.quantity = Math.min(existingItem.stock, existingItem.quantity + item.quantity);
+    existingItem.quantity = Math.min(existingItem.stock, existingItem.quantity + normalizedItem.quantity);
     writeCart(items);
     return existingItem.quantity;
   }
 
-  writeCart([...items, item]);
-  return item.quantity;
+  writeCart([...items, normalizedItem]);
+  return normalizedItem.quantity;
 }
 
 export function removeCartItem(productId: string) {
-  writeCart(readAllCartItems().filter((item) => item.productId !== productId));
+  writeCart(readAllCartItems().filter((item) => getCartItemKey(item) !== productId && item.productId !== productId));
 }
 
-export function removeVendorCartItem(vendorId: string | undefined, productId: string) {
-  writeCart(readAllCartItems().filter((item) => item.productId !== productId || (vendorId && item.vendorId !== vendorId)));
+export function removeVendorCartItem(vendorId: string | undefined, cartKey: string) {
+  writeCart(readAllCartItems().filter((item) => getCartItemKey(item) !== cartKey || (vendorId && item.vendorId !== vendorId)));
 }
 
-export function updateCartItemQuantity(productId: string, quantity: number, vendorId?: string) {
+export function updateCartItemQuantity(cartKey: string, quantity: number, vendorId?: string) {
   const items = readAllCartItems()
     .map((item) =>
-      item.productId === productId && (!vendorId || item.vendorId === vendorId)
+      getCartItemKey(item) === cartKey && (!vendorId || item.vendorId === vendorId)
         ? {
             ...item,
             quantity: Math.max(1, Math.min(item.stock, quantity)),
@@ -118,4 +124,18 @@ function readAllCartItems() {
 
 function filterCartItems(items: CartItem[], vendorId?: string) {
   return vendorId ? items.filter((item) => item.vendorId === vendorId) : items;
+}
+
+export function getCartItemKey(item: Pick<CartItem, "cartKey" | "productId" | "vendorId" | "selectedOptions">) {
+  if (item.cartKey) {
+    return item.cartKey;
+  }
+
+  const optionKey = Object.entries(item.selectedOptions ?? {})
+    .filter(([, value]) => Boolean(value))
+    .sort(([firstKey], [secondKey]) => firstKey.localeCompare(secondKey))
+    .map(([key, value]) => `${key}:${value}`)
+    .join("|");
+
+  return [item.vendorId ?? "", item.productId, optionKey].join("::");
 }

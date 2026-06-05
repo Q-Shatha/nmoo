@@ -1,10 +1,11 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { Prisma, UserRole } from "@prisma/client";
+import { Prisma, ProductStatus, UserRole } from "@prisma/client";
 import { ProductAssetsService } from "../products/product-assets.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { UpdateAddressDto } from "./dto/update-address.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { UpdateStoreUsernameDto } from "./dto/update-store-username.dto";
+import { UpdateStoreStatusDto } from "./dto/update-store-status.dto";
 
 const safeUserSelect = Prisma.validator<Prisma.UserSelect>()({
   id: true,
@@ -69,6 +70,7 @@ export class UsersService {
         role: {
           in: [UserRole.VENDOR, UserRole.ADMIN],
         },
+        OR: [{ theme: null }, { theme: { storeStatus: "ACTIVE" } }],
       },
       select: safeUserSelect,
     });
@@ -87,6 +89,7 @@ export class UsersService {
         role: {
           in: [UserRole.VENDOR, UserRole.ADMIN],
         },
+        OR: [{ theme: null }, { theme: { storeStatus: "ACTIVE" } }],
       },
       select: safeUserSelect,
     });
@@ -134,6 +137,66 @@ export class UsersService {
       data: { storeUsername: availability.storeUsername },
       select: safeUserSelect,
     });
+  }
+
+  async updateStoreStatus(id: string, data: UpdateStoreStatusDto) {
+    await this.ensureVendorCanManageStore(id);
+
+    return this.prisma.vendorTheme.upsert({
+      where: { vendorId: id },
+      update: {
+        storeStatus: data.status,
+        storeDeletedAt: null,
+      },
+      create: {
+        vendorId: id,
+        storeStatus: data.status,
+      },
+    });
+  }
+
+  async deleteStore(id: string) {
+    await this.ensureVendorCanManageStore(id);
+
+    await this.prisma.$transaction([
+      this.prisma.product.updateMany({
+        where: { vendorId: id },
+        data: { status: ProductStatus.ARCHIVED },
+      }),
+      this.prisma.vendorShippingMethod.updateMany({
+        where: { vendorId: id },
+        data: { enabled: false },
+      }),
+      this.prisma.discountCode.updateMany({
+        where: { vendorId: id },
+        data: { enabled: false },
+      }),
+      this.prisma.storePage.updateMany({
+        where: { vendorId: id },
+        data: { published: false },
+      }),
+      this.prisma.vendorTheme.upsert({
+        where: { vendorId: id },
+        update: {
+          storeStatus: "DELETED",
+          storeDeletedAt: new Date(),
+        },
+        create: {
+          vendorId: id,
+          storeStatus: "DELETED",
+          storeDeletedAt: new Date(),
+        },
+      }),
+      this.prisma.user.update({
+        where: { id },
+        data: {
+          role: UserRole.BUYER,
+          storeUsername: null,
+        },
+      }),
+    ]);
+
+    return { deleted: true };
   }
 
   updateAddress(id: string, data: UpdateAddressDto) {
@@ -186,6 +249,21 @@ export class UsersService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+  }
+
+  private async ensureVendorCanManageStore(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true, theme: { select: { storeStatus: true } } },
+    });
+
+    if (!user || (user.role !== UserRole.VENDOR && user.role !== UserRole.ADMIN)) {
+      throw new ForbiddenException("Only vendors can manage a store");
+    }
+
+    if (user.theme?.storeStatus === "DELETED") {
+      throw new ForbiddenException("Store has been deleted");
+    }
   }
 }
 

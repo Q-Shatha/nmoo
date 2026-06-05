@@ -87,6 +87,15 @@ export class ProductsController {
     return this.productAssetsService.uploadProductImage(file, user.id);
   }
 
+  @Patch(":id/restore")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.VENDOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Restore an archived product as its owner or an admin" })
+  restore(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.productsService.restore(id, user);
+  }
+
   @Patch(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.VENDOR, UserRole.ADMIN)
