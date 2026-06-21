@@ -63,6 +63,7 @@ model User {
   discountUses    DiscountRedemption[]
   subscription    VendorSubscription?
   reviews         Review[]
+  cartEvents      CartEvent[]
 
   @@index([role])
   @@map("users")
@@ -92,7 +93,11 @@ model VendorShippingMethod {
   eta         String?
   fee         Decimal  @db.Decimal(10, 2)
   enabled     Boolean  @default(true)
-  cashOnDeliveryEnabled Boolean @default(false)
+  cashOnDeliveryEnabled  Boolean  @default(false)
+  freeShippingEnabled    Boolean  @default(false)
+  freeShippingMinimum    Decimal? @db.Decimal(10, 2)
+  isPickup               Boolean  @default(false)
+  pickupAddress          String?
   excludedRegions String[] @default([])
   unavailableLocations Json @default("[]")
   deliveryLocations Json @default("[]")
@@ -174,7 +179,8 @@ model DiscountCode {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  vendor      User                 @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendor      User                    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  products    DiscountCodeProduct[]
   redemptions DiscountRedemption[]
 
   @@unique([vendorId, code])
@@ -182,6 +188,18 @@ model DiscountCode {
   @@index([code])
   @@index([enabled])
   @@map("discount_codes")
+}
+
+model DiscountCodeProduct {
+  discountCodeId String
+  productId      String
+
+  discountCode DiscountCode @relation(fields: [discountCodeId], references: [id], onDelete: Cascade)
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([discountCodeId, productId])
+  @@index([productId])
+  @@map("discount_code_products")
 }
 
 model Category {
@@ -222,9 +240,11 @@ model Product {
   category   Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   images     ProductImage[]
   options    ProductOption[]
-  addons     ProductAddon[]
-  orderItems OrderItem[]
-  reviews    Review[]
+  addons        ProductAddon[]
+  orderItems    OrderItem[]
+  reviews              Review[]
+  discountCodeProducts DiscountCodeProduct[]
+  cartEvents           CartEvent[]
 
   @@index([vendorId])
   @@index([categoryId])
@@ -332,14 +352,21 @@ model OrderItem {
   @@map("order_items")
 }
 
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Review {
-  id        String   @id @default(uuid())
+  id        String       @id @default(uuid())
   productId String
   userId    String
   rating    Int
   comment   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    ReviewStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -347,5 +374,25 @@ model Review {
   @@unique([productId, userId])
   @@index([productId])
   @@index([userId])
+  @@index([status])
   @@map("reviews")
+}
+
+
+model CartEvent {
+  id        String   @id @default(uuid())
+  buyerId   String
+  productId String
+  vendorId  String
+  quantity  Int      @default(1)
+  addedAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  buyer   User    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([buyerId, productId])
+  @@index([vendorId])
+  @@index([buyerId])
+  @@map("cart_events")
 }

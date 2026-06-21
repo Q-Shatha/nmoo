@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Edit(*schema.prisma)",
+            "shell": "powershell",
+            "command": "Set-Location 'E:\\coding projects\\matjer\\backend'; npx prisma migrate dev --name auto; npx prisma generate",
+            "timeout": 60,
+            "statusMessage": "Running prisma migrate & generate..."
+          }
+        ]
+      }
+    ]
+  }
+}

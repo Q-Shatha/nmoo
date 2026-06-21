@@ -36,7 +36,25 @@ export default async function DashboardOrderPage({ params }: DashboardOrderPageP
             </h1>
             <p className="mt-1 text-sm text-on-surface-variant">آخر تحديث: {formatDate(order.updatedAt)}</p>
           </div>
-          <span className={`w-fit rounded-full px-4 py-2 text-sm font-bold ${statusClass(order.status)}`}>{formatOrderStatus(order.status)}</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className={`w-fit rounded-full px-4 py-2 text-sm font-bold ${statusClass(order.status)}`}>{formatOrderStatus(order.status)}</span>
+            <a
+              href={`/dashboard/orders/${order.id}/invoice`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-2xl border border-outline-variant bg-surface px-4 py-2 text-sm font-bold text-on-surface hover:bg-surface-container-low"
+            >
+              🧾 طباعة الفاتورة
+            </a>
+            <a
+              href={`/dashboard/orders/${order.id}/label`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-2xl border border-outline-variant bg-surface px-4 py-2 text-sm font-bold text-on-surface hover:bg-surface-container-low"
+            >
+              📦 طباعة البوليصة
+            </a>
+          </div>
         </div>
 
         <section className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">

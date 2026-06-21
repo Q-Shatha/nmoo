@@ -103,12 +103,15 @@ export type Product = {
   addons?: ProductAddon[];
 };
 
+export type ReviewStatus = "PENDING" | "APPROVED" | "REJECTED";
+
 export type Review = {
   id: string;
   productId: string;
   userId: string;
   rating: number;
   comment?: string | null;
+  status: ReviewStatus;
   createdAt: string;
   updatedAt: string;
   user?: Pick<ApiUser, "id" | "name" | "avatarUrl" | "city">;
@@ -231,6 +234,10 @@ export type ShippingMethod = {
   fee: string;
   enabled: boolean;
   cashOnDeliveryEnabled: boolean;
+  freeShippingEnabled: boolean;
+  freeShippingMinimum?: string | null;
+  isPickup: boolean;
+  pickupAddress?: string | null;
   excludedRegions: string[];
   unavailableLocations: ShippingUnavailableLocation[];
   deliveryLocations: ShippingDeliveryLocation[];
@@ -245,6 +252,8 @@ export type CheckoutShippingOption = {
   eta?: string | null;
   fee: string;
   cashOnDeliveryEnabled: boolean;
+  isPickup: boolean;
+  pickupAddress?: string | null;
   vendorCount: number;
 };
 
@@ -256,6 +265,10 @@ export type ShippingMethodInput = {
   eta?: string;
   enabled?: boolean;
   cashOnDeliveryEnabled?: boolean;
+  freeShippingEnabled?: boolean;
+  freeShippingMinimum?: number | null;
+  isPickup?: boolean;
+  pickupAddress?: string | null;
   excludedRegions?: string[];
   unavailableLocations?: ShippingUnavailableLocation[];
   deliveryLocations?: ShippingDeliveryLocation[];
@@ -371,6 +384,7 @@ export type DiscountCode = {
   maxUsesPerUser?: number | null;
   startsAt?: string | null;
   expiresAt?: string | null;
+  products?: { product: { id: string; title: string } }[];
   createdAt: string;
   updatedAt: string;
   _count?: {
@@ -388,6 +402,7 @@ export type DiscountCodeInput = {
   maxUsesPerUser?: number;
   startsAt?: string;
   expiresAt?: string;
+  productIds?: string[];
 };
 
 export type DiscountValidationResult = {
@@ -421,7 +436,7 @@ export type OrderItem = {
     name: string;
     price: string;
   }>;
-  product?: Product;
+  product?: Product & { vendor?: Pick<ApiUser, "id" | "name" | "email" | "role" | "storeUsername" | "phoneNumber"> };
 };
 
 export type Order = {
@@ -552,6 +567,21 @@ export function createReview(input: ReviewInput, token: string) {
     method: "POST",
     token,
     body: input,
+  });
+}
+
+export function getDashboardReviews(token: string) {
+  return apiRequest<Review[]>("/reviews/dashboard/mine", {
+    token,
+    cache: "no-store",
+  });
+}
+
+export function updateReviewStatus(reviewId: string, status: ReviewStatus, token: string) {
+  return apiRequest<Review>(`/reviews/${reviewId}/status`, {
+    method: "PATCH",
+    token,
+    body: { status },
   });
 }
 
@@ -986,4 +1016,14 @@ function buildUrlPath(path: string, query: ProductQuery) {
 
   const queryString = params.toString();
   return queryString ? `${path}?${queryString}` : path;
+}
+
+export type AbandonedCartBuyer = {
+  buyer: { id: string; name: string; email: string; phoneNumber?: string | null; country?: string | null; city?: string | null };
+  items: Array<{ product: { id: string; title: string; price: string; imageUrl?: string | null }; quantity: number; addedAt: string }>;
+  lastActive: string;
+};
+
+export function getAbandonedCarts(token: string) {
+  return apiRequest<AbandonedCartBuyer[]>("/cart/abandoned", { token, cache: "no-store" });
 }

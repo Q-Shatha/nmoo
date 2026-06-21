@@ -31,16 +31,11 @@ export class DiscountsService {
 
   findMine(user: AuthenticatedUser) {
     return this.prisma.discountCode.findMany({
-      where: {
-        vendorId: user.id,
-      },
+      where: { vendorId: user.id },
       orderBy: [{ enabled: "desc" }, { createdAt: "desc" }],
       include: {
-        _count: {
-          select: {
-            redemptions: true,
-          },
-        },
+        products: { include: { product: { select: { id: true, title: true } } } },
+        _count: { select: { redemptions: true } },
       },
     });
   }
@@ -61,13 +56,13 @@ export class DiscountsService {
           maxUsesPerUser: dto.maxUsesPerUser,
           startsAt: this.optionalDate(dto.startsAt),
           expiresAt: this.optionalDate(dto.expiresAt),
+          products: dto.productIds?.length
+            ? { create: dto.productIds.map((productId) => ({ productId })) }
+            : undefined,
         },
         include: {
-          _count: {
-            select: {
-              redemptions: true,
-            },
-          },
+          products: { include: { product: { select: { id: true, title: true } } } },
+          _count: { select: { redemptions: true } },
         },
       });
     } catch (error) {
@@ -89,40 +84,21 @@ export class DiscountsService {
 
     const data: Prisma.DiscountCodeUpdateInput = {};
 
-    if (dto.code !== undefined) {
-      data.code = this.normalizeCode(dto.code);
-    }
+    if (dto.code !== undefined) data.code = this.normalizeCode(dto.code);
+    if (dto.description !== undefined) data.description = this.optionalText(dto.description);
+    if (dto.type !== undefined) data.type = dto.type;
+    if (dto.value !== undefined) data.value = new Prisma.Decimal(dto.value);
+    if (dto.enabled !== undefined) data.enabled = dto.enabled;
+    if (dto.maxUses !== undefined) data.maxUses = dto.maxUses;
+    if (dto.maxUsesPerUser !== undefined) data.maxUsesPerUser = dto.maxUsesPerUser;
+    if (dto.startsAt !== undefined) data.startsAt = this.optionalDate(dto.startsAt);
+    if (dto.expiresAt !== undefined) data.expiresAt = this.optionalDate(dto.expiresAt);
 
-    if (dto.description !== undefined) {
-      data.description = this.optionalText(dto.description);
-    }
-
-    if (dto.type !== undefined) {
-      data.type = dto.type;
-    }
-
-    if (dto.value !== undefined) {
-      data.value = new Prisma.Decimal(dto.value);
-    }
-
-    if (dto.enabled !== undefined) {
-      data.enabled = dto.enabled;
-    }
-
-    if (dto.maxUses !== undefined) {
-      data.maxUses = dto.maxUses;
-    }
-
-    if (dto.maxUsesPerUser !== undefined) {
-      data.maxUsesPerUser = dto.maxUsesPerUser;
-    }
-
-    if (dto.startsAt !== undefined) {
-      data.startsAt = this.optionalDate(dto.startsAt);
-    }
-
-    if (dto.expiresAt !== undefined) {
-      data.expiresAt = this.optionalDate(dto.expiresAt);
+    if (dto.productIds !== undefined) {
+      data.products = {
+        deleteMany: {},
+        create: (dto.productIds ?? []).map((productId) => ({ productId })),
+      };
     }
 
     try {
@@ -130,11 +106,8 @@ export class DiscountsService {
         where: { id },
         data,
         include: {
-          _count: {
-            select: {
-              redemptions: true,
-            },
-          },
+          products: { include: { product: { select: { id: true, title: true } } } },
+          _count: { select: { redemptions: true } },
         },
       });
     } catch (error) {
@@ -162,12 +135,8 @@ export class DiscountsService {
     const vendorIds = [...new Set(checkoutProducts.map((product) => product.vendorId))];
 
     const discountCode = await this.prisma.discountCode.findFirst({
-      where: {
-        code: normalizedCode,
-        vendorId: {
-          in: vendorIds,
-        },
-      },
+      where: { code: normalizedCode, vendorId: { in: vendorIds } },
+      include: { products: { select: { productId: true } } },
     });
 
     if (!discountCode) {
@@ -181,6 +150,11 @@ export class DiscountsService {
       const product = productsById.get(item.productId);
 
       if (!product || product.vendorId !== discountCode.vendorId) {
+        return sum;
+      }
+
+      // If the coupon is tied to specific products, only count those
+      if (discountCode.products.length > 0 && !discountCode.products.some((p) => p.productId === product.id)) {
         return sum;
       }
 

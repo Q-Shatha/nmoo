@@ -1,0 +1,1247 @@
+{
+  "E:\\coding projects\\matjer\\backend-legacy\\database.js": {
+    "mtime": 1779745443.923553,
+    "ast_hash": "f2a41dfc76c70abb8aa59f6acb21b9fd",
+    "semantic_hash": "f2a41dfc76c70abb8aa59f6acb21b9fd"
+  },
+  "E:\\coding projects\\matjer\\backend-legacy\\package.json": {
+    "mtime": 1779803211.0023491,
+    "ast_hash": "b1ac69054a56ca6a331e9291071362b1",
+    "semantic_hash": "b1ac69054a56ca6a331e9291071362b1"
+  },
+  "E:\\coding projects\\matjer\\backend-legacy\\server.js": {
+    "mtime": 1779746559.7150154,
+    "ast_hash": "90e6f808cec2f121c611be29290cd9d5",
+    "semantic_hash": "90e6f808cec2f121c611be29290cd9d5"
+  },
+  "E:\\coding projects\\matjer\\backend\\jest.config.js": {
+    "mtime": 1779834691.7231445,
+    "ast_hash": "3c6de248b9a051e02d0f976e6beb96a4",
+    "semantic_hash": "3c6de248b9a051e02d0f976e6beb96a4"
+  },
+  "E:\\coding projects\\matjer\\backend\\nest-cli.json": {
+    "mtime": 1779808189.8131287,
+    "ast_hash": "83723e4c72225b94471b75f63d1972e9",
+    "semantic_hash": "83723e4c72225b94471b75f63d1972e9"
+  },
+  "E:\\coding projects\\matjer\\backend\\package.json": {
+    "mtime": 1780377071.279303,
+    "ast_hash": "9e8fec863abccb210524999b85c5a4f1",
+    "semantic_hash": "9e8fec863abccb210524999b85c5a4f1"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma.config.ts": {
+    "mtime": 1779810021.3897715,
+    "ast_hash": "4dc809c8f2c2f3dfe4c15c564f9fa68e",
+    "semantic_hash": "4dc809c8f2c2f3dfe4c15c564f9fa68e"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260526174506_init\\migration.sql": {
+    "mtime": 1779817506.7100034,
+    "ast_hash": "1047dfc00796954026c0c7ff9c55d7f2",
+    "semantic_hash": "1047dfc00796954026c0c7ff9c55d7f2"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260527135534_add_user_address\\migration.sql": {
+    "mtime": 1779890134.6094027,
+    "ast_hash": "6682c2da237142fdfc339be056374d01",
+    "semantic_hash": "6682c2da237142fdfc339be056374d01"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260527141430_add_user_address_details\\migration.sql": {
+    "mtime": 1779891270.7626193,
+    "ast_hash": "fc49010f8851e1587c676297b56a284c",
+    "semantic_hash": "fc49010f8851e1587c676297b56a284c"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260527143531_add_user_phone_number\\migration.sql": {
+    "mtime": 1779892531.326689,
+    "ast_hash": "43efdf894a5f50db8fa1e6f82727ee1d",
+    "semantic_hash": "43efdf894a5f50db8fa1e6f82727ee1d"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260527213240_add_product_options\\migration.sql": {
+    "mtime": 1779917560.7574427,
+    "ast_hash": "8f4171420d22eabbeb94eee7f649d9e0",
+    "semantic_hash": "8f4171420d22eabbeb94eee7f649d9e0"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260527225256_add_vendor_categories\\migration.sql": {
+    "mtime": 1779911585.7730217,
+    "ast_hash": "1526068d1a2d1ad05d559a58a64454cd",
+    "semantic_hash": "1526068d1a2d1ad05d559a58a64454cd"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260528000100_add_order_shipping\\migration.sql": {
+    "mtime": 1779918840.5328214,
+    "ast_hash": "6928869ea1b83be6243513d1b7f58949",
+    "semantic_hash": "6928869ea1b83be6243513d1b7f58949"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260528000200_add_vendor_shipping_methods\\migration.sql": {
+    "mtime": 1779919571.2435179,
+    "ast_hash": "a14e2e7513653e607123c53aa8c41491",
+    "semantic_hash": "a14e2e7513653e607123c53aa8c41491"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260528000300_add_store_pages\\migration.sql": {
+    "mtime": 1779928697.8083181,
+    "ast_hash": "174b915c1d143846810499545c277923",
+    "semantic_hash": "174b915c1d143846810499545c277923"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260528000400_add_vendor_themes\\migration.sql": {
+    "mtime": 1779929429.8597074,
+    "ast_hash": "113c6a51f4e00459b7a3ca61bca96906",
+    "semantic_hash": "113c6a51f4e00459b7a3ca61bca96906"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260528000500_add_discount_codes\\migration.sql": {
+    "mtime": 1779930185.6564925,
+    "ast_hash": "663647238c046694fd997f929e145107",
+    "semantic_hash": "663647238c046694fd997f929e145107"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260601190000_add_vendor_storefront_images\\migration.sql": {
+    "mtime": 1780340354.2898805,
+    "ast_hash": "5d95c139c61b6755c62b5fa67c92160f",
+    "semantic_hash": "5d95c139c61b6755c62b5fa67c92160f"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260602120000_add_storefront_copy\\migration.sql": {
+    "mtime": 1780383261.5945923,
+    "ast_hash": "99d6e5b9896babb7461bbabac6e5b385",
+    "semantic_hash": "99d6e5b9896babb7461bbabac6e5b385"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260602123000_add_store_username\\migration.sql": {
+    "mtime": 1780384452.045638,
+    "ast_hash": "8f464b0332471f88c8c19b9ec9afae2b",
+    "semantic_hash": "8f464b0332471f88c8c19b9ec9afae2b"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260602124500_add_product_discounts\\migration.sql": {
+    "mtime": 1780392109.5711572,
+    "ast_hash": "f14314904a2ebb5d0bb5d702967cea66",
+    "semantic_hash": "f14314904a2ebb5d0bb5d702967cea66"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260603090000_add_vendor_social_links\\migration.sql": {
+    "mtime": 1780437309.8335178,
+    "ast_hash": "64421d310fba8564d8545e8abbea755f",
+    "semantic_hash": "64421d310fba8564d8545e8abbea755f"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260603100000_add_product_badge_label\\migration.sql": {
+    "mtime": 1780439140.4308188,
+    "ast_hash": "c2c3cb20f2f69fbd7118ed20aaab0255",
+    "semantic_hash": "c2c3cb20f2f69fbd7118ed20aaab0255"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260603110000_add_user_avatar_url\\migration.sql": {
+    "mtime": 1780441622.2665267,
+    "ast_hash": "4b46137a8c104228431bf9c3c7e752f1",
+    "semantic_hash": "4b46137a8c104228431bf9c3c7e752f1"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260604120000_add_vendor_theme_template\\migration.sql": {
+    "mtime": 1780542046.4380186,
+    "ast_hash": "2fb2f6c37b00eba24d9ab2aa2b4ac559",
+    "semantic_hash": "2fb2f6c37b00eba24d9ab2aa2b4ac559"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260604123000_add_shipping_regions_and_cod\\migration.sql": {
+    "mtime": 1780547950.13257,
+    "ast_hash": "3d195c88ce657a676eb122a0a3a52e26",
+    "semantic_hash": "3d195c88ce657a676eb122a0a3a52e26"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260604130000_add_shipping_unavailable_locations\\migration.sql": {
+    "mtime": 1780549535.5745845,
+    "ast_hash": "81a907d947e8e43f173a567082c0e50c",
+    "semantic_hash": "81a907d947e8e43f173a567082c0e50c"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260604133000_add_shipping_delivery_locations\\migration.sql": {
+    "mtime": 1780550732.7980754,
+    "ast_hash": "0f9aba87d31c4bc0e0f1207dc3ba28af",
+    "semantic_hash": "0f9aba87d31c4bc0e0f1207dc3ba28af"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260604143000_add_shipping_method_cod\\migration.sql": {
+    "mtime": 1780555629.835098,
+    "ast_hash": "b29e2bcf8d6dd15df812989b37c1a948",
+    "semantic_hash": "b29e2bcf8d6dd15df812989b37c1a948"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260604162000_add_vendor_theme_text_color\\migration.sql": {
+    "mtime": 1780571400.2747042,
+    "ast_hash": "079f7c593caf32bbfcc27da82a249eac",
+    "semantic_hash": "079f7c593caf32bbfcc27da82a249eac"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260604183000_add_vendor_store_name\\migration.sql": {
+    "mtime": 1780585307.6512735,
+    "ast_hash": "4a2049d06413346338c0eaa45ff650d4",
+    "semantic_hash": "4a2049d06413346338c0eaa45ff650d4"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260604190000_add_vendor_store_status\\migration.sql": {
+    "mtime": 1780586031.356656,
+    "ast_hash": "6d2046e61efa740c87710fdbaf7e28ad",
+    "semantic_hash": "6d2046e61efa740c87710fdbaf7e28ad"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260605090000_add_product_option_value_quantities\\migration.sql": {
+    "mtime": 1780623414.5315638,
+    "ast_hash": "fb6aaa1c2bbdabe7c76166a66fffa35e",
+    "semantic_hash": "fb6aaa1c2bbdabe7c76166a66fffa35e"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260605103000_add_product_archived_at\\migration.sql": {
+    "mtime": 1780627618.04721,
+    "ast_hash": "28eebe71e4727fc13a02fd73731c1bfb",
+    "semantic_hash": "28eebe71e4727fc13a02fd73731c1bfb"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260605110000_add_product_option_value_prices\\migration.sql": {
+    "mtime": 1780632236.332345,
+    "ast_hash": "ba0464b3f503c5a7d631e5c07558e875",
+    "semantic_hash": "ba0464b3f503c5a7d631e5c07558e875"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\migrations\\20260605123000_add_product_addons\\migration.sql": {
+    "mtime": 1780654517.044072,
+    "ast_hash": "2fdab9425d7e76ad13e72e946e17d80f",
+    "semantic_hash": "2fdab9425d7e76ad13e72e946e17d80f"
+  },
+  "E:\\coding projects\\matjer\\backend\\prisma\\seed.js": {
+    "mtime": 1779930997.8592384,
+    "ast_hash": "71ead1ffc040be7d118baf390f3760c5",
+    "semantic_hash": "71ead1ffc040be7d118baf390f3760c5"
+  },
+  "E:\\coding projects\\matjer\\backend\\scripts\\check-production-db.js": {
+    "mtime": 1779837230.7023168,
+    "ast_hash": "7373481f19b9d7d928161c69700a6f8b",
+    "semantic_hash": "7373481f19b9d7d928161c69700a6f8b"
+  },
+  "E:\\coding projects\\matjer\\backend\\scripts\\check-production-env.js": {
+    "mtime": 1779894717.7827644,
+    "ast_hash": "fc2ac213693d1915d9c82d91d634db9e",
+    "semantic_hash": "fc2ac213693d1915d9c82d91d634db9e"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\app.controller.ts": {
+    "mtime": 1779808189.816215,
+    "ast_hash": "3776c0ae199294f273038d9a161b326f",
+    "semantic_hash": "3776c0ae199294f273038d9a161b326f"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\app.module.ts": {
+    "mtime": 1780440185.6315227,
+    "ast_hash": "a0af8678bde2c06d506dc730406d20bf",
+    "semantic_hash": "a0af8678bde2c06d506dc730406d20bf"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\app.service.ts": {
+    "mtime": 1779817885.7500253,
+    "ast_hash": "666be89c7578c338b19e71db46f7a511",
+    "semantic_hash": "666be89c7578c338b19e71db46f7a511"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\auth\\auth.controller.ts": {
+    "mtime": 1779834054.663242,
+    "ast_hash": "ae13bd7ef2c3dc0522446f80665280ff",
+    "semantic_hash": "ae13bd7ef2c3dc0522446f80665280ff"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\auth\\auth.module.ts": {
+    "mtime": 1779819308.4865017,
+    "ast_hash": "fb0197ed106d72cd7bbde882ab17df88",
+    "semantic_hash": "fb0197ed106d72cd7bbde882ab17df88"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\auth\\auth.service.ts": {
+    "mtime": 1780670122.016814,
+    "ast_hash": "a8c0efb2df28967d80458d4ae7eddc53",
+    "semantic_hash": "a8c0efb2df28967d80458d4ae7eddc53"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\auth\\dto\\login.dto.ts": {
+    "mtime": 1780670350.5592506,
+    "ast_hash": "0c89832e3c281481d16df736d30b38a5",
+    "semantic_hash": "0c89832e3c281481d16df736d30b38a5"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\auth\\dto\\register.dto.ts": {
+    "mtime": 1779890100.8149498,
+    "ast_hash": "3e170f65447b879f0e3b2667ddb12592",
+    "semantic_hash": "3e170f65447b879f0e3b2667ddb12592"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\auth\\strategies\\jwt.strategy.ts": {
+    "mtime": 1779834054.6627328,
+    "ast_hash": "4549c0363d448a84111a271c8f5c75a7",
+    "semantic_hash": "4549c0363d448a84111a271c8f5c75a7"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\categories\\categories.controller.ts": {
+    "mtime": 1779911451.4795647,
+    "ast_hash": "dbc8479b3c0276bfb825f6f2168d2d50",
+    "semantic_hash": "dbc8479b3c0276bfb825f6f2168d2d50"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\categories\\categories.module.ts": {
+    "mtime": 1779817885.762829,
+    "ast_hash": "6cf850fd240bd965a847cbde5e71bc47",
+    "semantic_hash": "6cf850fd240bd965a847cbde5e71bc47"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\categories\\categories.service.ts": {
+    "mtime": 1779911423.0150025,
+    "ast_hash": "5467c1f5e8f3dc4c79db61ab1651dd5d",
+    "semantic_hash": "5467c1f5e8f3dc4c79db61ab1651dd5d"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\categories\\dto\\create-category.dto.ts": {
+    "mtime": 1779820879.7531092,
+    "ast_hash": "4c3c1149c4c50d3c7427c7a0ccf701e6",
+    "semantic_hash": "4c3c1149c4c50d3c7427c7a0ccf701e6"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\categories\\dto\\update-category.dto.ts": {
+    "mtime": 1779820879.7536182,
+    "ast_hash": "9b3f0f37a42e8ccacd517862ca14012c",
+    "semantic_hash": "9b3f0f37a42e8ccacd517862ca14012c"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\common\\decorators\\current-user.decorator.ts": {
+    "mtime": 1779834077.9411244,
+    "ast_hash": "affdf4843d3bd09f63acee8ab6e76e72",
+    "semantic_hash": "affdf4843d3bd09f63acee8ab6e76e72"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\common\\decorators\\roles.decorator.ts": {
+    "mtime": 1779817885.751042,
+    "ast_hash": "a8a95e9c4f9a3fda8551a5fa2d7f8888",
+    "semantic_hash": "a8a95e9c4f9a3fda8551a5fa2d7f8888"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\common\\filters\\http-exception.filter.ts": {
+    "mtime": 1779817885.7515545,
+    "ast_hash": "7f48f0fe6cd74bda9da93d6ae9880cec",
+    "semantic_hash": "7f48f0fe6cd74bda9da93d6ae9880cec"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\common\\guards\\jwt-auth.guard.ts": {
+    "mtime": 1779817885.7520676,
+    "ast_hash": "68416131ab08aba9e415fc3183048d1c",
+    "semantic_hash": "68416131ab08aba9e415fc3183048d1c"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\common\\guards\\roles.guard.ts": {
+    "mtime": 1779834054.6617074,
+    "ast_hash": "0cd60e956abeb6ffc5c7a0bb17f5076c",
+    "semantic_hash": "0cd60e956abeb6ffc5c7a0bb17f5076c"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\common\\interceptors\\response.interceptor.ts": {
+    "mtime": 1779817885.7526097,
+    "ast_hash": "8a2bc7c86c6136080a22828aafd9f7d1",
+    "semantic_hash": "8a2bc7c86c6136080a22828aafd9f7d1"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\common\\types\\authenticated-user.ts": {
+    "mtime": 1779834054.6606832,
+    "ast_hash": "26f69ca77aa02da7eb546d40f2ffd0f5",
+    "semantic_hash": "26f69ca77aa02da7eb546d40f2ffd0f5"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\config\\env.validation.spec.ts": {
+    "mtime": 1779834691.7241704,
+    "ast_hash": "15025822d61ff0bbb6fced2c452e6bc9",
+    "semantic_hash": "15025822d61ff0bbb6fced2c452e6bc9"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\config\\env.validation.ts": {
+    "mtime": 1780341133.1635418,
+    "ast_hash": "b460e3794171149d2581617af62e94ce",
+    "semantic_hash": "b460e3794171149d2581617af62e94ce"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\discounts\\discounts.controller.ts": {
+    "mtime": 1779930564.155624,
+    "ast_hash": "e26c169ac2dba7d66b3413e12bb24171",
+    "semantic_hash": "e26c169ac2dba7d66b3413e12bb24171"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\discounts\\discounts.module.ts": {
+    "mtime": 1779930485.149658,
+    "ast_hash": "4091b5251591529c813c08e17ab3c401",
+    "semantic_hash": "4091b5251591529c813c08e17ab3c401"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\discounts\\discounts.service.ts": {
+    "mtime": 1780392331.3119667,
+    "ast_hash": "116a969b650fcd35c013798cca4bc7ee",
+    "semantic_hash": "116a969b650fcd35c013798cca4bc7ee"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\discounts\\dto\\create-discount-code.dto.ts": {
+    "mtime": 1779930450.5310206,
+    "ast_hash": "48b1c1a63499e0fbc0fcf27ff0db9395",
+    "semantic_hash": "48b1c1a63499e0fbc0fcf27ff0db9395"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\discounts\\dto\\discount-item.dto.ts": {
+    "mtime": 1779930422.6656299,
+    "ast_hash": "f4ea3df467f68dbf217f46484ddf2da2",
+    "semantic_hash": "f4ea3df467f68dbf217f46484ddf2da2"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\discounts\\dto\\update-discount-code.dto.ts": {
+    "mtime": 1779930462.505507,
+    "ast_hash": "1c4d8b0ca61b5c8cf336cdf1ffebd8d4",
+    "semantic_hash": "1c4d8b0ca61b5c8cf336cdf1ffebd8d4"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\discounts\\dto\\validate-discount-code.dto.ts": {
+    "mtime": 1779930475.990032,
+    "ast_hash": "01e50b25ed2853e37045ad93c2d84c98",
+    "semantic_hash": "01e50b25ed2853e37045ad93c2d84c98"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\main.ts": {
+    "mtime": 1780479814.4580579,
+    "ast_hash": "dc64e999a85be12dede1445f0a8d3b9e",
+    "semantic_hash": "dc64e999a85be12dede1445f0a8d3b9e"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\orders\\dto\\create-order.dto.ts": {
+    "mtime": 1780654621.524413,
+    "ast_hash": "f1d459fdbca04cc0b2687e611cb40cc2",
+    "semantic_hash": "f1d459fdbca04cc0b2687e611cb40cc2"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\orders\\dto\\update-order-status.dto.ts": {
+    "mtime": 1779821224.864223,
+    "ast_hash": "1e8f88459621d128278d58cc1fde8223",
+    "semantic_hash": "1e8f88459621d128278d58cc1fde8223"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\orders\\orders.controller.ts": {
+    "mtime": 1779834286.2089994,
+    "ast_hash": "df43cd3772a9f9757419a56b898f4cac",
+    "semantic_hash": "df43cd3772a9f9757419a56b898f4cac"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\orders\\orders.module.ts": {
+    "mtime": 1779930577.6770687,
+    "ast_hash": "84b95cc6b909bec971ed38d13bc0ccfc",
+    "semantic_hash": "84b95cc6b909bec971ed38d13bc0ccfc"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\orders\\orders.service.ts": {
+    "mtime": 1780654689.793983,
+    "ast_hash": "793060d86aa5e7e1e1204be3e2c2eff1",
+    "semantic_hash": "793060d86aa5e7e1e1204be3e2c2eff1"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\payments\\dto\\create-checkout-session.dto.ts": {
+    "mtime": 1779838056.1101058,
+    "ast_hash": "a2ffbee754090168764133b4884ab03f",
+    "semantic_hash": "a2ffbee754090168764133b4884ab03f"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\payments\\payments.controller.ts": {
+    "mtime": 1779838659.88859,
+    "ast_hash": "5b3212662594ef7aba1b2472109d0059",
+    "semantic_hash": "5b3212662594ef7aba1b2472109d0059"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\payments\\payments.module.ts": {
+    "mtime": 1779838056.1090817,
+    "ast_hash": "2801acaa1433a1c536a8d1403513edaa",
+    "semantic_hash": "2801acaa1433a1c536a8d1403513edaa"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\payments\\payments.service.ts": {
+    "mtime": 1779930708.1969523,
+    "ast_hash": "493f23dc21ebdb98dd128d14496ce9c8",
+    "semantic_hash": "493f23dc21ebdb98dd128d14496ce9c8"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\prisma\\prisma.module.ts": {
+    "mtime": 1779817885.7531204,
+    "ast_hash": "b250f81fdd9523cf43cb2f5586deab10",
+    "semantic_hash": "b250f81fdd9523cf43cb2f5586deab10"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\prisma\\prisma.service.ts": {
+    "mtime": 1779817885.753631,
+    "ast_hash": "79a4e21910070508ccc651438a1e1841",
+    "semantic_hash": "79a4e21910070508ccc651438a1e1841"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\products\\dto\\create-product.dto.ts": {
+    "mtime": 1780654577.1406512,
+    "ast_hash": "015549b4f023dd6577c18cb6c6e462c4",
+    "semantic_hash": "015549b4f023dd6577c18cb6c6e462c4"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\products\\dto\\product-query.dto.ts": {
+    "mtime": 1780396077.8012335,
+    "ast_hash": "bec0b117ab69490a50f9b02d813b1977",
+    "semantic_hash": "bec0b117ab69490a50f9b02d813b1977"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\products\\dto\\update-product.dto.ts": {
+    "mtime": 1779820614.1864214,
+    "ast_hash": "77e5e2c01861d95bf714ab78c87d32f3",
+    "semantic_hash": "77e5e2c01861d95bf714ab78c87d32f3"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\products\\product-assets.controller.ts": {
+    "mtime": 1780341087.6286807,
+    "ast_hash": "235fc710cb457995d12db55dd0bc0a12",
+    "semantic_hash": "235fc710cb457995d12db55dd0bc0a12"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\products\\product-assets.service.ts": {
+    "mtime": 1780677165.3779142,
+    "ast_hash": "b833c1c09d6c9fcc7b51f6b241e92714",
+    "semantic_hash": "b833c1c09d6c9fcc7b51f6b241e92714"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\products\\products.controller.ts": {
+    "mtime": 1780627675.1904123,
+    "ast_hash": "df5fc61545a5565700c63bc435062155",
+    "semantic_hash": "df5fc61545a5565700c63bc435062155"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\products\\products.module.ts": {
+    "mtime": 1780377192.0584223,
+    "ast_hash": "573f58d13888e1087c9013a3bb7c5211",
+    "semantic_hash": "573f58d13888e1087c9013a3bb7c5211"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\products\\products.service.ts": {
+    "mtime": 1780654561.629027,
+    "ast_hash": "3902f42816068eb3012bbd40743beb9b",
+    "semantic_hash": "3902f42816068eb3012bbd40743beb9b"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\reviews\\dto\\create-review.dto.ts": {
+    "mtime": 1780440102.5549994,
+    "ast_hash": "d7a6bb19e23c4327d891fd75c0180fdd",
+    "semantic_hash": "d7a6bb19e23c4327d891fd75c0180fdd"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\reviews\\reviews.controller.ts": {
+    "mtime": 1780455437.6897075,
+    "ast_hash": "b8254b58cf8b999d9224ac96b5696cbd",
+    "semantic_hash": "b8254b58cf8b999d9224ac96b5696cbd"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\reviews\\reviews.module.ts": {
+    "mtime": 1780440174.1584444,
+    "ast_hash": "6c860a6adac14497ad693bfb1426858c",
+    "semantic_hash": "6c860a6adac14497ad693bfb1426858c"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\reviews\\reviews.service.ts": {
+    "mtime": 1780677874.981006,
+    "ast_hash": "3437ad0ee52e1b864684a3108e934f36",
+    "semantic_hash": "3437ad0ee52e1b864684a3108e934f36"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\shipping-methods\\dto\\checkout-shipping-options.dto.ts": {
+    "mtime": 1780549554.8768058,
+    "ast_hash": "aac856d694354f5181aa40ad418b80d8",
+    "semantic_hash": "aac856d694354f5181aa40ad418b80d8"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\shipping-methods\\dto\\create-shipping-method.dto.ts": {
+    "mtime": 1780555640.6621416,
+    "ast_hash": "9f93c1dba1c34c44f29a92c9c414841b",
+    "semantic_hash": "9f93c1dba1c34c44f29a92c9c414841b"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\shipping-methods\\dto\\shipping-method-item.dto.ts": {
+    "mtime": 1779919658.495346,
+    "ast_hash": "aab5f976e12cddf7114a081f6938f1f2",
+    "semantic_hash": "aab5f976e12cddf7114a081f6938f1f2"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\shipping-methods\\dto\\update-shipping-method.dto.ts": {
+    "mtime": 1779919658.4963758,
+    "ast_hash": "5dbf41da2fabb759693ee52a20347b43",
+    "semantic_hash": "5dbf41da2fabb759693ee52a20347b43"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\shipping-methods\\shipping-methods.controller.ts": {
+    "mtime": 1780550748.4709313,
+    "ast_hash": "5ac2c99c3467fef5ea2e04462f2bd2bf",
+    "semantic_hash": "5ac2c99c3467fef5ea2e04462f2bd2bf"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\shipping-methods\\shipping-methods.module.ts": {
+    "mtime": 1779919658.4963758,
+    "ast_hash": "8980dbec872095970bac67603e580620",
+    "semantic_hash": "8980dbec872095970bac67603e580620"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\shipping-methods\\shipping-methods.service.ts": {
+    "mtime": 1780654652.810707,
+    "ast_hash": "ba2a79dbc5f29408d3cf47aa75b2ad47",
+    "semantic_hash": "ba2a79dbc5f29408d3cf47aa75b2ad47"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\store-pages\\dto\\create-store-page.dto.ts": {
+    "mtime": 1779928789.71743,
+    "ast_hash": "e0b940096c68f08aed6689ea347b113c",
+    "semantic_hash": "e0b940096c68f08aed6689ea347b113c"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\store-pages\\dto\\update-store-page.dto.ts": {
+    "mtime": 1779928789.7179337,
+    "ast_hash": "0a54cedfe057347b40c8089a6637d182",
+    "semantic_hash": "0a54cedfe057347b40c8089a6637d182"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\store-pages\\store-pages.controller.ts": {
+    "mtime": 1779981864.5810137,
+    "ast_hash": "9e2bbeb8d35df17fafbf18fc60de5dd9",
+    "semantic_hash": "9e2bbeb8d35df17fafbf18fc60de5dd9"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\store-pages\\store-pages.module.ts": {
+    "mtime": 1779928789.7179337,
+    "ast_hash": "bfcb0b02aede48a6d50a5b642b017f49",
+    "semantic_hash": "bfcb0b02aede48a6d50a5b642b017f49"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\store-pages\\store-pages.service.ts": {
+    "mtime": 1780586222.6117582,
+    "ast_hash": "a5cb0c260652fa03ffca8b2206180b3c",
+    "semantic_hash": "a5cb0c260652fa03ffca8b2206180b3c"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\subscriptions\\dto\\activate-subscription.dto.ts": {
+    "mtime": 1779834286.2105365,
+    "ast_hash": "d0c2338b15128967bb1b715963c55c69",
+    "semantic_hash": "d0c2338b15128967bb1b715963c55c69"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\subscriptions\\dto\\update-subscription.dto.ts": {
+    "mtime": 1779834286.2110507,
+    "ast_hash": "4859f2c01a5df81f574d9d679aa70ff9",
+    "semantic_hash": "4859f2c01a5df81f574d9d679aa70ff9"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\subscriptions\\subscriptions.controller.ts": {
+    "mtime": 1779834286.2100272,
+    "ast_hash": "6865fea9ac94b521581f3d1a990c3721",
+    "semantic_hash": "6865fea9ac94b521581f3d1a990c3721"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\subscriptions\\subscriptions.module.ts": {
+    "mtime": 1779817885.7648706,
+    "ast_hash": "3f1914573593a49120c8e17acb5b8f10",
+    "semantic_hash": "3f1914573593a49120c8e17acb5b8f10"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\subscriptions\\subscriptions.service.ts": {
+    "mtime": 1779835551.2981877,
+    "ast_hash": "e3084221d83b279da76fb0c11538dfc6",
+    "semantic_hash": "e3084221d83b279da76fb0c11538dfc6"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\themes\\dto\\update-theme.dto.ts": {
+    "mtime": 1780585307.6517859,
+    "ast_hash": "4fe540e8862af1792154425e72b7b7d1",
+    "semantic_hash": "4fe540e8862af1792154425e72b7b7d1"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\themes\\themes.controller.ts": {
+    "mtime": 1779981818.725327,
+    "ast_hash": "71f93945e7c0a39c132ff0abab9c5490",
+    "semantic_hash": "71f93945e7c0a39c132ff0abab9c5490"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\themes\\themes.module.ts": {
+    "mtime": 1780377192.0594494,
+    "ast_hash": "fd7583fa8948bf1eadb0ec1cdef4787a",
+    "semantic_hash": "fd7583fa8948bf1eadb0ec1cdef4787a"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\themes\\themes.service.ts": {
+    "mtime": 1780586330.1384914,
+    "ast_hash": "45cc6a982f2e01e14d9c2bf1e1c414e4",
+    "semantic_hash": "45cc6a982f2e01e14d9c2bf1e1c414e4"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\users\\dto\\update-address.dto.ts": {
+    "mtime": 1779892448.1452441,
+    "ast_hash": "793b5d063baf4ca2b5e18bd8d8bc4d3c",
+    "semantic_hash": "793b5d063baf4ca2b5e18bd8d8bc4d3c"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\users\\dto\\update-profile.dto.ts": {
+    "mtime": 1780443621.6986187,
+    "ast_hash": "6047eb40c6b677d2cac09a28013eaaf7",
+    "semantic_hash": "6047eb40c6b677d2cac09a28013eaaf7"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\users\\dto\\update-store-status.dto.ts": {
+    "mtime": 1780586068.4559324,
+    "ast_hash": "ecd5250db1d0b7c3072b3d62f0042f85",
+    "semantic_hash": "ecd5250db1d0b7c3072b3d62f0042f85"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\users\\dto\\update-store-username.dto.ts": {
+    "mtime": 1780384452.046149,
+    "ast_hash": "66c7207a042f925948e37ca6c261bd58",
+    "semantic_hash": "66c7207a042f925948e37ca6c261bd58"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\users\\users.controller.ts": {
+    "mtime": 1780586068.457507,
+    "ast_hash": "6342d8b27792dcad23210f6cb5023aca",
+    "semantic_hash": "6342d8b27792dcad23210f6cb5023aca"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\users\\users.module.ts": {
+    "mtime": 1780441854.6979342,
+    "ast_hash": "c1f8a0eaeecb80a9b749ab02d14f3436",
+    "semantic_hash": "c1f8a0eaeecb80a9b749ab02d14f3436"
+  },
+  "E:\\coding projects\\matjer\\backend\\src\\users\\users.service.ts": {
+    "mtime": 1780678117.9088786,
+    "ast_hash": "4968e88bc09d5d762741229749dbf73a",
+    "semantic_hash": "4968e88bc09d5d762741229749dbf73a"
+  },
+  "E:\\coding projects\\matjer\\backend\\test\\app.e2e-spec.ts": {
+    "mtime": 1780384829.338079,
+    "ast_hash": "7f8ad594d07758a4445dfe0dbc7e9787",
+    "semantic_hash": "7f8ad594d07758a4445dfe0dbc7e9787"
+  },
+  "E:\\coding projects\\matjer\\backend\\test\\jest-e2e.json": {
+    "mtime": 1779834691.7236557,
+    "ast_hash": "0551d69403dadda5e2dd3fa1f04c5a93",
+    "semantic_hash": "0551d69403dadda5e2dd3fa1f04c5a93"
+  },
+  "E:\\coding projects\\matjer\\backend\\tsconfig.build.json": {
+    "mtime": 1779818062.7832773,
+    "ast_hash": "0659734556ff6cba61fef8ba8609df69",
+    "semantic_hash": "0659734556ff6cba61fef8ba8609df69"
+  },
+  "E:\\coding projects\\matjer\\backend\\tsconfig.json": {
+    "mtime": 1779818062.7822165,
+    "ast_hash": "56c5d66fa9db244ba768d8b4584b0d0a",
+    "semantic_hash": "56c5d66fa9db244ba768d8b4584b0d0a"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\[storeUsername]\\page.tsx": {
+    "mtime": 1781263607.0112574,
+    "ast_hash": "398a3244f17be70a3e1f5ea5ab6ead76",
+    "semantic_hash": "398a3244f17be70a3e1f5ea5ab6ead76"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\[storeUsername]\\products\\[productId]\\page.tsx": {
+    "mtime": 1780384565.2108285,
+    "ast_hash": "2fbc2b5ff5eb3b24ffe0d8f7f0fe6bad",
+    "semantic_hash": "2fbc2b5ff5eb3b24ffe0d8f7f0fe6bad"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\[storeUsername]\\reviews\\new\\page.tsx": {
+    "mtime": 1780440437.554389,
+    "ast_hash": "3e4582c692e2043920cf5e34de0d7151",
+    "semantic_hash": "3e4582c692e2043920cf5e34de0d7151"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\[storeUsername]\\storefront\\page.tsx": {
+    "mtime": 1780384565.2098088,
+    "ast_hash": "f30b8e5003579631e67b6fae3997ef04",
+    "semantic_hash": "f30b8e5003579631e67b6fae3997ef04"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\account\\AccountAvatar.tsx": {
+    "mtime": 1780443880.4525414,
+    "ast_hash": "7fa9b2efb4c9a04f4cbd4b3ec791885d",
+    "semantic_hash": "7fa9b2efb4c9a04f4cbd4b3ec791885d"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\account\\AvatarSettings.tsx": {
+    "mtime": 1780442944.1144593,
+    "ast_hash": "ffaaa50084ad7968e3f9aece2e6738ce",
+    "semantic_hash": "ffaaa50084ad7968e3f9aece2e6738ce"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\account\\EditableName.tsx": {
+    "mtime": 1780585823.1120374,
+    "ast_hash": "cfaa1dab66af44e5e1ffbb227b5d5545",
+    "semantic_hash": "cfaa1dab66af44e5e1ffbb227b5d5545"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\account\\address\\AddressForm.tsx": {
+    "mtime": 1779893215.391242,
+    "ast_hash": "40bfa80d76f4e2e5c6417c0938270a04",
+    "semantic_hash": "40bfa80d76f4e2e5c6417c0938270a04"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\account\\address\\page.tsx": {
+    "mtime": 1780342943.265496,
+    "ast_hash": "df0927678a160b96c4736d445b2b593f",
+    "semantic_hash": "df0927678a160b96c4736d445b2b593f"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\account\\page.tsx": {
+    "mtime": 1780585823.1135948,
+    "ast_hash": "d187954cad29198d74eb5d4fed7dbac9",
+    "semantic_hash": "d187954cad29198d74eb5d4fed7dbac9"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\cart\\CartView.tsx": {
+    "mtime": 1780655244.633361,
+    "ast_hash": "09011753b1b66a112b2e4429e3c6112e",
+    "semantic_hash": "09011753b1b66a112b2e4429e3c6112e"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\cart\\page.tsx": {
+    "mtime": 1780395855.8617675,
+    "ast_hash": "2a31571d19192e9ba12d669a4f362a43",
+    "semantic_hash": "2a31571d19192e9ba12d669a4f362a43"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\checkout\\CheckoutView.tsx": {
+    "mtime": 1780669518.673254,
+    "ast_hash": "394c2cb905910ef3b3083bffbd8fca2d",
+    "semantic_hash": "394c2cb905910ef3b3083bffbd8fca2d"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\checkout\\page.tsx": {
+    "mtime": 1780395882.7987487,
+    "ast_hash": "bf2e86db762eb8e9850aee03c940fb45",
+    "semantic_hash": "bf2e86db762eb8e9850aee03c940fb45"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\AccountMenu.tsx": {
+    "mtime": 1781263887.9465506,
+    "ast_hash": "cc0d67f2be5d86b006f4a57242113e0a",
+    "semantic_hash": "cc0d67f2be5d86b006f4a57242113e0a"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\AddToCartButton.tsx": {
+    "mtime": 1780480120.537896,
+    "ast_hash": "8f7320fd4eb6d125d86fcfc16d85afa7",
+    "semantic_hash": "8f7320fd4eb6d125d86fcfc16d85afa7"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\AddToCartWithQuantity.tsx": {
+    "mtime": 1780649239.1930697,
+    "ast_hash": "405af2bdb434a51fd91edb533014d51e",
+    "semantic_hash": "405af2bdb434a51fd91edb533014d51e"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\BrandLogo.tsx": {
+    "mtime": 1780342256.9671826,
+    "ast_hash": "bb4cd243a7536fa6524f4a0108525c2a",
+    "semantic_hash": "bb4cd243a7536fa6524f4a0108525c2a"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\CartIcon.tsx": {
+    "mtime": 1780479481.8601637,
+    "ast_hash": "b09f290352781a4e774bad67de26914c",
+    "semantic_hash": "b09f290352781a4e774bad67de26914c"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\CartLink.tsx": {
+    "mtime": 1780460604.5805655,
+    "ast_hash": "bf4ae642b2cda76a126587a8bf811e00",
+    "semantic_hash": "bf4ae642b2cda76a126587a8bf811e00"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\LoadingScreen.tsx": {
+    "mtime": 1780674994.200796,
+    "ast_hash": "0535877da7295c1152fd5c8377be0280",
+    "semantic_hash": "0535877da7295c1152fd5c8377be0280"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\ProductCard.tsx": {
+    "mtime": 1780668163.4037557,
+    "ast_hash": "227ab8c75e101d53b9f7e0e8b2a03cc7",
+    "semantic_hash": "227ab8c75e101d53b9f7e0e8b2a03cc7"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\ProductCardCartButton.tsx": {
+    "mtime": 1780655097.5154614,
+    "ast_hash": "cfae025c26b7ee7f1c173c3f547c7976",
+    "semantic_hash": "cfae025c26b7ee7f1c173c3f547c7976"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\PublicFooter.tsx": {
+    "mtime": 1780438274.119063,
+    "ast_hash": "079f69a3dd9db7f71f99da61e6620a1e",
+    "semantic_hash": "079f69a3dd9db7f71f99da61e6620a1e"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\PublicHeader.tsx": {
+    "mtime": 1781264099.4416082,
+    "ast_hash": "83af502c54d27ebc66bd63be8c3e8d93",
+    "semantic_hash": "83af502c54d27ebc66bd63be8c3e8d93"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\StoreNavLink.tsx": {
+    "mtime": 1780624449.3852346,
+    "ast_hash": "d3bb5aaa2870497afd5afdc00f742d82",
+    "semantic_hash": "d3bb5aaa2870497afd5afdc00f742d82"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\components\\ThemeStyle.tsx": {
+    "mtime": 1779932544.8372042,
+    "ast_hash": "7520f6e48a67e667bb3218befc288634",
+    "semantic_hash": "7520f6e48a67e667bb3218befc288634"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\DashboardAccordion.tsx": {
+    "mtime": 1780577634.0463345,
+    "ast_hash": "72016985453c9128c3a92684405bcbd1",
+    "semantic_hash": "72016985453c9128c3a92684405bcbd1"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\DashboardProductManager.tsx": {
+    "mtime": 1780669265.831141,
+    "ast_hash": "79477537f422a19f5faa8583c0ec55d9",
+    "semantic_hash": "79477537f422a19f5faa8583c0ec55d9"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\DashboardShell.tsx": {
+    "mtime": 1780651470.8271823,
+    "ast_hash": "1ad305599b1961cbab6d3b477108e67f",
+    "semantic_hash": "1ad305599b1961cbab6d3b477108e67f"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\DiscountCodeManager.tsx": {
+    "mtime": 1780669518.6753123,
+    "ast_hash": "dab67ccd49bd7afc95dfcc1b7b826ec4",
+    "semantic_hash": "dab67ccd49bd7afc95dfcc1b7b826ec4"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\ShippingMethodForm.tsx": {
+    "mtime": 1780577059.85384,
+    "ast_hash": "f634eca8e386a1cec1bd802be1d2e725",
+    "semantic_hash": "f634eca8e386a1cec1bd802be1d2e725"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\ShippingMethodManager.tsx": {
+    "mtime": 1780562328.9580152,
+    "ast_hash": "f5ed6ccf04794c25d7253685fdf1d382",
+    "semantic_hash": "f5ed6ccf04794c25d7253685fdf1d382"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\StoreLifecycleManager.tsx": {
+    "mtime": 1780586297.1756227,
+    "ast_hash": "78e9a11c45813b7f247f4d2f7825117f",
+    "semantic_hash": "78e9a11c45813b7f247f4d2f7825117f"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\StorePageForm.tsx": {
+    "mtime": 1780577213.0552793,
+    "ast_hash": "521071a749cb14f0921faf4ff8e688ef",
+    "semantic_hash": "521071a749cb14f0921faf4ff8e688ef"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\StorePageManager.tsx": {
+    "mtime": 1780556207.6815114,
+    "ast_hash": "12d2444402f8c3113c87d00ccd7f2618",
+    "semantic_hash": "12d2444402f8c3113c87d00ccd7f2618"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\StoreUsernameManager.tsx": {
+    "mtime": 1780384518.1127753,
+    "ast_hash": "a15ad92a782c8cdca9405aafd29712cd",
+    "semantic_hash": "a15ad92a782c8cdca9405aafd29712cd"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\ThemeManager.tsx": {
+    "mtime": 1780633143.6677938,
+    "ast_hash": "f264f81a17dba165f83c1587a43477a7",
+    "semantic_hash": "f264f81a17dba165f83c1587a43477a7"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\dashboard-data.ts": {
+    "mtime": 1780665784.9729917,
+    "ast_hash": "37254ef6b08caf587e7b61c304aacead",
+    "semantic_hash": "37254ef6b08caf587e7b61c304aacead"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\discounts\\page.tsx": {
+    "mtime": 1780652123.3843448,
+    "ast_hash": "86e453115ea1e2738a6290f4ca134e24",
+    "semantic_hash": "86e453115ea1e2738a6290f4ca134e24"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\loading.tsx": {
+    "mtime": 1780674994.2023382,
+    "ast_hash": "a936863a27384d46f8ddc173955b7604",
+    "semantic_hash": "a936863a27384d46f8ddc173955b7604"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\orders\\[orderId]\\OrderStatusEditor.tsx": {
+    "mtime": 1780396774.5708306,
+    "ast_hash": "0eb186728ae72a88a9f1abeac63de2dc",
+    "semantic_hash": "0eb186728ae72a88a9f1abeac63de2dc"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\orders\\[orderId]\\page.tsx": {
+    "mtime": 1780669518.6742835,
+    "ast_hash": "ea477de8fc234d74d0e0f5ef79285c53",
+    "semantic_hash": "ea477de8fc234d74d0e0f5ef79285c53"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\orders\\page.tsx": {
+    "mtime": 1780652148.342829,
+    "ast_hash": "5da5c23907ccfb567fe165b9332cad0d",
+    "semantic_hash": "5da5c23907ccfb567fe165b9332cad0d"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\page.tsx": {
+    "mtime": 1780652062.892883,
+    "ast_hash": "3921d9f3a8aaa488958e637ce71a8f69",
+    "semantic_hash": "3921d9f3a8aaa488958e637ce71a8f69"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\products\\[productId]\\EditProductForm.tsx": {
+    "mtime": 1780655046.9124513,
+    "ast_hash": "e98e4da1460dab480195414e5713996f",
+    "semantic_hash": "e98e4da1460dab480195414e5713996f"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\products\\[productId]\\page.tsx": {
+    "mtime": 1780654069.8326116,
+    "ast_hash": "a9857890ca549fe6c7c3f98c6c588dd7",
+    "semantic_hash": "a9857890ca549fe6c7c3f98c6c588dd7"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\products\\new\\AddProductForm.tsx": {
+    "mtime": 1780655028.1759117,
+    "ast_hash": "ea0123da4a13af890c37655f38d9b4c8",
+    "semantic_hash": "ea0123da4a13af890c37655f38d9b4c8"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\products\\new\\page.tsx": {
+    "mtime": 1780654042.81308,
+    "ast_hash": "338f6b8f06e26c1bdbe63d3e3a699f5a",
+    "semantic_hash": "338f6b8f06e26c1bdbe63d3e3a699f5a"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\products\\page.tsx": {
+    "mtime": 1780652170.863929,
+    "ast_hash": "59f5bf3166f80c79f380bff3aea45f8d",
+    "semantic_hash": "59f5bf3166f80c79f380bff3aea45f8d"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\settings\\page.tsx": {
+    "mtime": 1780653466.4177945,
+    "ast_hash": "1c7f8f5bad72bce3574e1fc6c855e70b",
+    "semantic_hash": "1c7f8f5bad72bce3574e1fc6c855e70b"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\settings\\pages\\[pageId]\\page.tsx": {
+    "mtime": 1780654210.296883,
+    "ast_hash": "47e02b915f4fbfd76e8806c4992c30fd",
+    "semantic_hash": "47e02b915f4fbfd76e8806c4992c30fd"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\settings\\pages\\new\\page.tsx": {
+    "mtime": 1780654163.3609993,
+    "ast_hash": "6d9c50614d7f25f683c74b401e4f3eaf",
+    "semantic_hash": "6d9c50614d7f25f683c74b401e4f3eaf"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\shipping\\[methodId]\\page.tsx": {
+    "mtime": 1780652293.7474298,
+    "ast_hash": "c91044a37b0e91311de8904ece218d24",
+    "semantic_hash": "c91044a37b0e91311de8904ece218d24"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\shipping\\new\\page.tsx": {
+    "mtime": 1780652268.8229134,
+    "ast_hash": "adf3ca6afaeafef8d2ab874170995903",
+    "semantic_hash": "adf3ca6afaeafef8d2ab874170995903"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\dashboard\\shipping\\page.tsx": {
+    "mtime": 1780652223.9247458,
+    "ast_hash": "dc8a8bcce5e86e4c8a8656ef16b62064",
+    "semantic_hash": "dc8a8bcce5e86e4c8a8656ef16b62064"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\layout.tsx": {
+    "mtime": 1780486087.4271107,
+    "ast_hash": "551a2e1df317b1ff3d678bb9b77ad944",
+    "semantic_hash": "551a2e1df317b1ff3d678bb9b77ad944"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\loading.tsx": {
+    "mtime": 1780674994.2013068,
+    "ast_hash": "c6a8223a75becfb4f843813e42cd7894",
+    "semantic_hash": "c6a8223a75becfb4f843813e42cd7894"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\login\\LoginForm.tsx": {
+    "mtime": 1781264578.7668602,
+    "ast_hash": "fd220ce924c834ae1c3ab7420da18400",
+    "semantic_hash": "fd220ce924c834ae1c3ab7420da18400"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\login\\page.tsx": {
+    "mtime": 1780480544.933988,
+    "ast_hash": "4adbeb36f67d20816784f8e0681b5faa",
+    "semantic_hash": "4adbeb36f67d20816784f8e0681b5faa"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\login\\submit\\route.ts": {
+    "mtime": 1780670611.2434604,
+    "ast_hash": "24e7537802860f904fc43566ba919ce5",
+    "semantic_hash": "24e7537802860f904fc43566ba919ce5"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\logout\\route.ts": {
+    "mtime": 1781263615.0203536,
+    "ast_hash": "c86a0b1b7fbfb556f0a95fbd113a990e",
+    "semantic_hash": "c86a0b1b7fbfb556f0a95fbd113a990e"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\orders\\page.tsx": {
+    "mtime": 1780580815.4691556,
+    "ast_hash": "1eff03bd054c5465f17d087256eb4f97",
+    "semantic_hash": "1eff03bd054c5465f17d087256eb4f97"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\page.tsx": {
+    "mtime": 1780379480.4428666,
+    "ast_hash": "bdf96f669eee10faeccbae24f5ba6df8",
+    "semantic_hash": "bdf96f669eee10faeccbae24f5ba6df8"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\payment\\[orderId]\\PaymentActions.tsx": {
+    "mtime": 1779919113.7458797,
+    "ast_hash": "fc6cfbb1e245da653b0e1060579bf0ab",
+    "semantic_hash": "fc6cfbb1e245da653b0e1060579bf0ab"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\payment\\[orderId]\\page.tsx": {
+    "mtime": 1780669518.674799,
+    "ast_hash": "ef206cbe048622e2df63dea9b5968932",
+    "semantic_hash": "ef206cbe048622e2df63dea9b5968932"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\register\\RegisterForm.tsx": {
+    "mtime": 1780379459.812791,
+    "ast_hash": "74946380dfa3d7343425eae54722610b",
+    "semantic_hash": "74946380dfa3d7343425eae54722610b"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\register\\page.tsx": {
+    "mtime": 1780342943.2639253,
+    "ast_hash": "1a362b38cbbc7aaf6478e48753c21cb4",
+    "semantic_hash": "1a362b38cbbc7aaf6478e48753c21cb4"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\store-pages\\[id]\\page.tsx": {
+    "mtime": 1780543072.5400867,
+    "ast_hash": "9730bd1dc147e56ef0adcf350930f104",
+    "semantic_hash": "9730bd1dc147e56ef0adcf350930f104"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\store\\loading.tsx": {
+    "mtime": 1780674994.2038796,
+    "ast_hash": "001e4576bb1a8a9a93c62049bb060aa7",
+    "semantic_hash": "001e4576bb1a8a9a93c62049bb060aa7"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\store\\page.tsx": {
+    "mtime": 1780378927.8183324,
+    "ast_hash": "edc4de0a0c1ca441cb974cc91d046a48",
+    "semantic_hash": "edc4de0a0c1ca441cb974cc91d046a48"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\store\\product\\[id]\\loading.tsx": {
+    "mtime": 1780674994.2049077,
+    "ast_hash": "b58472cc629f896e420fa1709eb6e8cb",
+    "semantic_hash": "b58472cc629f896e420fa1709eb6e8cb"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\store\\product\\[id]\\page.tsx": {
+    "mtime": 1780378927.8193622,
+    "ast_hash": "d95f2d6b5f69adbb9444e6a844888555",
+    "semantic_hash": "d95f2d6b5f69adbb9444e6a844888555"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\vendors\\[vendorId]\\ReviewsCarousel.tsx": {
+    "mtime": 1780479481.8653312,
+    "ast_hash": "953bf950dde7acda84b7bfc3dc16a61b",
+    "semantic_hash": "953bf950dde7acda84b7bfc3dc16a61b"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\vendors\\[vendorId]\\page.tsx": {
+    "mtime": 1780624725.860053,
+    "ast_hash": "5fade90dccec56a96eb805cc6bec5e76",
+    "semantic_hash": "5fade90dccec56a96eb805cc6bec5e76"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\vendors\\[vendorId]\\products\\[productId]\\ProductGallery.tsx": {
+    "mtime": 1780647653.280161,
+    "ast_hash": "f39ab90731b5445c838a5bc7c0cb83b2",
+    "semantic_hash": "f39ab90731b5445c838a5bc7c0cb83b2"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\vendors\\[vendorId]\\products\\[productId]\\ProductPurchasePanel.tsx": {
+    "mtime": 1780668163.4053054,
+    "ast_hash": "b9fd7f4634bdbd02598f0cc0e7fd3219",
+    "semantic_hash": "b9fd7f4634bdbd02598f0cc0e7fd3219"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\vendors\\[vendorId]\\products\\[productId]\\page.tsx": {
+    "mtime": 1780668163.4042735,
+    "ast_hash": "f05ec2cdaa7c16f120292b0626f99c09",
+    "semantic_hash": "f05ec2cdaa7c16f120292b0626f99c09"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\vendors\\[vendorId]\\reviews\\new\\ReviewForm.tsx": {
+    "mtime": 1780440839.5698607,
+    "ast_hash": "3da039d4dddf978d8ae5b2c8bcd252c1",
+    "semantic_hash": "3da039d4dddf978d8ae5b2c8bcd252c1"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\vendors\\[vendorId]\\reviews\\new\\page.tsx": {
+    "mtime": 1780624928.9268584,
+    "ast_hash": "edf4827e914b8cca0b364877f9f97fd0",
+    "semantic_hash": "edf4827e914b8cca0b364877f9f97fd0"
+  },
+  "E:\\coding projects\\matjer\\frontend\\app\\vendors\\[vendorId]\\storefront\\page.tsx": {
+    "mtime": 1780624739.0392425,
+    "ast_hash": "4bf8583ce45d16da6e93cdb169ae7218",
+    "semantic_hash": "4bf8583ce45d16da6e93cdb169ae7218"
+  },
+  "E:\\coding projects\\matjer\\frontend\\eslint.config.mjs": {
+    "mtime": 1779747186.5151806,
+    "ast_hash": "dfa1f5f6a7037bf39dc510f30b180002",
+    "semantic_hash": "dfa1f5f6a7037bf39dc510f30b180002"
+  },
+  "E:\\coding projects\\matjer\\frontend\\lib\\api.ts": {
+    "mtime": 1780675958.648602,
+    "ast_hash": "f1e2a316a1923cf033345a449c6b9f21",
+    "semantic_hash": "f1e2a316a1923cf033345a449c6b9f21"
+  },
+  "E:\\coding projects\\matjer\\frontend\\lib\\cart.ts": {
+    "mtime": 1780676125.9254894,
+    "ast_hash": "d4fbe7dfe40f0d34db2c2375d0866754",
+    "semantic_hash": "d4fbe7dfe40f0d34db2c2375d0866754"
+  },
+  "E:\\coding projects\\matjer\\frontend\\lib\\location-data.ts": {
+    "mtime": 1780562299.5822628,
+    "ast_hash": "55923cf31ed9a33888529e551d509131",
+    "semantic_hash": "55923cf31ed9a33888529e551d509131"
+  },
+  "E:\\coding projects\\matjer\\frontend\\lib\\store-templates.ts": {
+    "mtime": 1780566399.3067453,
+    "ast_hash": "35dfe314eb8fca19e3f1d2d51a351131",
+    "semantic_hash": "35dfe314eb8fca19e3f1d2d51a351131"
+  },
+  "E:\\coding projects\\matjer\\frontend\\lib\\theme.ts": {
+    "mtime": 1780571513.9457836,
+    "ast_hash": "1a142c03caad01e2fd7558ccc1d15b2b",
+    "semantic_hash": "1a142c03caad01e2fd7558ccc1d15b2b"
+  },
+  "E:\\coding projects\\matjer\\frontend\\next-env.d.ts": {
+    "mtime": 1781264689.7400784,
+    "ast_hash": "d0f8375ae1199dc7acd3977fc33b78b8",
+    "semantic_hash": "d0f8375ae1199dc7acd3977fc33b78b8"
+  },
+  "E:\\coding projects\\matjer\\frontend\\next.config.ts": {
+    "mtime": 1780675958.6491158,
+    "ast_hash": "2bfbd2ae8ad10719a1a4734d51479be3",
+    "semantic_hash": "2bfbd2ae8ad10719a1a4734d51479be3"
+  },
+  "E:\\coding projects\\matjer\\frontend\\package.json": {
+    "mtime": 1780438094.213101,
+    "ast_hash": "65b9178d1f454df69b6b7e3223290e3e",
+    "semantic_hash": "65b9178d1f454df69b6b7e3223290e3e"
+  },
+  "E:\\coding projects\\matjer\\frontend\\playwright.config.ts": {
+    "mtime": 1779834845.978163,
+    "ast_hash": "c79c5fbd83d205c7f4f682e42b68e0fe",
+    "semantic_hash": "c79c5fbd83d205c7f4f682e42b68e0fe"
+  },
+  "E:\\coding projects\\matjer\\frontend\\postcss.config.mjs": {
+    "mtime": 1779747186.535318,
+    "ast_hash": "239f3ebf717465dc636818a1a619398d",
+    "semantic_hash": "239f3ebf717465dc636818a1a619398d"
+  },
+  "E:\\coding projects\\matjer\\frontend\\public\\nmoo-mobile-controls.js": {
+    "mtime": 1780678882.7018602,
+    "ast_hash": "79428da31f7f03c51e0104afac79a411",
+    "semantic_hash": "79428da31f7f03c51e0104afac79a411"
+  },
+  "E:\\coding projects\\matjer\\frontend\\tests\\store-dashboard.spec.ts": {
+    "mtime": 1780382440.3783965,
+    "ast_hash": "49c202fb3e081875e471e2cfff8bcbab",
+    "semantic_hash": "49c202fb3e081875e471e2cfff8bcbab"
+  },
+  "E:\\coding projects\\matjer\\frontend\\tsconfig.json": {
+    "mtime": 1779747244.7724483,
+    "ast_hash": "02fc19ad21338c2ab820a70136310db4",
+    "semantic_hash": "02fc19ad21338c2ab820a70136310db4"
+  },
+  "E:\\coding projects\\matjer\\frontend\\vercel.json": {
+    "mtime": 1779837128.520282,
+    "ast_hash": "83f8bd5dc7bb769c9ac8fbe0edac935e",
+    "semantic_hash": "83f8bd5dc7bb769c9ac8fbe0edac935e"
+  },
+  "E:\\coding projects\\matjer\\package.json": {
+    "mtime": 1779837866.1889422,
+    "ast_hash": "5535cbfa5bd4f1b9944659b3b0cdc54c",
+    "semantic_hash": "5535cbfa5bd4f1b9944659b3b0cdc54c"
+  },
+  "E:\\coding projects\\matjer\\scripts\\check-production.js": {
+    "mtime": 1780379947.904685,
+    "ast_hash": "c65ed46dc863476cea9f2a002bf5b843",
+    "semantic_hash": "c65ed46dc863476cea9f2a002bf5b843"
+  },
+  "E:\\coding projects\\matjer\\BACKEND_RENDER_DEPLOYMENT.md": {
+    "mtime": 1779838645.4227695,
+    "ast_hash": "6f21da182dc52fdc680e4da3bf61cc7e",
+    "semantic_hash": "6f21da182dc52fdc680e4da3bf61cc7e"
+  },
+  "E:\\coding projects\\matjer\\DEPLOYMENT_CHECKLIST.md": {
+    "mtime": 1780379970.9205215,
+    "ast_hash": "f184a2c2736b5a87bcb273acfe33613f",
+    "semantic_hash": "f184a2c2736b5a87bcb273acfe33613f"
+  },
+  "E:\\coding projects\\matjer\\DEPLOYMENT_PROJECTS.md": {
+    "mtime": 1779837764.9459918,
+    "ast_hash": "fa89f0d144cd830b5a97e403913339f8",
+    "semantic_hash": "fa89f0d144cd830b5a97e403913339f8"
+  },
+  "E:\\coding projects\\matjer\\DOMAIN_SETUP.md": {
+    "mtime": 1779837866.1899645,
+    "ast_hash": "b43efb07e9803b043054dfaf0fe7c75a",
+    "semantic_hash": "b43efb07e9803b043054dfaf0fe7c75a"
+  },
+  "E:\\coding projects\\matjer\\FRONTEND_VERCEL_DEPLOYMENT.md": {
+    "mtime": 1780379970.9210339,
+    "ast_hash": "85ce3b2e25d762c7789b9148f8672044",
+    "semantic_hash": "85ce3b2e25d762c7789b9148f8672044"
+  },
+  "E:\\coding projects\\matjer\\OPTIONAL_FEATURES.md": {
+    "mtime": 1780379761.1509414,
+    "ast_hash": "e545a2fa5e98c0173aebae4a6669104f",
+    "semantic_hash": "e545a2fa5e98c0173aebae4a6669104f"
+  },
+  "E:\\coding projects\\matjer\\PRODUCTION_DATABASE.md": {
+    "mtime": 1779837230.7033443,
+    "ast_hash": "fee5c4b85c2957484ab63b1f9a6cf2b3",
+    "semantic_hash": "fee5c4b85c2957484ab63b1f9a6cf2b3"
+  },
+  "E:\\coding projects\\matjer\\PRODUCTION_ENV.md": {
+    "mtime": 1779838645.4222207,
+    "ast_hash": "3bd1d522e6ca76a29c0321f1a50e0c37",
+    "semantic_hash": "3bd1d522e6ca76a29c0321f1a50e0c37"
+  },
+  "E:\\coding projects\\matjer\\SECURITY_NOTES.md": {
+    "mtime": 1779838614.2288072,
+    "ast_hash": "e9a89c2ae886066ce426aa7bd59279d3",
+    "semantic_hash": "e9a89c2ae886066ce426aa7bd59279d3"
+  },
+  "E:\\coding projects\\matjer\\SEED_DATA.md": {
+    "mtime": 1780384877.305491,
+    "ast_hash": "9d90f324ce56e6965ad62464c273fefb",
+    "semantic_hash": "9d90f324ce56e6965ad62464c273fefb"
+  },
+  "E:\\coding projects\\matjer\\backend\\DEPLOYMENT.md": {
+    "mtime": 1779838086.165393,
+    "ast_hash": "ebbc5a46c53a22edc934b59b512e3231",
+    "semantic_hash": "ebbc5a46c53a22edc934b59b512e3231"
+  },
+  "E:\\coding projects\\matjer\\frontend\\AGENTS.md": {
+    "mtime": 1779747392.9149394,
+    "ast_hash": "9e09241799026ac05be315a2f0b50055",
+    "semantic_hash": "9e09241799026ac05be315a2f0b50055"
+  },
+  "E:\\coding projects\\matjer\\frontend\\CLAUDE.md": {
+    "mtime": 1779747392.9149394,
+    "ast_hash": "5c27369b226fcf2be8a6cfe52224e767",
+    "semantic_hash": "5c27369b226fcf2be8a6cfe52224e767"
+  },
+  "E:\\coding projects\\matjer\\frontend\\DEPLOYMENT.md": {
+    "mtime": 1779837632.2982645,
+    "ast_hash": "eff7e74c466c2563c88edd4248b54566",
+    "semantic_hash": "eff7e74c466c2563c88edd4248b54566"
+  },
+  "E:\\coding projects\\matjer\\frontend\\README.md": {
+    "mtime": 1779747186.4987438,
+    "ast_hash": "f15aaa42d5d299d091b1171097ea56ad",
+    "semantic_hash": "f15aaa42d5d299d091b1171097ea56ad"
+  },
+  "E:\\coding projects\\matjer\\implementation_plan.md": {
+    "mtime": 1780384877.304467,
+    "ast_hash": "2c29af0753085a910db42c49a6845eb7",
+    "semantic_hash": "2c29af0753085a910db42c49a6845eb7"
+  },
+  "E:\\coding projects\\matjer\\plan.md": {
+    "mtime": 1780384877.3049772,
+    "ast_hash": "61c7bb91ac5d10352477f871a0682fc0",
+    "semantic_hash": "61c7bb91ac5d10352477f871a0682fc0"
+  },
+  "E:\\coding projects\\matjer\\render.yaml": {
+    "mtime": 1779838645.4206855,
+    "ast_hash": "1daa096b64405e9020b261b74af02cff",
+    "semantic_hash": "1daa096b64405e9020b261b74af02cff"
+  },
+  "E:\\coding projects\\matjer\\frontend\\public\\file.svg": {
+    "mtime": 1779747186.5420127,
+    "ast_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71",
+    "semantic_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71"
+  },
+  "E:\\coding projects\\matjer\\frontend\\public\\globe.svg": {
+    "mtime": 1779747186.5496714,
+    "ast_hash": "2aaafa6a49b6563925fe440891e32717",
+    "semantic_hash": "2aaafa6a49b6563925fe440891e32717"
+  },
+  "E:\\coding projects\\matjer\\frontend\\public\\next.svg": {
+    "mtime": 1779747186.5594685,
+    "ast_hash": "8e061864f388b47f33a1c3780831193e",
+    "semantic_hash": "8e061864f388b47f33a1c3780831193e"
+  },
+  "E:\\coding projects\\matjer\\frontend\\public\\nmoo-loading.gif": {
+    "mtime": 1780674647.400248,
+    "ast_hash": "ca0bd76de449965831c08927e1f71ff8",
+    "semantic_hash": "ca0bd76de449965831c08927e1f71ff8"
+  },
+  "E:\\coding projects\\matjer\\frontend\\public\\nmoo-logo.png": {
+    "mtime": 1779816348.1411521,
+    "ast_hash": "71dfa943eb7d84e86ceccd71e083b3b7",
+    "semantic_hash": "71dfa943eb7d84e86ceccd71e083b3b7"
+  },
+  "E:\\coding projects\\matjer\\frontend\\public\\vercel.svg": {
+    "mtime": 1779747186.568144,
+    "ast_hash": "c0af2f507b369b085b35ef4bbe3bcf1e",
+    "semantic_hash": "c0af2f507b369b085b35ef4bbe3bcf1e"
+  },
+  "E:\\coding projects\\matjer\\frontend\\public\\window.svg": {
+    "mtime": 1779747186.5765045,
+    "ast_hash": "a2760511c65806022ad20adf74370ff3",
+    "semantic_hash": "a2760511c65806022ad20adf74370ff3"
+  }
+}

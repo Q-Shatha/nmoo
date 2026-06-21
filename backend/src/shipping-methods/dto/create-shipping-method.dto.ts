@@ -60,6 +60,29 @@ export class CreateShippingMethodDto {
   @IsBoolean()
   cashOnDeliveryEnabled?: boolean;
 
+  @ApiPropertyOptional({ example: false })
+  @IsOptional()
+  @IsBoolean()
+  freeShippingEnabled?: boolean;
+
+  @ApiPropertyOptional({ example: 200, minimum: 0 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  freeShippingMinimum?: number;
+
+  @ApiPropertyOptional({ example: false })
+  @IsOptional()
+  @IsBoolean()
+  isPickup?: boolean;
+
+  @ApiPropertyOptional({ example: "الرياض، حي العليا، شارع العروبة" })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  pickupAddress?: string;
+
   @ApiPropertyOptional({ example: ["منطقة الرياض", "منطقة مكة المكرمة"], type: [String] })
   @IsOptional()
   @IsArray()

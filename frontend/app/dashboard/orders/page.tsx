@@ -2,6 +2,7 @@
 import { ApiError, getOrders, Order } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable, EmptyPanel, formatDashboardDate, formatDashboardPrice, formatOrderStatus, statusClass } from "../DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "../dashboard-data";
+import { BulkPrintButton } from "./BulkPrintDialog";
 
 type DashboardOrdersPageProps = {
   searchParams?: Promise<{ q?: string }>;
@@ -30,7 +31,19 @@ export default async function DashboardOrdersPage({ searchParams }: DashboardOrd
             </form>
             <div className="order-1 flex items-center justify-between gap-4 text-right lg:order-2">
               <h2 className="text-xl font-black text-on-surface">كل الطلبات</h2>
-              <span className="text-sm font-bold text-on-surface-variant">{visibleOrders.length} / {data.orders.length} طلب</span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-bold text-on-surface-variant">{visibleOrders.length} / {data.orders.length} طلب</span>
+                <a
+                  href={query ? `/dashboard/orders/print?q=${encodeURIComponent(query)}` : "/dashboard/orders/print"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-outline-variant bg-surface px-4 py-2 text-sm font-bold text-on-surface hover:bg-surface-container-low"
+                >
+                  🖨️ طباعة الكل
+                </a>
+                <BulkPrintButton type="invoices" query={query} />
+                <BulkPrintButton type="labels" query={query} />
+              </div>
             </div>
           </div>
           {visibleOrders.length > 0 ? <OrdersTable orders={visibleOrders} /> : <EmptyPanel title={query ? "لا توجد طلبات مطابقة للبحث" : "لا توجد طلبات بعد"} />}

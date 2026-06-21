@@ -5,7 +5,7 @@ import { PublicFooter } from "../components/PublicFooter";
 import { PublicHeader } from "../components/PublicHeader";
 
 type DashboardShellProps = {
-  active: "overview" | "orders" | "products" | "shipping" | "discounts" | "settings";
+  active: "overview" | "orders" | "products" | "shipping" | "discounts" | "reviews" | "analytics" | "settings";
   title: string;
   description: string;
   userName?: string;
@@ -20,6 +20,8 @@ const navItems: Array<{ key: DashboardShellProps["active"]; label: string; icon:
   { key: "products", label: "المنتجات", icon: "▣", href: "/dashboard/products" },
   { key: "shipping", label: "الشحن", icon: "⇄", href: "/dashboard/shipping" },
   { key: "discounts", label: "التخفيضات", icon: "%", href: "/dashboard/discounts" },
+  { key: "reviews", label: "التقييمات", icon: "★", href: "/dashboard/reviews" },
+  { key: "analytics", label: "التقارير", icon: "↗", href: "/dashboard/analytics" },
   { key: "settings", label: "الإعدادات", icon: "⚙", href: "/dashboard/settings" },
 ];
 
@@ -51,17 +53,17 @@ export function DashboardUnavailable({
   needsLogin?: boolean;
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4 text-on-surface" dir="rtl">
-      <div className="w-full max-w-xl rounded-[28px] border border-outline-variant bg-surface p-8 text-center shadow-soft">
-        <h1 className="text-3xl font-black text-primary">
+    <div dir="rtl" className="flex flex-1 items-center justify-center py-12">
+      <div className="w-full rounded-3xl border border-outline-variant bg-surface px-10 py-12 text-center shadow-soft">
+        <h1 className="text-2xl font-black leading-relaxed text-primary">
           {title ?? (needsLogin ? "تحتاج تسجيل دخول" : "تعذر تحميل الصفحة")}
         </h1>
-        <p className="mt-3 leading-8 text-on-surface-variant">
+        <p className="mt-4 text-base leading-8 text-on-surface-variant">
           {description ?? message ?? "لم نتمكن من تحميل بيانات لوحة التحكم. حاول مرة أخرى بعد لحظات."}
         </p>
         <Link
           href={needsLogin ? "/login" : "/dashboard"}
-          className="mt-6 inline-flex rounded-2xl bg-primary px-6 py-3 font-bold text-white"
+          className="mt-8 block rounded-2xl bg-primary px-6 py-4 text-center text-base font-bold text-white"
         >
           {needsLogin ? "تسجيل الدخول" : "العودة للوحة التحكم"}
         </Link>

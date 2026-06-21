@@ -3,8 +3,40 @@
 import type React from "react";
 import { useMemo, useState } from "react";
 import { FiEdit3, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
-import { ApiError, createDiscountCode, deleteDiscountCode, DiscountCode, DiscountCodeInput, DiscountType, updateDiscountCode } from "@/lib/api";
+import { ApiError, createDiscountCode, deleteDiscountCode, DiscountCode, DiscountCodeInput, DiscountType, Product, updateDiscountCode } from "@/lib/api";
 import { DashboardAccordion } from "./DashboardAccordion";
+
+function ProductMultiSelect({
+  products,
+  selected,
+  onChange,
+}: {
+  products: Product[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  function toggle(id: string) {
+    onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
+  }
+
+  if (products.length === 0) {
+    return <p className="py-2 text-sm text-on-surface-variant">لا توجد منتجات</p>;
+  }
+
+  return (
+    <div className="flex max-h-40 flex-col gap-1 overflow-y-auto rounded-2xl border border-outline-variant bg-surface p-2">
+      {products.map((p) => (
+        <label key={p.id} className="flex cursor-pointer items-center gap-2 rounded-xl px-2 py-1.5 text-sm font-bold text-on-surface hover:bg-surface-container">
+          <input type="checkbox" checked={selected.includes(p.id)} onChange={() => toggle(p.id)} className="accent-primary" />
+          {p.title}
+        </label>
+      ))}
+      {selected.length === 0 && (
+        <p className="px-2 py-1 text-xs italic text-on-surface-variant">بدون تحديد = يسري على جميع المنتجات</p>
+      )}
+    </div>
+  );
+}
 
 const emptyForm: DiscountCodeInput = {
   code: "",
@@ -16,7 +48,7 @@ const emptyForm: DiscountCodeInput = {
   maxUsesPerUser: 1,
 };
 
-export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCode[] }) {
+export function DiscountCodeManager({ initialCodes, products }: { initialCodes: DiscountCode[]; products: Product[] }) {
   const [codes, setCodes] = useState(initialCodes);
   const [form, setForm] = useState<DiscountCodeInput>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -59,6 +91,7 @@ export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCo
       maxUsesPerUser: code.maxUsesPerUser ?? undefined,
       startsAt: toDateInput(code.startsAt),
       expiresAt: toDateInput(code.expiresAt),
+      productIds: code.products?.map((p) => p.product.id) ?? [],
     });
   }
 
@@ -121,8 +154,21 @@ export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCo
         <Field label="ينتهي في" className="lg:col-span-3">
           <input className="input-field" type="datetime-local" value={form.expiresAt ?? ""} onChange={(event) => setForm((current) => ({ ...current, expiresAt: event.target.value || undefined }))} />
         </Field>
-        <div className="flex items-end gap-2 lg:col-span-2">
-          <button className="primary-button w-full py-3 disabled:opacity-60" disabled={isSaving} type="submit">
+
+        {/* Product selector — full row */}
+        <div className="lg:col-span-12">
+          <Field label="تطبيق على منتجات محددة">
+            <ProductMultiSelect
+              products={products}
+              selected={form.productIds ?? []}
+              onChange={(ids) => setForm((c) => ({ ...c, productIds: ids }))}
+            />
+          </Field>
+        </div>
+
+        {/* Submit row — full width */}
+        <div className="flex items-center gap-3 lg:col-span-12">
+          <button className="primary-button px-8 py-3 disabled:opacity-60" disabled={isSaving} type="submit">
             {editingId ? "تحديث" : "إضافة"}
           </button>
           {editingId ? (
@@ -147,6 +193,16 @@ export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCo
               </div>
             </div>
             <div className="mt-4 grid gap-2 text-sm">
+              {code.products && code.products.length > 0 && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-on-surface-variant shrink-0">المنتجات</span>
+                  <span className="flex flex-wrap justify-end gap-1">
+                    {code.products.map((p) => (
+                      <span key={p.product.id} className="rounded-full bg-surface-container px-2 py-0.5 text-xs font-bold">{p.product.title}</span>
+                    ))}
+                  </span>
+                </div>
+              )}
               <div className="flex items-center justify-between gap-3">
                 <span className="text-on-surface-variant">الاستخدام</span>
                 <span className="font-bold text-on-surface">{code._count?.redemptions ?? 0} / {code.maxUses ?? "بدون حد"}</span>
@@ -176,7 +232,7 @@ export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCo
         <table className="w-full min-w-[760px] text-right">
           <thead>
             <tr className="bg-surface-container-low/60">
-              {["الكود", "الخصم", "الحالة", "الاستخدام", "الحد لكل عميل", "الإجراءات"].map((heading) => (
+              {["الكود", "الخصم", "المنتج", "الحالة", "الاستخدام", "الحد لكل عميل", "الإجراءات"].map((heading) => (
                 <th key={heading} className="border-b border-outline-variant/15 px-4 py-3 text-sm font-bold text-on-surface-variant">{heading}</th>
               ))}
             </tr>
@@ -186,6 +242,11 @@ export function DiscountCodeManager({ initialCodes }: { initialCodes: DiscountCo
               <tr key={code.id}>
                 <td className="px-4 py-4 font-black text-on-surface">{code.code}</td>
                 <td className="px-4 py-4 font-bold text-red-600">{formatDiscount(code)}</td>
+                <td className="px-4 py-4 text-sm text-on-surface-variant">
+                  {code.products && code.products.length > 0
+                    ? <span className="flex flex-wrap gap-1">{code.products.map((p) => <span key={p.product.id} className="rounded-full bg-surface-container px-2 py-0.5 text-xs font-bold">{p.product.title}</span>)}</span>
+                    : <span className="italic">جميع المنتجات</span>}
+                </td>
                 <td className="px-4 py-4"><span className={`rounded-full px-3 py-1 text-sm font-bold ${code.enabled ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-700"}`}>{code.enabled ? "نشط" : "متوقف"}</span></td>
                 <td className="px-4 py-4 text-on-surface-variant">{code._count?.redemptions ?? 0} / {code.maxUses ?? "بدون حد"}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{code.maxUsesPerUser ?? "بدون حد"}</td>

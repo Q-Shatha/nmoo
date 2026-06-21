@@ -15,6 +15,10 @@ type Draft = {
   eta: string;
   enabled: boolean;
   cashOnDeliveryEnabled: boolean;
+  freeShippingEnabled: boolean;
+  freeShippingMinimum: string;
+  isPickup: boolean;
+  pickupAddress: string;
   deliveryLocations: ShippingDeliveryLocation[];
 };
 
@@ -32,10 +36,15 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
     code: method?.code ?? "",
     name: method?.name ?? "",
     fee: method?.fee ? String(method.fee) : "",
+    freeShippingMinimum: method?.freeShippingMinimum ? String(method.freeShippingMinimum) : "",
     description: method?.description ?? "",
     eta: method?.eta ?? "",
     enabled: method?.enabled ?? true,
     cashOnDeliveryEnabled: method?.cashOnDeliveryEnabled ?? false,
+    freeShippingEnabled: method?.freeShippingEnabled ?? false,
+    freeShippingMinimum: method?.freeShippingMinimum ? String(method.freeShippingMinimum) : "",
+    isPickup: method?.isPickup ?? false,
+    pickupAddress: method?.pickupAddress ?? "",
     deliveryLocations: method?.deliveryLocations ?? [],
   });
   const [locationDraft, setLocationDraft] = useState<LocationDraft>(emptyLocation);
@@ -80,6 +89,10 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
         code: draft.code,
         name: draft.name,
         fee: Number(draft.fee),
+        freeShippingEnabled: draft.freeShippingEnabled,
+        freeShippingMinimum: draft.freeShippingEnabled && draft.freeShippingMinimum ? Number(draft.freeShippingMinimum) : null,
+        isPickup: draft.isPickup,
+        pickupAddress: draft.isPickup && draft.pickupAddress ? draft.pickupAddress : null,
         description: draft.description || undefined,
         eta: draft.eta || undefined,
         enabled: draft.enabled,
@@ -131,10 +144,43 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
         </Field>
 
         <DashboardAccordion title="خيارات الشركة والدفع" defaultOpen>
-        <div className="grid gap-3 md:grid-cols-2">
-          <Toggle label="مفعلة للعملاء" checked={draft.enabled} onChange={(enabled) => setDraft({ ...draft, enabled })} />
-          <Toggle label="توفير الدفع عند الاستلام لهذه الشركة" checked={draft.cashOnDeliveryEnabled} onChange={(cashOnDeliveryEnabled) => setDraft({ ...draft, cashOnDeliveryEnabled })} />
-        </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <Toggle label="مفعلة للعملاء" checked={draft.enabled} onChange={(enabled) => setDraft({ ...draft, enabled })} />
+            <Toggle label="توفير الدفع عند الاستلام لهذه الشركة" checked={draft.cashOnDeliveryEnabled} onChange={(cashOnDeliveryEnabled) => setDraft({ ...draft, cashOnDeliveryEnabled })} />
+            <Toggle label="استلام من المتجر (بدون شحن)" checked={draft.isPickup} onChange={(isPickup) => setDraft({ ...draft, isPickup })} />
+            {draft.isPickup && (
+              <div className="grid gap-2 md:col-span-2">
+                <span className="text-sm font-bold text-on-surface">رابط الموقع على قوقل ماب</span>
+                <input
+                  className="input-field px-4 py-3 text-left"
+                  dir="ltr"
+                  placeholder="https://maps.google.com/..."
+                  required={draft.isPickup}
+                  type="url"
+                  value={draft.pickupAddress}
+                  onChange={(e) => setDraft({ ...draft, pickupAddress: e.target.value })}
+                />
+                <p className="text-xs text-on-surface-variant">افتح قوقل ماب، ابحث عن موقع متجرك، ثم انسخ الرابط والصقه هنا</p>
+              </div>
+            )}
+            <Toggle label="شحن مجاني عند حد أدنى" checked={draft.freeShippingEnabled} onChange={(freeShippingEnabled) => setDraft({ ...draft, freeShippingEnabled })} />
+            {draft.freeShippingEnabled && (
+              <div className="grid gap-2">
+                <span className="text-sm font-bold text-on-surface">الحد الأدنى للشحن المجاني (ر.س)</span>
+                <input
+                  className="input-field px-4 py-3 text-left"
+                  dir="ltr"
+                  min="0"
+                  placeholder="مثال: 200"
+                  required={draft.freeShippingEnabled}
+                  step="0.01"
+                  type="number"
+                  value={draft.freeShippingMinimum}
+                  onChange={(e) => setDraft({ ...draft, freeShippingMinimum: e.target.value })}
+                />
+              </div>
+            )}
+          </div>
         </DashboardAccordion>
 
         <DashboardAccordion title="مناطق التوصيل المتاحة" description="اختر الدول والمناطق والمدن التي تدعمها شركة الشحن.">

@@ -7,12 +7,17 @@ import { CreateShippingMethodDto } from "./dto/create-shipping-method.dto";
 import { UpdateShippingMethodDto } from "./dto/update-shipping-method.dto";
 
 type VendorShippingChoice = {
+  vendorId: string;
   code: string;
   name: string;
   description: string | null;
   eta: string | null;
   fee: Prisma.Decimal;
+  freeShippingEnabled: boolean;
+  freeShippingMinimum: Prisma.Decimal | null;
   cashOnDeliveryEnabled: boolean;
+  isPickup: boolean;
+  pickupAddress: string | null;
   excludedRegions: string[];
   unavailableLocations: Prisma.JsonValue;
   deliveryLocations: Prisma.JsonValue;
@@ -57,6 +62,10 @@ export class ShippingMethodsService {
           eta: this.optionalText(dto.eta),
           enabled: dto.enabled ?? true,
           cashOnDeliveryEnabled: dto.cashOnDeliveryEnabled ?? false,
+          freeShippingEnabled: dto.freeShippingEnabled ?? false,
+          freeShippingMinimum: dto.freeShippingMinimum != null ? new Prisma.Decimal(dto.freeShippingMinimum) : null,
+          isPickup: dto.isPickup ?? false,
+          pickupAddress: dto.pickupAddress?.trim() || null,
           excludedRegions: this.normalizeExcludedRegions(dto.excludedRegions),
           unavailableLocations: this.normalizeUnavailableLocations(dto.unavailableLocations),
           deliveryLocations: this.normalizeUnavailableLocations(dto.deliveryLocations),
@@ -103,6 +112,22 @@ export class ShippingMethodsService {
 
     if (dto.cashOnDeliveryEnabled !== undefined) {
       data.cashOnDeliveryEnabled = dto.cashOnDeliveryEnabled;
+    }
+
+    if (dto.freeShippingEnabled !== undefined) {
+      data.freeShippingEnabled = dto.freeShippingEnabled;
+    }
+
+    if (dto.freeShippingMinimum !== undefined) {
+      data.freeShippingMinimum = dto.freeShippingMinimum != null ? new Prisma.Decimal(dto.freeShippingMinimum) : null;
+    }
+
+    if (dto.isPickup !== undefined) {
+      data.isPickup = dto.isPickup;
+    }
+
+    if (dto.pickupAddress !== undefined) {
+      data.pickupAddress = dto.pickupAddress?.trim() || null;
     }
 
     if (dto.excludedRegions !== undefined) {
@@ -158,7 +183,8 @@ export class ShippingMethodsService {
       orderBy: [{ name: "asc" }],
     });
 
-    const options = this.buildSharedOptions(vendorIds, methods, destination);
+    const vendorSubtotals = this.calculateVendorSubtotals(items, products);
+    const options = this.buildSharedOptions(vendorIds, methods, destination, vendorSubtotals);
 
     return options.map((option) => ({
       code: option.code,
@@ -167,6 +193,8 @@ export class ShippingMethodsService {
       eta: option.eta,
       fee: option.fee.toFixed(2),
       cashOnDeliveryEnabled: option.cashOnDeliveryEnabled,
+      isPickup: option.isPickup,
+      pickupAddress: option.pickupAddress,
       vendorCount: vendorIds.length,
     }));
   }
@@ -196,9 +224,17 @@ export class ShippingMethodsService {
       throw new BadRequestException("Selected shipping method is not available for all vendors in this order");
     }
 
+    const vendorSubtotals = this.calculateVendorSubtotals(items, products);
+
     return {
       code,
-      fee: availableMethods.reduce((sum, method) => sum.add(method.fee), new Prisma.Decimal(0)),
+      fee: availableMethods.reduce((sum, method) => {
+        const subtotal = vendorSubtotals.get(method.vendorId) ?? new Prisma.Decimal(0);
+        if (method.freeShippingMinimum && subtotal.gte(method.freeShippingMinimum)) {
+          return sum;
+        }
+        return sum.add(method.fee);
+      }, new Prisma.Decimal(0)),
       cashOnDeliveryEnabled: availableMethods.every((method) => method.cashOnDeliveryEnabled),
       products,
     };
@@ -260,7 +296,7 @@ export class ShippingMethodsService {
     return products;
   }
 
-  private buildSharedOptions(vendorIds: string[], methods: VendorShippingChoice[], destination: ShippingDestination) {
+  private buildSharedOptions(vendorIds: string[], methods: VendorShippingChoice[], destination: ShippingDestination, vendorSubtotals: Map<string, Prisma.Decimal> = new Map()) {
     const methodsByCode = new Map<string, VendorShippingChoice[]>();
 
     for (const method of methods) {
@@ -277,10 +313,30 @@ export class ShippingMethodsService {
         name: group[0].name,
         description: group[0].description,
         eta: group[0].eta,
-        fee: group.reduce((sum, method) => sum.add(method.fee), new Prisma.Decimal(0)),
+        fee: group.reduce((sum, method) => {
+          const subtotal = vendorSubtotals.get(method.vendorId) ?? new Prisma.Decimal(0);
+          if (method.freeShippingEnabled && method.freeShippingMinimum && subtotal.gte(method.freeShippingMinimum)) {
+            return sum;
+          }
+          return sum.add(method.fee);
+        }, new Prisma.Decimal(0)),
         cashOnDeliveryEnabled: group.every((method) => method.cashOnDeliveryEnabled),
+        isPickup: group[0].isPickup,
+        pickupAddress: group[0].pickupAddress,
       }))
       .sort((first, second) => Number(first.fee) - Number(second.fee));
+  }
+
+  private calculateVendorSubtotals(items: ShippingMethodItemDto[], products: Array<{ id: string; vendorId: string; price: Prisma.Decimal }>) {
+    const priceById = new Map(products.map((p) => [p.id, p]));
+    const subtotals = new Map<string, Prisma.Decimal>();
+    for (const item of items) {
+      const product = priceById.get(item.productId);
+      if (!product) continue;
+      const current = subtotals.get(product.vendorId) ?? new Prisma.Decimal(0);
+      subtotals.set(product.vendorId, current.add(product.price.mul(item.quantity)));
+    }
+    return subtotals;
   }
 
   private getVendorIds(products: Array<{ vendorId: string }>) {
@@ -344,7 +400,8 @@ export class ShippingMethodsService {
     return Array.from(unique.values());
   }
 
-  private isAvailableForDestination(method: Pick<VendorShippingChoice, "excludedRegions" | "unavailableLocations" | "deliveryLocations">, destination: ShippingDestination) {
+  private isAvailableForDestination(method: Pick<VendorShippingChoice, "isPickup" | "excludedRegions" | "unavailableLocations" | "deliveryLocations">, destination: ShippingDestination) {
+    if (method.isPickup) return true;
     const normalizedCountry = destination.country?.trim().toUpperCase();
     const normalizedRegion = destination.region?.trim();
     const normalizedCity = destination.city?.trim();

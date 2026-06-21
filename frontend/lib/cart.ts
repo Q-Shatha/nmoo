@@ -71,11 +71,22 @@ export function addCartItem(item: CartItem) {
   if (existingItem) {
     existingItem.quantity = Math.min(existingItem.stock, existingItem.quantity + normalizedItem.quantity);
     writeCart(items);
+    trackCartEvent(item.productId, item.vendorId, existingItem.quantity);
     return existingItem.quantity;
   }
 
   writeCart([...items, normalizedItem]);
+  trackCartEvent(item.productId, item.vendorId, normalizedItem.quantity);
   return normalizedItem.quantity;
+}
+
+function trackCartEvent(productId: string, vendorId: string | undefined, quantity: number) {
+  if (!vendorId) return;
+  fetch("/api/cart/track", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId, vendorId, quantity }),
+  }).catch(() => {});
 }
 
 export function removeCartItem(productId: string) {

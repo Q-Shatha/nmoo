@@ -279,6 +279,12 @@ export function ShippingMethodManager({ initialMethods }: { initialMethods: Ship
                 <p className="mt-2 text-sm text-on-surface-variant">الكود: {method.code}</p>
                 <div className="mt-3 flex flex-wrap justify-end gap-2 text-sm font-bold text-on-surface-variant">
                   <span className="rounded-full bg-surface-container-low px-3 py-1">الرسوم: {formatPrice(Number(method.fee))}</span>
+                  {method.isPickup
+                    ? <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">استلام من المتجر</span>
+                    : null}
+                  {method.freeShippingEnabled && method.freeShippingMinimum
+                    ? <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">شحن مجاني عند {formatPrice(Number(method.freeShippingMinimum))}+</span>
+                    : null}
                   {method.eta ? <span className="rounded-full bg-surface-container-low px-3 py-1">{method.eta}</span> : null}
                   {method.description ? <span className="rounded-full bg-surface-container-low px-3 py-1">{method.description}</span> : null}
                   {normalizeDeliveryLocations(method).length ? <span className="rounded-full bg-primary-container px-3 py-1 text-on-primary-container">التوصيل إلى: {normalizeDeliveryLocations(method).map(formatLocation).join("، ")}</span> : <span className="rounded-full bg-surface-container-low px-3 py-1">التوصيل: كل المواقع</span>}

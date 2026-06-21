@@ -1,4 +1,4 @@
-import { ApiError, getMyDiscountCodes } from "@/lib/api";
+import { ApiError, getMyDiscountCodes, getMyProducts } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable } from "../DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "../dashboard-data";
 import { DiscountCodeManager } from "../DiscountCodeManager";
@@ -15,7 +15,7 @@ export default async function DashboardDiscountsPage() {
       logoUrl={data.ok ? data.logoUrl : null}
       storeHref={data.ok ? data.storeHref : undefined}
     >
-      {data.ok ? <DiscountCodeManager initialCodes={data.discountCodes} /> : <DashboardUnavailable message={data.message} needsLogin={data.needsLogin} />}
+      {data.ok ? <DiscountCodeManager initialCodes={data.discountCodes} products={data.products} /> : <DashboardUnavailable message={data.message} needsLogin={data.needsLogin} />}
     </DashboardShell>
   );
 }
@@ -28,12 +28,17 @@ async function loadPageData() {
   }
 
   try {
+    const [discountCodes, products] = await Promise.all([
+      getMyDiscountCodes(base.token),
+      getMyProducts(base.token),
+    ]);
     return {
       ok: true as const,
       userName: base.user.name,
       logoUrl: base.theme.logoUrl,
       storeHref: getVendorStoreHref(base.user),
-      discountCodes: await getMyDiscountCodes(base.token),
+      discountCodes,
+      products,
     };
   } catch (error) {
     return {
