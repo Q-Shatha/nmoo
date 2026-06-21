@@ -32,7 +32,7 @@ export function LoginForm({ initialMessage = "", nextPath = "" }: LoginFormProps
           return (
             <label key={accountMode} className="relative block min-h-12 cursor-pointer touch-manipulation">
               <input className="peer sr-only" data-testid={`login-mode-${accountMode}`} defaultChecked={accountMode === "buyer"} name="expectedRole" type="radio" value={account.role} />
-              <span className="flex min-h-12 items-center justify-center rounded-xl px-4 py-3 text-base font-black text-on-surface-variant transition-colors peer-checked:bg-primary peer-checked:text-on-primary peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary sm:text-sm">
+              <span className="flex min-h-12 items-center justify-center rounded-xl px-4 py-3 text-base font-black text-on-surface-variant transition-colors peer-checked:bg-secondary peer-checked:text-on-secondary peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-secondary sm:text-sm">
                 دخول {account.label}
               </span>
             </label>
@@ -57,7 +57,7 @@ export function LoginForm({ initialMessage = "", nextPath = "" }: LoginFormProps
       </button>
 
       <p className="text-center text-sm leading-7 text-on-surface-variant">
-        لا تملك حسابا؟{" "}
+        لا تملك حسابًا؟{" "}
         <Link className="font-bold text-primary hover:underline" href="/register">
           أنشئ حساب جديد
         </Link>

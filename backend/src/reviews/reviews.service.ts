@@ -168,7 +168,15 @@ export class ReviewsService {
   }
 
   private serializeReview(review: Prisma.ReviewGetPayload<{ include: ReturnType<ReviewsService["reviewIncludes"]> }>) {
-    return review;
+    return {
+      ...review,
+      user: review.user
+        ? {
+            ...review.user,
+            avatarUrl: normalizeAssetUrl(review.user.avatarUrl),
+          }
+        : review.user,
+    };
   }
 
   private normalizeOptionalText(value: string | undefined) {
@@ -179,4 +187,14 @@ export class ReviewsService {
     const trimmedValue = value.trim();
     return trimmedValue.length > 0 ? trimmedValue : null;
   }
+}
+
+function normalizeAssetUrl(value: string | null) {
+  if (!value) {
+    return value;
+  }
+
+  const marker = "/api/assets/";
+  const markerIndex = value.indexOf(marker);
+  return markerIndex === -1 ? value : value.slice(markerIndex);
 }

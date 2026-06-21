@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const SERVER_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:5000";
 
 type RequestOptions = Omit<RequestInit, "body"> & {
   token?: string;
@@ -457,7 +457,7 @@ export class ApiError extends Error {
 }
 
 function buildUrl(path: string, query?: Record<string, string | number | undefined>) {
-  const url = new URL(`/api${path}`, API_BASE_URL);
+  const url = new URL(`/api${path}`, getApiBaseUrl());
 
   Object.entries(query ?? {}).forEach(([key, value]) => {
     if (value !== undefined && value !== "") {
@@ -466,6 +466,14 @@ function buildUrl(path: string, query?: Record<string, string | number | undefin
   });
 
   return url.toString();
+}
+
+function getApiBaseUrl() {
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+
+  return SERVER_API_BASE_URL;
 }
 
 async function apiRequest<T>(path: string, options: RequestOptions = {}) {

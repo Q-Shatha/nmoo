@@ -53,8 +53,9 @@ export function subscribeToCart(callback: () => void) {
 }
 
 export function writeCart(items: CartItem[]) {
-  cachedCartItems = items;
+  cachedCartItems = items.map(normalizeCartItem);
   cachedCartText = JSON.stringify(items);
+  cachedCartText = JSON.stringify(cachedCartItems);
   window.localStorage.setItem(CART_STORAGE_KEY, cachedCartText);
   window.dispatchEvent(new Event("nmoo-cart-change"));
 }
@@ -62,7 +63,7 @@ export function writeCart(items: CartItem[]) {
 export function addCartItem(item: CartItem) {
   const items = readAllCartItems();
   const normalizedItem = {
-    ...item,
+    ...normalizeCartItem(item),
     cartKey: getCartItemKey(item),
   };
   const existingItem = items.find((cartItem) => getCartItemKey(cartItem) === normalizedItem.cartKey);
@@ -128,7 +129,23 @@ function readAllCartItems() {
 }
 
 function filterCartItems(items: CartItem[], vendorId?: string) {
-  return vendorId ? items.filter((item) => item.vendorId === vendorId) : items;
+  const normalizedItems = items.map(normalizeCartItem);
+  return vendorId ? normalizedItems.filter((item) => item.vendorId === vendorId) : normalizedItems;
+}
+
+function normalizeCartItem(item: CartItem): CartItem {
+  return {
+    ...item,
+    imageUrl: normalizeAssetUrl(item.imageUrl),
+  };
+}
+
+function normalizeAssetUrl(value?: string | null) {
+  if (!value) {
+    return value;
+  }
+
+  return value.replace(/^https?:\/\/(?:localhost|127\.0\.0\.1|\d{1,3}(?:\.\d{1,3}){3}):5000\/api\/assets\//, "/api/assets/");
 }
 
 export function getCartItemKey(item: Pick<CartItem, "cartKey" | "productId" | "vendorId" | "selectedOptions" | "selectedAddons">) {

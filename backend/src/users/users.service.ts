@@ -42,11 +42,13 @@ export class UsersService {
     private readonly productAssetsService: ProductAssetsService,
   ) {}
 
-  create(data: Prisma.UserCreateInput) {
-    return this.prisma.user.create({
+  async create(data: Prisma.UserCreateInput) {
+    const user = await this.prisma.user.create({
       data,
       select: safeUserSelect,
     });
+
+    return this.toSafeUser(user);
   }
 
   findByEmail(email: string) {
@@ -56,11 +58,13 @@ export class UsersService {
     });
   }
 
-  findSafeById(id: string) {
-    return this.prisma.user.findUnique({
+  async findSafeById(id: string) {
+    const user = await this.prisma.user.findUnique({
       where: { id },
       select: safeUserSelect,
     });
+
+    return user ? this.toSafeUser(user) : null;
   }
 
   async findPublicVendor(id: string) {
@@ -79,7 +83,7 @@ export class UsersService {
       throw new NotFoundException("Vendor not found");
     }
 
-    return vendor;
+    return this.toSafeUser(vendor);
   }
 
   async findPublicVendorByUsername(storeUsername: string) {
@@ -98,7 +102,7 @@ export class UsersService {
       throw new NotFoundException("Vendor not found");
     }
 
-    return vendor;
+    return this.toSafeUser(vendor);
   }
 
   async checkStoreUsernameAvailability(storeUsername: string, currentUserId?: string) {
@@ -132,11 +136,13 @@ export class UsersService {
       throw new ConflictException("Store username is already taken");
     }
 
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id },
       data: { storeUsername: availability.storeUsername },
       select: safeUserSelect,
     });
+
+    return this.toSafeUser(updatedUser);
   }
 
   async updateStoreStatus(id: string, data: UpdateStoreStatusDto) {
@@ -199,34 +205,40 @@ export class UsersService {
     return { deleted: true };
   }
 
-  updateAddress(id: string, data: UpdateAddressDto) {
-    return this.prisma.user.update({
+  async updateAddress(id: string, data: UpdateAddressDto) {
+    const user = await this.prisma.user.update({
       where: { id },
       data,
       select: safeUserSelect,
     });
+
+    return this.toSafeUser(user);
   }
 
-  updateProfile(id: string, data: UpdateProfileDto) {
-    return this.prisma.user.update({
+  async updateProfile(id: string, data: UpdateProfileDto) {
+    const user = await this.prisma.user.update({
       where: { id },
       data: {
         ...(data.name === undefined ? {} : { name: data.name.trim() }),
       },
       select: safeUserSelect,
     });
+
+    return this.toSafeUser(user);
   }
 
   async updateAvatar(id: string, file: Express.Multer.File) {
     const uploaded = await this.productAssetsService.uploadUserAvatar(file, id);
 
-    return this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: { id },
       data: {
         avatarUrl: uploaded.url,
       },
       select: safeUserSelect,
     });
+
+    return this.toSafeUser(user);
   }
 
   toSafeUser(user: SafeUser | UserWithPassword): SafeUser {
@@ -235,7 +247,7 @@ export class UsersService {
       name: user.name,
       email: user.email,
       storeUsername: user.storeUsername,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: normalizeAssetUrl(user.avatarUrl),
       role: user.role,
       country: user.country,
       phoneNumber: user.phoneNumber,
@@ -284,6 +296,16 @@ const reservedUsernames = new Set([
 
 function normalizeStoreUsername(value: string) {
   return value.trim().toLowerCase();
+}
+
+function normalizeAssetUrl(value: string | null) {
+  if (!value) {
+    return value;
+  }
+
+  const marker = "/api/assets/";
+  const markerIndex = value.indexOf(marker);
+  return markerIndex === -1 ? value : value.slice(markerIndex);
 }
 
 function validateReservedUsername(value: string) {

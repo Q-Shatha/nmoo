@@ -16,6 +16,19 @@
     window.localStorage.setItem(storageKey, JSON.stringify(items));
     window.dispatchEvent(new Event("nmoo-cart-change"));
   };
+  const normalizeAssetUrl = (value) => {
+    if (!value) return value;
+    return String(value).replace(/^https?:\/\/(?:localhost|127\.0\.0\.1|\d{1,3}(?:\.\d{1,3}){3}):5000\/api\/assets\//, "/api/assets/");
+  };
+  const normalizePageImages = () => {
+    if (!isMobile()) return;
+    document.querySelectorAll("img[src]").forEach((image) => {
+      const normalizedSrc = normalizeAssetUrl(image.getAttribute("src"));
+      if (normalizedSrc && normalizedSrc !== image.getAttribute("src")) {
+        image.setAttribute("src", normalizedSrc);
+      }
+    });
+  };
   const captureMobileClick = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -37,7 +50,7 @@
   };
   const addItem = (item) => {
     const items = readItems();
-    const normalizedItem = { ...item, cartKey: getCartItemKey(item) };
+    const normalizedItem = { ...item, imageUrl: normalizeAssetUrl(item.imageUrl), cartKey: getCartItemKey(item) };
     const existing = items.find((cartItem) => getCartItemKey(cartItem) === normalizedItem.cartKey);
     if (existing) existing.quantity = Math.min(existing.stock, existing.quantity + normalizedItem.quantity);
     else items.push(normalizedItem);
@@ -102,7 +115,7 @@
               (item) => `
                 <article class="grid grid-cols-[92px_1fr] gap-4 p-5 text-right">
                   <a class="relative block h-24 w-24 overflow-hidden rounded-xl bg-surface-container-low" href="${getCartItemHref(item)}">
-                    <img class="h-full w-full object-cover" alt="${escapeHtml(item.title)}" src="${escapeHtml(item.imageUrl || "/nmoo-logo.png")}" loading="lazy" />
+                    <img class="h-full w-full object-cover" alt="${escapeHtml(item.title)}" src="${escapeHtml(normalizeAssetUrl(item.imageUrl) || "/nmoo-logo.png")}" loading="lazy" />
                   </a>
                   <div>
                     <a class="text-base font-bold text-on-surface hover:text-primary" href="${getCartItemHref(item)}">${escapeHtml(item.title)}</a>
@@ -159,6 +172,15 @@
       return;
     }
 
+    const logoutButton = target.closest("[data-mobile-logout]");
+    if (logoutButton) {
+      captureMobileClick(event);
+      document.cookie = "nmoo_access_token=; path=/; max-age=0; samesite=lax";
+      document.cookie = "nmoo_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; samesite=lax";
+      window.location.assign("/logout");
+      return;
+    }
+
     const quantityButton = target.closest("[data-quantity-action]");
     if (quantityButton) {
       const container = quantityButton.closest("[data-cart-form]");
@@ -193,8 +215,17 @@
     }
   }, true);
 
-  document.addEventListener("DOMContentLoaded", renderMobileCartFallback);
-  window.addEventListener("pageshow", renderMobileCartFallback);
+  document.addEventListener("DOMContentLoaded", () => {
+    normalizePageImages();
+    renderMobileCartFallback();
+  });
+  window.addEventListener("pageshow", () => {
+    normalizePageImages();
+    renderMobileCartFallback();
+  });
   window.addEventListener("nmoo-cart-change", renderMobileCartFallback);
-  setTimeout(renderMobileCartFallback, 250);
+  setTimeout(() => {
+    normalizePageImages();
+    renderMobileCartFallback();
+  }, 250);
 })();

@@ -19,7 +19,7 @@ type UploadedAssetStream = {
 export class ProductAssetsService {
   private readonly bucket = process.env.AWS_S3_BUCKET;
   private readonly region = process.env.AWS_REGION;
-  private readonly publicBaseUrl = process.env.PUBLIC_ASSET_BASE_URL ?? process.env.BACKEND_PUBLIC_URL;
+  private readonly publicBaseUrl = process.env.PUBLIC_ASSET_BASE_URL;
   private readonly s3 =
     this.region && process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
       ? new S3Client({
@@ -129,8 +129,7 @@ export class ProductAssetsService {
       return `${this.publicBaseUrl.replace(/\/$/, "")}/${this.encodeAssetKey(key)}`;
     }
 
-    const port = process.env.PORT ?? 5000;
-    return `http://localhost:${port}/api/assets/${this.encodeAssetKey(key)}`;
+    return `/api/assets/${this.encodeAssetKey(key)}`;
   }
 
   private extractAssetKey(value: string) {

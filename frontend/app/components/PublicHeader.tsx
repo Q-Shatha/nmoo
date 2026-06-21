@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { ApiError, ApiUser, getMe } from "@/lib/api";
 import { AccountMenu } from "./AccountMenu";
 import { CartLink } from "./CartLink";
 import { StoreNavLink } from "./StoreNavLink";
@@ -12,7 +14,9 @@ type PublicHeaderProps = {
   hideCart?: boolean;
 };
 
-export function PublicHeader({ active, storeHref, profileHref, vendorId, storeLogoUrl, storeName, hideCart = false }: PublicHeaderProps) {
+export async function PublicHeader({ active, storeHref, profileHref, vendorId, storeLogoUrl, storeName, hideCart = false }: PublicHeaderProps) {
+  const user = await loadHeaderUser();
+
   return (
     <header className="sticky inset-x-0 top-0 z-50 border-b border-outline-variant/25 bg-surface-container-lowest/95 backdrop-blur-xl">
       <nav className="mx-auto grid min-h-24 w-full max-w-[1180px] grid-cols-[1fr_auto_1fr] items-center px-4 py-3 sm:px-6 lg:px-8" dir="ltr">
@@ -23,9 +27,28 @@ export function PublicHeader({ active, storeHref, profileHref, vendorId, storeLo
         </div>
 
         <div className="flex items-center justify-end gap-2 justify-self-end" aria-label="خيارات الحساب">
-          <AccountMenu compact />
+          <AccountMenu compact initialUser={user} />
         </div>
       </nav>
     </header>
   );
+}
+
+async function loadHeaderUser(): Promise<ApiUser | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("nmoo_access_token")?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  try {
+    return await getMe(token);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      return null;
+    }
+
+    return null;
+  }
 }

@@ -2,25 +2,29 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
-import { ApiUser, getMe } from "@/lib/api";
+import { ApiError, ApiUser, getMe } from "@/lib/api";
 
 type AccountMenuProps = {
   compact?: boolean;
+  initialUser?: ApiUser | null;
 };
 
-export function AccountMenu({ compact = false }: AccountMenuProps) {
-  const router = useRouter();
+export function AccountMenu({ compact = false, initialUser = null }: AccountMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
-  const [user, setUser] = useState<ApiUser | null>(null);
+  const [user, setUser] = useState<ApiUser | null>(initialUser);
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialUser);
 
   useEffect(() => {
-    const token = readCookie("nmoo_access_token");
+    if (initialUser) {
+      setUser(initialUser);
+      setIsLoading(false);
+      return;
+    }
 
+    const token = readCookie("nmoo_access_token");
     if (!token) {
       Promise.resolve().then(() => setIsLoading(false));
       return;
@@ -28,12 +32,14 @@ export function AccountMenu({ compact = false }: AccountMenuProps) {
 
     getMe(token)
       .then(setUser)
-      .catch(() => {
-        clearAuthCookie();
-        setUser(null);
+      .catch((error) => {
+        if (error instanceof ApiError && error.status === 401) {
+          clearAuthCookie();
+          setUser(null);
+        }
       })
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [initialUser]);
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -50,18 +56,17 @@ export function AccountMenu({ compact = false }: AccountMenuProps) {
     clearAuthCookie();
     setUser(null);
     setIsOpen(false);
-    router.push("/login");
-    router.refresh();
+    window.location.assign("/logout");
   }
 
   if (compact) {
     return (
       <>
         <div className="sm:hidden">
-          <MobileAccountMenu user={user} onLogout={handleLogout} />
+          <MobileAccountMenu isLoading={isLoading} user={user} onLogout={handleLogout} />
         </div>
         <div className="hidden sm:block">
-          <DesktopAccountMenu isLoading={isLoading} isOpen={isOpen} menuRef={menuRef} setIsOpen={setIsOpen} user={user} onLogout={handleLogout} compact />
+          <DesktopAccountMenu compact isLoading={isLoading} isOpen={isOpen} menuRef={menuRef} setIsOpen={setIsOpen} user={user} onLogout={handleLogout} />
         </div>
       </>
     );
@@ -70,7 +75,7 @@ export function AccountMenu({ compact = false }: AccountMenuProps) {
   return <DesktopAccountMenu isLoading={isLoading} isOpen={isOpen} menuRef={menuRef} setIsOpen={setIsOpen} user={user} onLogout={handleLogout} />;
 }
 
-function MobileAccountMenu({ user, onLogout }: { user: ApiUser | null; onLogout: () => void }) {
+function MobileAccountMenu({ isLoading, user, onLogout }: { isLoading: boolean; user: ApiUser | null; onLogout: () => void }) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
   function closeMenu() {
@@ -96,7 +101,13 @@ function MobileAccountMenu({ user, onLogout }: { user: ApiUser | null; onLogout:
             </button>
           </div>
           <div className="grid gap-1 overflow-y-auto">
-            {user ? (
+            {isLoading ? (
+              <div className="grid gap-3 px-3 py-3">
+                <div className="h-12 w-full animate-pulse rounded-xl bg-surface-container-low" />
+                <div className="h-10 w-full animate-pulse rounded-lg bg-surface-container-low" />
+                <div className="h-10 w-full animate-pulse rounded-lg bg-surface-container-low" />
+              </div>
+            ) : user ? (
               <>
                 <div className="flex items-center gap-3 border-b border-outline-variant/20 px-3 py-3">
                   <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-sm font-black text-on-primary-container">
@@ -112,9 +123,7 @@ function MobileAccountMenu({ user, onLogout }: { user: ApiUser | null; onLogout:
                 {user.role === "BUYER" ? <MenuLink href="/account/address" label="عنوان الشحن" onClick={closeMenu} /> : null}
                 {user.role !== "BUYER" ? <MenuLink href="/dashboard" label="لوحة التحكم" onClick={closeMenu} /> : null}
                 {user.role === "VENDOR" ? <MenuLink href={user.storeUsername ? `/${user.storeUsername}` : `/vendors/${user.id}`} label="المتجر" onClick={closeMenu} /> : null}
-                <button className="mt-2 w-full rounded-lg px-3 py-3 text-right font-bold text-error hover:bg-error-container/50" type="button" role="menuitem" onClick={onLogout}>
-                  تسجيل الخروج
-                </button>
+                <LogoutLink onLogout={onLogout} />
               </>
             ) : (
               <>
@@ -181,7 +190,7 @@ function DesktopAccountMenu({
           تسجيل الدخول
         </Link>
         <Link href="/register" className="primary-button px-4 py-3 text-sm">
-          ابدأ مجانا
+          ابدأ مجانًا
         </Link>
       </div>
     );
@@ -223,9 +232,7 @@ function DesktopAccountMenu({
           {user.role === "BUYER" ? <MenuLink href="/account/address" label="عنوان الشحن" onClick={() => setIsOpen(false)} /> : null}
           {user.role !== "BUYER" ? <MenuLink href="/dashboard" label="لوحة التحكم" onClick={() => setIsOpen(false)} /> : null}
           {user.role === "VENDOR" ? <MenuLink href={user.storeUsername ? `/${user.storeUsername}` : `/vendors/${user.id}`} label="المتجر" onClick={() => setIsOpen(false)} /> : null}
-          <button className="mt-2 w-full rounded-lg px-3 py-3 text-right font-bold text-error hover:bg-error-container/50" type="button" role="menuitem" onClick={onLogout}>
-            تسجيل الخروج
-          </button>
+          <LogoutLink onLogout={onLogout} />
         </div>
       ) : null}
     </div>
@@ -237,6 +244,14 @@ function MenuLink({ href, label, onClick }: { href: string; label: string; onCli
     <Link className="block rounded-lg px-3 py-3 font-bold text-on-surface hover:bg-surface-container-low" href={href} role="menuitem" onClick={onClick}>
       {label}
     </Link>
+  );
+}
+
+function LogoutLink({ onLogout }: { onLogout: () => void }) {
+  return (
+    <a className="mt-2 block w-full rounded-lg px-3 py-3 text-right font-bold text-error hover:bg-error-container/50" href="/logout" role="menuitem" data-mobile-logout onClick={onLogout}>
+      تسجيل الخروج
+    </a>
   );
 }
 
