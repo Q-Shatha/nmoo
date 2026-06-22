@@ -1,4 +1,5 @@
 import { ApiError, getMyStorePages } from "@/lib/api";
+import { getT } from "@/lib/i18n/server";
 import { DashboardShell, DashboardUnavailable } from "../DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "../dashboard-data";
 import { StorePageManager } from "../StorePageManager";
@@ -7,14 +8,15 @@ import { StoreUsernameManager } from "../StoreUsernameManager";
 import { ThemeManager } from "../ThemeManager";
 
 export default async function DashboardSettingsPage() {
-  const data = await loadPageData();
+  const t = await getT();
+  const data = await loadPageData(t.settingsLoadError);
 
   return (
     <DashboardShell
       active="settings"
-      title="إعدادات المتجر"
-      description="رابط المتجر، الهوية البصرية، وصفحات المتجر"
-      userName={data.ok ? data.user.name : "التاجر"}
+      title={t.storeSettings}
+      description={t.settingsPageDesc}
+      userName={data.ok ? data.user.name : t.defaultMerchant}
       logoUrl={data.ok ? data.theme.logoUrl : null}
       storeHref={data.ok ? getVendorStoreHref(data.user) : undefined}
     >
@@ -32,7 +34,7 @@ export default async function DashboardSettingsPage() {
   );
 }
 
-async function loadPageData() {
+async function loadPageData(settingsLoadError: string) {
   const base = await loadVendorDashboardBase();
 
   if (!base.ok) {
@@ -50,7 +52,7 @@ async function loadPageData() {
     return {
       ok: false as const,
       needsLogin: false,
-      message: error instanceof ApiError ? error.message : "تعذر تحميل إعدادات المتجر.",
+      message: error instanceof ApiError ? error.message : settingsLoadError,
     };
   }
 }

@@ -4,8 +4,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
 import { AddressInput, ApiError, ApiUser, updateMyAddress } from "@/lib/api";
 import { countries, defaultSaudiRegion, saRegions } from "@/lib/location-data";
+import { useI18n } from "@/lib/i18n/context";
 
 export function AddressForm({ user }: { user: ApiUser }) {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [country, setCountry] = useState(user.country ?? "SA");
@@ -67,18 +69,18 @@ export function AddressForm({ user }: { user: ApiUser }) {
       router.push(next);
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر حفظ العنوان. حاول مرة أخرى.");
+      setMessage(error instanceof ApiError ? error.message : t.failedToSaveAddress);
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <form className="panel grid gap-5 p-6 text-right" dir="rtl" onSubmit={handleSubmit}>
+    <form className="panel grid gap-5 p-6 text-start" onSubmit={handleSubmit}>
       <div className="grid gap-4 md:grid-cols-3">
         <label className="grid gap-2">
-          <RequiredLabel>البلد</RequiredLabel>
-          <select className="input-field px-4 py-3 text-right" dir="rtl" required value={country} onChange={(event) => handleCountryChange(event.target.value)}>
+          <RequiredLabel>{t.countryLabel}</RequiredLabel>
+          <select className="input-field px-4 py-3 text-start" required value={country} onChange={(event) => handleCountryChange(event.target.value)}>
             {countries.map((item) => (
               <option key={item.value} value={item.value}>
                 {item.label}
@@ -88,9 +90,9 @@ export function AddressForm({ user }: { user: ApiUser }) {
         </label>
 
         <label className="grid gap-2">
-          <RequiredLabel>رقم الجوال</RequiredLabel>
+          <RequiredLabel>{t.mobileNumber}</RequiredLabel>
           <input
-            className="input-field px-4 py-3 text-right"
+            className="input-field px-4 py-3"
             dir="ltr"
             inputMode="tel"
             placeholder="+966501234567"
@@ -103,10 +105,9 @@ export function AddressForm({ user }: { user: ApiUser }) {
         {isSaudi ? (
           <>
             <label className="grid gap-2">
-              <RequiredLabel>المنطقة</RequiredLabel>
+              <RequiredLabel>{t.regionLabel}</RequiredLabel>
               <select
-                className="input-field px-4 py-3 text-right"
-                dir="rtl"
+                className="input-field px-4 py-3 text-start"
                 required
                 value={region}
                 onChange={(event) => {
@@ -123,8 +124,8 @@ export function AddressForm({ user }: { user: ApiUser }) {
               </select>
             </label>
             <label className="grid gap-2">
-              <RequiredLabel>المدينة</RequiredLabel>
-              <select className="input-field px-4 py-3 text-right" dir="rtl" required value={city} onChange={(event) => setCity(event.target.value)}>
+              <RequiredLabel>{t.cityLabel}</RequiredLabel>
+              <select className="input-field px-4 py-3 text-start" required value={city} onChange={(event) => setCity(event.target.value)}>
                 {cityOptions.map((item) => (
                   <option key={item} value={item}>
                     {item}
@@ -136,12 +137,12 @@ export function AddressForm({ user }: { user: ApiUser }) {
         ) : (
           <>
             <label className="grid gap-2">
-              <RequiredLabel>المنطقة</RequiredLabel>
-              <input className="input-field px-4 py-3 text-right" dir="rtl" required value={region} onChange={(event) => setRegion(event.target.value)} />
+              <RequiredLabel>{t.regionLabel}</RequiredLabel>
+              <input className="input-field px-4 py-3 text-start" required value={region} onChange={(event) => setRegion(event.target.value)} />
             </label>
             <label className="grid gap-2">
-              <RequiredLabel>المدينة</RequiredLabel>
-              <input className="input-field px-4 py-3 text-right" dir="rtl" required value={city} onChange={(event) => setCity(event.target.value)} />
+              <RequiredLabel>{t.cityLabel}</RequiredLabel>
+              <input className="input-field px-4 py-3 text-start" required value={city} onChange={(event) => setCity(event.target.value)} />
             </label>
           </>
         )}
@@ -149,30 +150,29 @@ export function AddressForm({ user }: { user: ApiUser }) {
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="grid gap-2">
-          <RequiredLabel>الحي</RequiredLabel>
-          <input className="input-field px-4 py-3 text-right" dir="rtl" required value={district} onChange={(event) => setDistrict(event.target.value)} />
+          <RequiredLabel>{t.districtLabel}</RequiredLabel>
+          <input className="input-field px-4 py-3 text-start" required value={district} onChange={(event) => setDistrict(event.target.value)} />
         </label>
         <label className="grid gap-2">
-          <RequiredLabel>الشارع</RequiredLabel>
-          <input className="input-field px-4 py-3 text-right" dir="rtl" required value={street} onChange={(event) => setStreet(event.target.value)} />
+          <RequiredLabel>{t.streetLabel}</RequiredLabel>
+          <input className="input-field px-4 py-3 text-start" required value={street} onChange={(event) => setStreet(event.target.value)} />
         </label>
         <label className="grid gap-2">
-          <RequiredLabel>رقم المبنى أو البيت</RequiredLabel>
-          <input className="input-field px-4 py-3 text-right" dir="rtl" required value={buildingNumber} onChange={(event) => setBuildingNumber(event.target.value)} />
+          <RequiredLabel>{t.buildingNumber}</RequiredLabel>
+          <input className="input-field px-4 py-3 text-start" required value={buildingNumber} onChange={(event) => setBuildingNumber(event.target.value)} />
         </label>
         <label className="grid gap-2">
-          <RequiredLabel>الرمز البريدي</RequiredLabel>
-          <input className="input-field px-4 py-3 text-right" dir="ltr" inputMode="numeric" required value={postalCode} onChange={(event) => setPostalCode(event.target.value)} />
+          <RequiredLabel>{t.postalCode}</RequiredLabel>
+          <input className="input-field px-4 py-3" dir="ltr" inputMode="numeric" required value={postalCode} onChange={(event) => setPostalCode(event.target.value)} />
         </label>
       </div>
 
       {isSaudi ? (
         <label className="grid gap-2">
-          <RequiredLabel>العنوان الوطني</RequiredLabel>
+          <RequiredLabel>{t.nationalAddress}</RequiredLabel>
           <textarea
-            className="input-field min-h-28 px-4 py-3 text-right"
-            dir="rtl"
-            placeholder="مثال: RDBA1234"
+            className="input-field min-h-28 px-4 py-3 text-start"
+            placeholder={t.nationalAddressPlaceholder}
             required
             value={nationalAddress}
             onChange={(event) => setNationalAddress(event.target.value)}
@@ -183,7 +183,7 @@ export function AddressForm({ user }: { user: ApiUser }) {
       {message ? <p className="rounded-xl bg-error-container/60 px-4 py-3 text-sm font-bold text-error">{message}</p> : null}
 
       <button className="primary-button py-4 disabled:cursor-not-allowed disabled:opacity-60" disabled={isSubmitting} type="submit">
-        {isSubmitting ? "جاري حفظ العنوان..." : "حفظ العنوان"}
+        {isSubmitting ? t.savingAddress : t.saveAddress}
       </button>
     </form>
   );
@@ -200,7 +200,7 @@ function readCookie(name: string) {
 
 function RequiredLabel({ children }: { children: string }) {
   return (
-    <span className="inline-flex flex-row-reverse items-center justify-end gap-1 text-right text-sm font-bold text-on-surface" dir="rtl">
+    <span className="inline-flex items-center gap-1 text-sm font-bold text-on-surface">
       {children}
       <span aria-hidden="true" className="text-error">
         *

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ProductAddon, ProductOption } from "@/lib/api";
 import { addCartItem, type CartItem } from "@/lib/cart";
+import { useI18n } from "@/lib/i18n/context";
 import { CartIcon } from "./CartIcon";
 
 type ProductCardCartButtonProps = {
@@ -13,6 +14,7 @@ type ProductCardCartButtonProps = {
   fallbackPrice: number;
   fallbackStock: number;
   className?: string;
+  currency: string;
 };
 
 export function ProductCardCartButton({
@@ -22,7 +24,9 @@ export function ProductCardCartButton({
   fallbackPrice,
   fallbackStock,
   className = "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:w-11",
+  currency,
 }: ProductCardCartButtonProps) {
+  const { t } = useI18n();
   const selectableOptions = options.filter((option) => option.values.length > 0);
   const availableAddons = addons.filter((addon) => addon.enabled);
   const [isOpen, setIsOpen] = useState(false);
@@ -38,7 +42,7 @@ export function ProductCardCartButton({
   const unavailable = selectedStock <= 0;
   const hasOptions = selectableOptions.length > 0;
   const hasChoices = hasOptions || availableAddons.length > 0;
-  const label = unavailable ? "غير متوفر" : status === "added" ? "تمت الإضافة" : hasOptions ? "اختيار النوع" : "أضف إلى السلة";
+  const label = unavailable ? t.cardUnavailable : status === "added" ? t.cardAdded : hasOptions ? t.cardChooseType : t.addToCart;
 
   useEffect(() => {
     setIsMounted(true);
@@ -83,13 +87,13 @@ export function ProductCardCartButton({
 
       {isMounted && isOpen ? createPortal(
         <div className="product-option-modal fixed inset-0 z-50 bg-black/45 px-4 py-6" role="dialog" aria-modal="true">
-          <div className="product-option-modal-panel border border-outline-variant/30 bg-surface-container-lowest text-right shadow-2xl" dir="rtl">
+          <div className="product-option-modal-panel border border-outline-variant/30 bg-surface-container-lowest text-start shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-black text-on-surface">اختر نوع المنتج</h2>
-                <p className="mt-1 text-sm font-bold text-on-surface-variant">حدد كل الخيارات قبل الإضافة للسلة.</p>
+                <h2 className="text-xl font-black text-on-surface">{t.chooseProductType}</h2>
+                <p className="mt-1 text-sm font-bold text-on-surface-variant">{t.cardChooseAll}</p>
               </div>
-              <button className="icon-button border border-outline-variant bg-surface" type="button" onClick={() => setIsOpen(false)} aria-label="إغلاق">
+              <button className="icon-button border border-outline-variant bg-surface" type="button" onClick={() => setIsOpen(false)} aria-label={t.reviewsClose}>
                 ×
               </button>
             </div>
@@ -114,8 +118,8 @@ export function ProductCardCartButton({
                           onClick={() => setSelectedValues((current) => ({ ...current, [option.id]: value }))}
                         >
                           <span>{value}</span>
-                          <span className="mx-2 text-xs opacity-80">{quantity} متوفر</span>
-                          <span className="text-xs opacity-80">{formatPrice(price)}</span>
+                          <span className="mx-2 text-xs opacity-80">{t.inStockCount(quantity)}</span>
+                          <span className="text-xs opacity-80">{formatPrice(price, currency, t.numberLocale)}</span>
                         </button>
                       );
                     })}
@@ -124,14 +128,14 @@ export function ProductCardCartButton({
               ))}
               {availableAddons.length > 0 ? (
                 <div className="grid gap-2">
-                  <p className="font-black text-on-surface">إضافات اختيارية</p>
+                  <p className="font-black text-on-surface">{t.optionalAddons}</p>
                   <div className="grid gap-2">
                     {availableAddons.map((addon) => {
                       const checked = selectedAddonIds.includes(addon.id);
                       return (
                         <label key={addon.id} className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-4 py-3 font-bold transition ${checked ? "border-primary bg-primary-container/35 text-primary" : "border-outline-variant/40 bg-surface-container-lowest text-on-surface"}`}>
                           <span>{addon.name}</span>
-                          <span className="text-sm">+ {formatPrice(Number(addon.price))}</span>
+                          <span className="text-sm">+ {formatPrice(Number(addon.price), currency, t.numberLocale)}</span>
                           <input
                             checked={checked}
                             type="checkbox"
@@ -149,11 +153,11 @@ export function ProductCardCartButton({
 
             <div className="mt-5 rounded-2xl bg-surface-container-low p-4">
               <div className="flex items-center justify-between gap-4">
-                <span className="font-bold text-on-surface-variant">السعر</span>
-                <strong className="text-xl text-primary">{formatPrice(selectedPrice)}</strong>
+                <span className="font-bold text-on-surface-variant">{t.cardPrice}</span>
+                <strong className="text-xl text-primary">{formatPrice(selectedPrice, currency, t.numberLocale)}</strong>
               </div>
               <div className="mt-2 flex items-center justify-between gap-4">
-                <span className="font-bold text-on-surface-variant">المتوفر</span>
+                <span className="font-bold text-on-surface-variant">{t.cardAvailable}</span>
                 <strong className="text-on-surface">{selectedStock}</strong>
               </div>
             </div>
@@ -164,7 +168,7 @@ export function ProductCardCartButton({
               type="button"
               onClick={addSelectedItem}
             >
-              أضف إلى السلة
+              {t.addToCart}
             </button>
           </div>
         </div>,
@@ -210,9 +214,9 @@ function getOptionValuePrice(option: ProductOption, value: string, fallbackPrice
   return typeof price === "number" && Number.isFinite(price) ? price : fallbackPrice;
 }
 
-function formatPrice(price: number) {
-  return `${price.toLocaleString("ar-SA", {
+function formatPrice(price: number, currency: string, locale = "ar-SA") {
+  return `${price.toLocaleString(locale, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  })} ر.س`;
+  })} ${currency}`;
 }

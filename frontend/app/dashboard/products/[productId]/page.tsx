@@ -1,4 +1,5 @@
 import { ApiError, getMyCategories, getMyProducts } from "@/lib/api";
+import { getT } from "@/lib/i18n/server";
 import { DashboardShell, DashboardUnavailable } from "../../DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "../../dashboard-data";
 import { EditProductForm } from "./EditProductForm";
@@ -9,14 +10,15 @@ type EditProductPageProps = {
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
   const { productId } = await params;
-  const data = await loadPageData(productId);
+  const t = await getT();
+  const data = await loadPageData(productId, t.editProductPageError, t.productNotFoundOrForbidden);
 
   return (
     <DashboardShell
       active="products"
-      title="تعديل المنتج"
-      description="عدّل بيانات المنتج والصور والخيارات من صفحة مخصصة"
-      userName={data.ok ? data.userName : "التاجر"}
+      title={t.editProductPageTitle}
+      description={t.editProductPageDesc}
+      userName={data.ok ? data.userName : t.defaultMerchant}
       logoUrl={data.ok ? data.logoUrl : null}
       storeHref={data.ok ? data.storeHref : undefined}
     >
@@ -25,7 +27,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
   );
 }
 
-async function loadPageData(productId: string) {
+async function loadPageData(productId: string, errorMessage: string, notFoundMessage: string) {
   const base = await loadVendorDashboardBase();
 
   if (!base.ok) {
@@ -40,7 +42,7 @@ async function loadPageData(productId: string) {
       return {
         ok: false as const,
         needsLogin: false,
-        message: "لم يتم العثور على المنتج أو لا تملك صلاحية تعديله.",
+        message: notFoundMessage,
       };
     }
 
@@ -56,7 +58,7 @@ async function loadPageData(productId: string) {
     return {
       ok: false as const,
       needsLogin: false,
-      message: error instanceof ApiError ? error.message : "تعذر تحميل صفحة تعديل المنتج.",
+      message: error instanceof ApiError ? error.message : errorMessage,
     };
   }
 }

@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 import { FiEdit3, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 import { TbFileSearch } from "react-icons/tb";
 import { ApiError, createStorePage, deleteStorePage, StorePage, updateStorePage } from "@/lib/api";
+import { useI18n } from "@/lib/i18n/context";
 
 type StorePageDraft = {
   title: string;
@@ -21,6 +22,7 @@ const emptyDraft: StorePageDraft = {
 };
 
 export function StorePageManager({ initialPages }: { initialPages: StorePage[] }) {
+  const { t } = useI18n();
   const [pages, setPages] = useState(initialPages);
   const [draft, setDraft] = useState<StorePageDraft>(emptyDraft);
   const [editingId, setEditingId] = useState("");
@@ -60,23 +62,23 @@ export function StorePageManager({ initialPages }: { initialPages: StorePage[] }
       if (editingId) {
         const updated = await updateStorePage(editingId, input, token);
         setPages((current) => current.map((page) => (page.id === updated.id ? updated : page)));
-        setMessage("تم تحديث صفحة المتجر.");
+        setMessage(t.storePageUpdated);
       } else {
         const created = await createStorePage(input, token);
         setPages((current) => [created, ...current]);
-        setMessage("تمت إضافة صفحة المتجر.");
+        setMessage(t.storePageAdded);
       }
 
       resetForm();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر حفظ صفحة المتجر.");
+      setMessage(error instanceof ApiError ? error.message : t.storePageSaveError);
     } finally {
       setIsSaving(false);
     }
   }
 
   async function handleDelete(page: StorePage) {
-    const confirmed = window.confirm(`حذف صفحة "${page.title}"؟`);
+    const confirmed = window.confirm(t.confirmDeleteStorePage(page.title));
 
     if (!confirmed) {
       return;
@@ -91,9 +93,9 @@ export function StorePageManager({ initialPages }: { initialPages: StorePage[] }
       if (editingId === page.id) {
         resetForm();
       }
-      setMessage("تم حذف الصفحة.");
+      setMessage(t.storePageDeleted);
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر حذف الصفحة.");
+      setMessage(error instanceof ApiError ? error.message : t.storePageDeleteError);
     }
   }
 
@@ -105,52 +107,52 @@ export function StorePageManager({ initialPages }: { initialPages: StorePage[] }
       const updated = await updateStorePage(page.id, { published: !page.published }, token);
       setPages((current) => current.map((item) => (item.id === updated.id ? updated : item)));
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر تغيير حالة النشر.");
+      setMessage(error instanceof ApiError ? error.message : t.storePageToggleError);
     }
   }
 
   return (
     <section id="store-pages" className="dashboard-panel overflow-hidden">
-      <div className="border-b border-outline-variant/15 p-5 text-right">
+      <div className="border-b border-outline-variant/15 p-5 text-start">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Link className="primary-button px-6 py-3 text-center" href="/dashboard/settings/pages/new">
-            إضافة صفحة
+            {t.addStorePage}
           </Link>
-          <h4 className="text-xl font-black text-on-surface">مدونة وصفحات المتجر</h4>
+          <h4 className="text-xl font-black text-on-surface">{t.storePageManagerTitle}</h4>
         </div>
-        <p className="mt-1 text-sm leading-6 text-on-surface-variant">أضف صفحات مثل سياسة الاسترجاع أو شرح عام عن المتجر. الصفحات المنشورة تظهر في الفوتر آخر الموقع.</p>
+        <p className="mt-1 text-sm leading-6 text-on-surface-variant">{t.storePageManagerDesc}</p>
       </div>
 
-      {false ? <form className="grid gap-4 border-b border-outline-variant/15 p-5 text-right" dir="rtl" onSubmit={handleSubmit}>
+      {false ? <form className="grid gap-4 border-b border-outline-variant/15 p-5 text-start" onSubmit={handleSubmit}>
         <div className="grid gap-4 lg:grid-cols-2">
           <label className="grid gap-2">
-            <RequiredLabel>عنوان الصفحة</RequiredLabel>
-            <input className="input-field px-4 py-3 text-right" required value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} />
+            <RequiredLabel>{t.storePageTitleLabel}</RequiredLabel>
+            <input className="input-field px-4 py-3 text-start" required value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} />
           </label>
           <label className="grid gap-2">
-            <span className="text-sm font-bold text-on-surface">الرابط المختصر</span>
+            <span className="text-sm font-bold text-on-surface">{t.storePageSlugLabel}</span>
             <input className="input-field px-4 py-3 text-left" dir="ltr" placeholder="return-policy" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: event.target.value })} />
           </label>
         </div>
 
         <label className="grid gap-2">
-          <RequiredLabel>المحتوى</RequiredLabel>
-          <textarea className="input-field min-h-44 px-4 py-3 text-right leading-8" required value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} />
+          <RequiredLabel>{t.storePageContentLabel}</RequiredLabel>
+          <textarea className="input-field min-h-44 px-4 py-3 text-start leading-8" required value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} />
         </label>
 
         <label className="flex items-center justify-end gap-2 text-sm font-bold text-on-surface">
-          <span>منشورة في الفوتر</span>
+          <span>{t.storePagePublished}</span>
           <input checked={draft.published} className="h-4 w-4" type="checkbox" onChange={(event) => setDraft({ ...draft, published: event.target.checked })} />
         </label>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           {editingId ? (
             <button className="secondary-button px-6 py-3" type="button" onClick={resetForm}>
-              إلغاء التعديل
+              {t.cancelEdit}
             </button>
           ) : null}
           <button className="primary-button px-8 py-3 disabled:opacity-60" disabled={isSaving} type="submit">
-            {isSaving ? "جاري الحفظ..." : editingId ? "حفظ التعديل" : "إضافة صفحة"}
+            {isSaving ? t.savingPage : editingId ? t.saveEditPage : t.addPageButton}
           </button>
         </div>
       </form> : null}
@@ -159,31 +161,31 @@ export function StorePageManager({ initialPages }: { initialPages: StorePage[] }
 
       <div className="grid gap-3 p-5">
         {pages.length === 0 ? (
-          <p className="py-6 text-center font-bold text-on-surface-variant">لا توجد صفحات بعد.</p>
+          <p className="py-6 text-center font-bold text-on-surface-variant">{t.noStorePages}</p>
         ) : (
           pages.map((page) => (
-            <article key={page.id} className="grid gap-4 rounded-lg border border-outline-variant/15 bg-surface-container-lowest p-4 text-right lg:grid-cols-[1fr_auto]">
+            <article key={page.id} className="grid gap-4 rounded-lg border border-outline-variant/15 bg-surface-container-lowest p-4 text-start lg:grid-cols-[1fr_auto]">
               <div>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   <span className={`rounded-full px-3 py-1 text-sm font-bold ${page.published ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>
-                    {page.published ? "منشورة" : "مسودة"}
+                    {page.published ? t.pagePublishedBadge : t.pageDraftBadge}
                   </span>
                   <h5 className="text-lg font-black text-on-surface">{page.title}</h5>
                 </div>
-                <p className="mt-2 text-sm text-on-surface-variant">الرابط: {page.slug}</p>
+                <p className="mt-2 text-sm text-on-surface-variant">{t.pageSlugLabel} {page.slug}</p>
                 <p className="mt-3 line-clamp-2 leading-7 text-on-surface-variant">{page.content}</p>
               </div>
               <div className="grid grid-cols-4 gap-2 lg:flex lg:flex-col">
-                <a className="secondary-button flex h-11 w-full items-center justify-center p-0 text-[0px] lg:w-11" href={`/store-pages/${page.id}`} target="_blank" title="عرض" aria-label={`عرض ${page.title}`}>
+                <a className="secondary-button flex h-11 w-full items-center justify-center p-0 text-[0px] lg:w-11" href={`/store-pages/${page.id}`} target="_blank" title={t.viewPage} aria-label={t.viewPageAria(page.title)}>
                   <TbFileSearch aria-hidden="true" className="h-6 w-6" />
                 </a>
-                <Link className="secondary-button flex h-11 w-full items-center justify-center p-0 text-[0px] lg:w-11" title="تعديل" aria-label={`تعديل ${page.title}`} href={`/dashboard/settings/pages/${page.id}`}>
+                <Link className="secondary-button flex h-11 w-full items-center justify-center p-0 text-[0px] lg:w-11" title={t.editAction} aria-label={t.editPageAria(page.title)} href={`/dashboard/settings/pages/${page.id}`}>
                   <FiEdit3 aria-hidden="true" className="h-5 w-5" />
                 </Link>
-                <button className="secondary-button h-11 w-full p-0 text-[0px] lg:w-11" type="button" title={page.published ? "إخفاء" : "نشر"} aria-label={`${page.published ? "إخفاء" : "نشر"} ${page.title}`} onClick={() => togglePublished(page)}>
+                <button className="secondary-button h-11 w-full p-0 text-[0px] lg:w-11" type="button" title={page.published ? t.hideAction : t.publishAction} aria-label={page.published ? t.hidePageAria(page.title) : t.publishPageAria(page.title)} onClick={() => togglePublished(page)}>
                   {page.published ? <FiEyeOff aria-hidden="true" className="h-5 w-5" /> : <FiEye aria-hidden="true" className="h-5 w-5" />}
                 </button>
-                <button className="flex h-11 w-full items-center justify-center rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40 lg:w-11" type="button" title="حذف" aria-label={`حذف ${page.title}`} onClick={() => handleDelete(page)}>
+                <button className="flex h-11 w-full items-center justify-center rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40 lg:w-11" type="button" title={t.deleteAction} aria-label={t.deletePageAria(page.title)} onClick={() => handleDelete(page)}>
                   <FiTrash2 aria-hidden="true" className="h-5 w-5" />
                 </button>
               </div>
@@ -197,7 +199,7 @@ export function StorePageManager({ initialPages }: { initialPages: StorePage[] }
 
 function RequiredLabel({ children }: { children: string }) {
   return (
-    <span className="inline-flex flex-row-reverse items-center justify-end gap-1 text-right text-sm font-bold text-on-surface" dir="rtl">
+    <span className="inline-flex items-center gap-1 text-start text-sm font-bold text-on-surface">
       <span aria-hidden="true" className="text-error">
         *
       </span>

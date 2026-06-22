@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, Category, createCategory, createProduct, ProductStatus } from "@/lib/api";
+import { useI18n } from "@/lib/i18n/context";
 import { DashboardAccordion } from "../../DashboardAccordion";
 import { calculateProductStock, normalizeProductAddons, normalizeProductOptions, ProductAddonsEditor, ProductDraft, ProductFields, ProductImageUploader, ProductOptionsEditor } from "../../DashboardProductManager";
 
@@ -23,6 +24,7 @@ const emptyDraft: ProductDraft = {
 
 export function AddProductForm({ categories: initialCategories }: { categories: Category[] }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [categories, setCategories] = useState(initialCategories);
   const [draft, setDraft] = useState<ProductDraft>(emptyDraft);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -67,9 +69,9 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
         categoryId: category.id,
       }));
       setNewCategoryName("");
-      setMessage("تمت إضافة التصنيف واختياره للمنتج.");
+      setMessage(t.categoryAddedAndSelected);
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر إضافة التصنيف.");
+      setMessage(error instanceof ApiError ? error.message : t.categoryAddError);
     } finally {
       setIsCreatingCategory(false);
     }
@@ -104,52 +106,52 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
       router.push("/dashboard/products");
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر إضافة المنتج.");
+      setMessage(error instanceof ApiError ? error.message : t.addProductError);
     } finally {
       setIsSaving(false);
     }
   }
 
   return (
-    <form className="dashboard-panel grid gap-6 p-6 text-right" dir="rtl" onSubmit={handleSubmit}>
-      <section className="grid gap-5 rounded-xl bg-surface-container-low p-4 text-right" dir="rtl">
+    <form className="dashboard-panel grid gap-6 p-6 text-start" onSubmit={handleSubmit}>
+      <section className="grid gap-5 rounded-xl bg-surface-container-low p-4 text-start">
         <div>
-          <h2 className="text-lg font-black text-on-surface">بيانات المنتج</h2>
-          <p className="mt-1 text-sm leading-6 text-on-surface-variant">اكتب بيانات واضحة تساعد العميل على فهم المنتج قبل الشراء.</p>
+          <h2 className="text-lg font-black text-on-surface">{t.productDataTitle}</h2>
+          <p className="mt-1 text-sm leading-6 text-on-surface-variant">{t.productDataDesc}</p>
         </div>
-        <DashboardAccordion title="حقول المنتج الأساسية" defaultOpen>
+        <DashboardAccordion title={t.productFieldsBasic} defaultOpen>
           <ProductFields categories={categories} draft={draft} setDraft={setDraft} />
         </DashboardAccordion>
       </section>
 
-      <DashboardAccordion title="أنواع وخيارات المنتج" description="الألوان، المقاسات، أو أي خيارات يختارها العميل.">
+      <DashboardAccordion title={t.productFieldsVariants} description={t.variantsAccordionDesc}>
         <ProductOptionsEditor options={draft.options} onChange={(options) => setDraft({ ...draft, options })} />
       </DashboardAccordion>
 
-      <DashboardAccordion title="إضافات المنتج" description="إضافات اختيارية غير إجبارية يختارها العميل وتزيد على سعر المنتج.">
+      <DashboardAccordion title={t.productFieldsAddons} description={t.addonsAccordionDesc}>
         <ProductAddonsEditor addons={draft.addons} onChange={(addons) => setDraft({ ...draft, addons })} />
       </DashboardAccordion>
 
-      <section className="grid gap-3 rounded-xl bg-surface-container-low p-4 text-right" dir="rtl">
+      <section className="grid gap-3 rounded-xl bg-surface-container-low p-4 text-start">
         <div>
-          <h2 className="text-lg font-black text-on-surface">تصنيف جديد</h2>
-          <p className="mt-1 text-sm leading-6 text-on-surface-variant">إذا لم تجد التصنيف المناسب، أضف تصنيفا لمتجرك وسيظهر في قائمة التصنيفات.</p>
+          <h2 className="text-lg font-black text-on-surface">{t.newCategoryTitle}</h2>
+          <p className="mt-1 text-sm leading-6 text-on-surface-variant">{t.newCategoryDesc}</p>
         </div>
         <div className="grid gap-3 md:grid-cols-[1fr_auto]">
           <input
-            className="input-field px-4 py-3 text-right"
-            dir="rtl"
-            placeholder="مثال: عطور منزلية"
+            className="input-field px-4 py-3 text-start"
+            dir="auto"
+            placeholder={t.categoryNamePlaceholder}
             value={newCategoryName}
             onChange={(event) => setNewCategoryName(event.target.value)}
           />
           <button className="secondary-button px-5 py-3 disabled:opacity-60" disabled={isCreatingCategory || !newCategoryName.trim()} type="button" onClick={handleCreateCategory}>
-            {isCreatingCategory ? "جاري الإضافة..." : "إضافة التصنيف"}
+            {isCreatingCategory ? t.addingCategory : t.addCategoryButton}
           </button>
         </div>
       </section>
 
-      <DashboardAccordion title="صور المنتج" description="ارفع صور المنتج أو أضف روابط الصور.">
+      <DashboardAccordion title={t.productFieldsImages} description={t.imagesAccordionDesc}>
         <ProductImageUploader imageUrls={draft.imageUrls} onAddImage={addImageUrl} onRemoveImage={removeImageUrl} />
       </DashboardAccordion>
 
@@ -157,10 +159,10 @@ export function AddProductForm({ categories: initialCategories }: { categories: 
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <button className="primary-button px-8 py-4 disabled:opacity-60" disabled={isSaving} type="submit">
-          {isSaving ? "جاري إضافة المنتج..." : "إضافة المنتج"}
+          {isSaving ? t.addingProduct : t.addProductButton}
         </button>
         <button className="secondary-button px-8 py-4" type="button" onClick={() => router.push("/dashboard/products")}>
-          رجوع للمنتجات
+          {t.backToProducts}
         </button>
       </div>
     </form>

@@ -1,4 +1,5 @@
 import { ApiError, getMyStorePages } from "@/lib/api";
+import { getT } from "@/lib/i18n/server";
 import { DashboardShell, DashboardUnavailable } from "../../../DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "../../../dashboard-data";
 import { StorePageForm } from "../../../StorePageForm";
@@ -9,14 +10,15 @@ type PageProps = {
 
 export default async function EditStorePagePage({ params }: PageProps) {
   const { pageId } = await params;
-  const data = await loadPageData(pageId);
+  const t = await getT();
+  const data = await loadPageData(pageId, t.storePageNotFound, t.storePageLoadError);
 
   return (
     <DashboardShell
       active="settings"
-      title="تعديل صفحة المتجر"
-      description="عدّل محتوى الصفحة وحالة النشر"
-      userName={data.ok ? data.userName : "التاجر"}
+      title={t.editStorePageTitle}
+      description={t.editStorePageDesc}
+      userName={data.ok ? data.userName : t.defaultMerchant}
       logoUrl={data.ok ? data.logoUrl : null}
       storeHref={data.ok ? data.storeHref : undefined}
     >
@@ -25,7 +27,7 @@ export default async function EditStorePagePage({ params }: PageProps) {
   );
 }
 
-async function loadPageData(pageId: string) {
+async function loadPageData(pageId: string, notFoundMsg: string, loadErrorMsg: string) {
   const base = await loadVendorDashboardBase();
 
   if (!base.ok) {
@@ -40,7 +42,7 @@ async function loadPageData(pageId: string) {
       return {
         ok: false as const,
         needsLogin: false,
-        message: "صفحة المتجر غير موجودة.",
+        message: notFoundMsg,
       };
     }
 
@@ -55,7 +57,7 @@ async function loadPageData(pageId: string) {
     return {
       ok: false as const,
       needsLogin: false,
-      message: error instanceof ApiError ? error.message : "تعذر تحميل صفحة المتجر.",
+      message: error instanceof ApiError ? error.message : loadErrorMsg,
     };
   }
 }

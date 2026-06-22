@@ -5,9 +5,11 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, createStorePage, StorePage, updateStorePage } from "@/lib/api";
 import { DashboardAccordion } from "./DashboardAccordion";
+import { useI18n } from "@/lib/i18n/context";
 
 export function StorePageForm({ page }: { page?: StorePage }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [title, setTitle] = useState(page?.title ?? "");
   const [slug, setSlug] = useState(page?.slug ?? "");
   const [content, setContent] = useState(page?.content ?? "");
@@ -38,39 +40,39 @@ export function StorePageForm({ page }: { page?: StorePage }) {
       router.push("/dashboard/settings#store-pages");
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر حفظ صفحة المتجر.");
+      setMessage(error instanceof ApiError ? error.message : t.storePageSaveError);
       setIsSaving(false);
     }
   }
 
   return (
     <section className="dashboard-panel overflow-hidden">
-      <div className="border-b border-outline-variant/15 p-5 text-right">
-        <h4 className="text-xl font-black text-on-surface">{page ? "تعديل صفحة المتجر" : "إضافة صفحة للمتجر"}</h4>
-        <p className="mt-1 text-sm leading-6 text-on-surface-variant">اكتب سياسة الاسترجاع، وصف المتجر، أو أي صفحة تريد ظهورها في أسفل المتجر.</p>
+      <div className="border-b border-outline-variant/15 p-5 text-start">
+        <h4 className="text-xl font-black text-on-surface">{page ? t.storePageFormEditTitle : t.storePageFormAddTitle}</h4>
+        <p className="mt-1 text-sm leading-6 text-on-surface-variant">{t.storePageFormDesc}</p>
       </div>
 
-      <form className="grid gap-5 p-5 text-right" dir="rtl" onSubmit={handleSubmit}>
+      <form className="grid gap-5 p-5 text-start" onSubmit={handleSubmit}>
         <div className="grid gap-4 lg:grid-cols-2">
           <label className="grid gap-2">
-            <RequiredLabel>عنوان الصفحة</RequiredLabel>
-            <input className="input-field px-4 py-3 text-right" required value={title} onChange={(event) => setTitle(event.target.value)} />
+            <RequiredLabel>{t.storePageTitleLabel}</RequiredLabel>
+            <input className="input-field px-4 py-3 text-start" required value={title} onChange={(event) => setTitle(event.target.value)} />
           </label>
           <label className="grid gap-2">
-            <span className="text-sm font-bold text-on-surface">الرابط المختصر</span>
+            <span className="text-sm font-bold text-on-surface">{t.storePageSlugLabel}</span>
             <input className="input-field px-4 py-3 text-left" dir="ltr" placeholder="return-policy" value={slug} onChange={(event) => setSlug(event.target.value)} />
           </label>
         </div>
 
-        <DashboardAccordion title="محتوى الصفحة" description="اكتب النص الطويل الذي يظهر في صفحة المتجر." defaultOpen>
+        <DashboardAccordion title={t.storePageContentTitle} description={t.storePageContentDesc} defaultOpen>
         <label className="grid gap-2">
-          <RequiredLabel>المحتوى</RequiredLabel>
-          <textarea className="input-field min-h-60 px-4 py-3 text-right leading-8" required value={content} onChange={(event) => setContent(event.target.value)} />
+          <RequiredLabel>{t.storePageContentLabel}</RequiredLabel>
+          <textarea className="input-field min-h-60 px-4 py-3 text-start leading-8" required value={content} onChange={(event) => setContent(event.target.value)} />
         </label>
         </DashboardAccordion>
 
         <label className="flex items-center justify-end gap-2 text-sm font-bold text-on-surface">
-          <span>منشورة في الفوتر</span>
+          <span>{t.storePagePublished}</span>
           <input checked={published} className="h-4 w-4" type="checkbox" onChange={(event) => setPublished(event.target.checked)} />
         </label>
 
@@ -78,10 +80,10 @@ export function StorePageForm({ page }: { page?: StorePage }) {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           <Link className="secondary-button px-6 py-3 text-center" href="/dashboard/settings#store-pages">
-            إلغاء
+            {t.cancelPageForm}
           </Link>
           <button className="primary-button px-8 py-3 disabled:opacity-60" disabled={isSaving} type="submit">
-            {isSaving ? "جاري الحفظ..." : "حفظ الصفحة"}
+            {isSaving ? t.savingPageForm : t.savePageForm}
           </button>
         </div>
       </form>
@@ -91,7 +93,7 @@ export function StorePageForm({ page }: { page?: StorePage }) {
 
 function RequiredLabel({ children }: { children: string }) {
   return (
-    <span className="inline-flex flex-row-reverse items-center justify-end gap-1 text-right text-sm font-bold text-on-surface" dir="rtl">
+    <span className="inline-flex items-center gap-1 text-start text-sm font-bold text-on-surface">
       <span aria-hidden="true" className="text-error">
         *
       </span>

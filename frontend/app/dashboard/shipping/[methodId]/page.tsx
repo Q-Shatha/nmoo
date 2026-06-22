@@ -1,4 +1,5 @@
 import { ApiError, getMyShippingMethods } from "@/lib/api";
+import { getT } from "@/lib/i18n/server";
 import { DashboardShell, DashboardUnavailable } from "../../DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "../../dashboard-data";
 import { ShippingMethodForm } from "../../ShippingMethodForm";
@@ -9,14 +10,15 @@ type PageProps = {
 
 export default async function EditShippingMethodPage({ params }: PageProps) {
   const { methodId } = await params;
-  const data = await loadPageData(methodId);
+  const t = await getT();
+  const data = await loadPageData(methodId, t.shippingMethodNotFound, t.shippingMethodLoadError);
 
   return (
     <DashboardShell
       active="shipping"
-      title="تعديل شركة الشحن"
-      description="عدّل بيانات شركة الشحن ومناطق التوصيل وخيار الدفع عند الاستلام"
-      userName={data.ok ? data.userName : "التاجر"}
+      title={t.editShippingMethod}
+      description={t.editShippingPageDesc}
+      userName={data.ok ? data.userName : t.defaultMerchant}
       logoUrl={data.ok ? data.logoUrl : null}
       storeHref={data.ok ? data.storeHref : undefined}
     >
@@ -25,7 +27,7 @@ export default async function EditShippingMethodPage({ params }: PageProps) {
   );
 }
 
-async function loadPageData(methodId: string) {
+async function loadPageData(methodId: string, notFoundMsg: string, loadErrorMsg: string) {
   const base = await loadVendorDashboardBase();
 
   if (!base.ok) {
@@ -40,7 +42,7 @@ async function loadPageData(methodId: string) {
       return {
         ok: false as const,
         needsLogin: false,
-        message: "شركة الشحن غير موجودة.",
+        message: notFoundMsg,
       };
     }
 
@@ -55,7 +57,7 @@ async function loadPageData(methodId: string) {
     return {
       ok: false as const,
       needsLogin: false,
-      message: error instanceof ApiError ? error.message : "تعذر تحميل شركة الشحن.",
+      message: error instanceof ApiError ? error.message : loadErrorMsg,
     };
   }
 }

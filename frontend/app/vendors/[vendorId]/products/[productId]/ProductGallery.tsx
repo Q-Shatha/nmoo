@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { MouseEvent, TouchEvent, useRef, useState } from "react";
+import { useI18n } from "@/lib/i18n/context";
 
 type ProductGalleryProps = {
   images: string[];
@@ -9,6 +10,7 @@ type ProductGalleryProps = {
 };
 
 export function ProductGallery({ images, title }: ProductGalleryProps) {
+  const { t } = useI18n();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const mouseStartX = useRef<number | null>(null);
@@ -100,7 +102,7 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
             {images.slice(0, 8).map((_, index) => (
               <button
                 key={index}
-                aria-label={`انتقال إلى صورة ${index + 1}`}
+                aria-label={t.goToImageLabel(index + 1)}
                 className={`h-2 rounded-full transition-all ${index === selectedIndex ? "w-6 bg-white" : "w-2 bg-white/60"}`}
                 type="button"
                 onClick={() => goToImage(index)}
@@ -114,7 +116,7 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
           {images.slice(0, 8).map((src, index) => (
             <button
               key={`${src}-${index}`}
-              aria-label={`عرض صورة ${index + 1}`}
+              aria-label={t.viewImageLabel(index + 1)}
               className={`relative aspect-square overflow-hidden rounded-xl border-2 transition ${
                 index === selectedIndex ? "border-primary ring-2 ring-primary/20" : "border-transparent hover:border-outline-variant"
               }`}

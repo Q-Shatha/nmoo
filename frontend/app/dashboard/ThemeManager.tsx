@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -6,55 +6,14 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { ApiError, updateMyTheme, uploadProductImage, VendorTheme } from "@/lib/api";
 import { getStoreTemplate, StoreTemplate, storeTemplates, StoreTemplateId } from "@/lib/store-templates";
 import { applyThemeTokens } from "@/lib/theme";
+import { useI18n } from "@/lib/i18n/context";
 import { DashboardAccordion } from "./DashboardAccordion";
 
 type ImageField = "logoUrl" | "bannerUrl" | "storefrontImageUrl";
 type SocialField = "whatsappUrl" | "instagramUrl" | "tiktokUrl" | "lineUrl" | "telegramUrl" | "xUrl" | "snapchatUrl" | "youtubeUrl" | "contactEmail" | "websiteUrl";
 
-const imageFields: Array<{
-  key: ImageField;
-  label: string;
-  helper: string;
-  ratio: string;
-}> = [
-  {
-    key: "logoUrl",
-    label: "أيقونة المتجر",
-    helper: "تظهر داخل الدائرة فوق البانر في صفحة التاجر.",
-    ratio: "aspect-square",
-  },
-  {
-    key: "bannerUrl",
-    label: "بانر المتجر",
-    helper: "الصورة العريضة أعلى صفحة التاجر.",
-    ratio: "aspect-[16/5]",
-  },
-  {
-    key: "storefrontImageUrl",
-    label: "صورة واجهة المتجر",
-    helper: "صورة عامة تستخدم كبديل بصري لواجهة المتجر.",
-    ratio: "aspect-[4/3]",
-  },
-];
-
-const socialFields: Array<{
-  key: SocialField;
-  label: string;
-  placeholder: string;
-}> = [
-  { key: "whatsappUrl", label: "واتساب", placeholder: "https://wa.me/9665..." },
-  { key: "instagramUrl", label: "إنستغرام", placeholder: "https://instagram.com/store" },
-  { key: "tiktokUrl", label: "تيك توك", placeholder: "https://tiktok.com/@store" },
-  { key: "lineUrl", label: "لاين", placeholder: "https://line.me/R/ti/p/@store" },
-  { key: "telegramUrl", label: "تيليقرام", placeholder: "https://t.me/store" },
-  { key: "xUrl", label: "إكس", placeholder: "https://x.com/store" },
-  { key: "snapchatUrl", label: "سناب شات", placeholder: "https://snapchat.com/add/store" },
-  { key: "youtubeUrl", label: "يوتيوب", placeholder: "https://youtube.com/@store" },
-  { key: "contactEmail", label: "البريد", placeholder: "support@example.com" },
-  { key: "websiteUrl", label: "الموقع", placeholder: "https://example.com" },
-];
-
 export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
+  const { t, locale } = useI18n();
   const router = useRouter();
   const [primaryColor, setPrimaryColor] = useState(initialTheme.primaryColor);
   const [secondaryColor, setSecondaryColor] = useState(initialTheme.secondaryColor);
@@ -82,6 +41,49 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingField, setUploadingField] = useState<ImageField | null>(null);
+
+  const imageFields: Array<{
+    key: ImageField;
+    label: string;
+    helper: string;
+    ratio: string;
+  }> = [
+    {
+      key: "logoUrl",
+      label: t.storeIconLabel,
+      helper: t.storeIconHelper,
+      ratio: "aspect-square",
+    },
+    {
+      key: "bannerUrl",
+      label: t.storeBannerLabel,
+      helper: t.storeBannerHelper,
+      ratio: "aspect-[16/5]",
+    },
+    {
+      key: "storefrontImageUrl",
+      label: t.storeCoverLabel,
+      helper: t.storeCoverHelper,
+      ratio: "aspect-[4/3]",
+    },
+  ];
+
+  const socialFields: Array<{
+    key: SocialField;
+    label: string;
+    placeholder: string;
+  }> = [
+    { key: "whatsappUrl", label: t.whatsappLabel, placeholder: "https://wa.me/9665..." },
+    { key: "instagramUrl", label: t.instagramLabel, placeholder: "https://instagram.com/store" },
+    { key: "tiktokUrl", label: t.tiktokLabel, placeholder: "https://tiktok.com/@store" },
+    { key: "lineUrl", label: t.lineLabel, placeholder: "https://line.me/R/ti/p/@store" },
+    { key: "telegramUrl", label: t.telegramLabel, placeholder: "https://t.me/store" },
+    { key: "xUrl", label: t.xLabel, placeholder: "https://x.com/store" },
+    { key: "snapchatUrl", label: t.snapchatLabel, placeholder: "https://snapchat.com/add/store" },
+    { key: "youtubeUrl", label: t.youtubeLabel, placeholder: "https://youtube.com/@store" },
+    { key: "contactEmail", label: t.contactEmailLabel, placeholder: "support@example.com" },
+    { key: "websiteUrl", label: t.websiteLabel, placeholder: "https://example.com" },
+  ];
 
   const imageState = {
     logoUrl,
@@ -114,9 +116,9 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
       const token = readCookie("nmoo_access_token");
       const uploaded = await uploadProductImage(file, token);
       setImageValue(field, uploaded.url);
-      setMessage("تم رفع الصورة. اضغط حفظ لتطبيقها على واجهة المتجر.");
+      setMessage(t.imageUploadedSaveToApply);
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر رفع الصورة.");
+      setMessage(error instanceof ApiError ? error.message : t.imageUploadError2);
     } finally {
       setUploadingField(null);
     }
@@ -148,9 +150,9 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
       setPreviewTheme(theme);
       applyThemeTokens(theme);
       router.refresh();
-      setMessage("تم حفظ واجهة المتجر. الألوان والصور ستظهر الآن في صفحة التاجر ومنتجاته.");
+      setMessage(t.themeSaved);
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر حفظ واجهة المتجر.");
+      setMessage(error instanceof ApiError ? error.message : t.themeSaveError);
     } finally {
       setIsSaving(false);
     }
@@ -158,55 +160,53 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
 
   return (
     <section id="theme" className="dashboard-panel overflow-hidden">
-      <div className="border-b border-outline-variant/15 p-5 text-right">
-        <h4 className="text-xl font-black text-on-surface">هوية واجهة المتجر</h4>
-        <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-          اختر ألوان المتجر وصورته وأيقونته والبانر الذي يظهر للمشتري. النظام يحسب لون النص المناسب تلقائيا حتى تبقى الكتابة واضحة.
-        </p>
+      <div className="border-b border-outline-variant/15 p-5 text-start">
+        <h4 className="text-xl font-black text-on-surface">{t.themeIdentityTitle}</h4>
+        <p className="mt-1 text-sm leading-6 text-on-surface-variant">{t.themeIdentityDesc}</p>
       </div>
 
-      <form className="grid gap-5 p-5 text-right lg:grid-cols-[1fr_360px]" dir="rtl" onSubmit={handleSubmit}>
+      <form className="grid gap-5 p-5 text-start lg:grid-cols-[1fr_360px]" onSubmit={handleSubmit}>
         <div className="grid gap-5">
           <label className="grid gap-2 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
-            <span className="text-sm font-bold text-on-surface">اسم المتجر</span>
+            <span className="text-sm font-bold text-on-surface">{t.storeName}</span>
             <input
-              className="input-field px-4 py-3 text-right"
+              className="input-field px-4 py-3 text-start"
               maxLength={70}
-              placeholder="مثال: متجر نمو"
+              placeholder={t.storeNamePlaceholderTheme}
               value={storeName}
               onChange={(event) => setStoreName(event.target.value)}
             />
-            <span className="text-xs font-bold leading-5 text-on-surface-variant">هذا الاسم يظهر للعميل في بروفايل المتجر، واجهة المتجر، وصفحات المنتجات.</span>
+            <span className="text-xs font-bold leading-5 text-on-surface-variant">{t.storeNameHelperTheme}</span>
           </label>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <ColorField label="اللون الأساسي" value={primaryColor} onChange={setPrimaryColor} />
-            <ColorField label="اللون الثانوي" value={secondaryColor} onChange={setSecondaryColor} />
-            <ColorField label="لون الخط" value={textColor} onChange={setTextColor} />
+            <ColorField label={t.primaryColorLabel} value={primaryColor} onChange={setPrimaryColor} />
+            <ColorField label={t.secondaryColorLabel} value={secondaryColor} onChange={setSecondaryColor} />
+            <ColorField label={t.textColorLabel} value={textColor} onChange={setTextColor} />
           </div>
 
-          <DashboardAccordion title="قالب تصميم المتجر" description="اختر الشكل العام لواجهة المتجر وصفحة المنتج والقوائم." defaultOpen>
-            <TemplateSelector primaryColor={primaryColor} secondaryColor={secondaryColor} textColor={textColor} selectedTemplateId={templateId} onChange={setTemplateId} />
+          <DashboardAccordion title={t.templateAccordionTitle} description={t.templateAccordionDesc} defaultOpen>
+            <TemplateSelector primaryColor={primaryColor} secondaryColor={secondaryColor} textColor={textColor} selectedTemplateId={templateId} onChange={setTemplateId} templateSelected={t.templateSelected} templateSelectorDesc={t.templateSelectorDesc} locale={locale} />
           </DashboardAccordion>
 
-          <DashboardAccordion title="نص واجهة المتجر" description="العنوان والوصف الذي يظهر للمشتري في صفحة واجهة المتجر.">
+          <DashboardAccordion title={t.storefrontTextAccordionTitle} description={t.storefrontTextAccordionDesc}>
             <div className="grid gap-4">
               <label className="grid gap-2">
-                <span className="text-sm font-bold text-on-surface">عنوان واجهة المتجر</span>
+                <span className="text-sm font-bold text-on-surface">{t.storefrontTitleLabel}</span>
                 <input
-                  className="input-field px-4 py-3 text-right"
+                  className="input-field px-4 py-3 text-start"
                   maxLength={80}
-                  placeholder="مثال: أحدث منتجات متجرنا"
+                  placeholder={t.storefrontTitlePlaceholder}
                   value={storefrontTitle}
                   onChange={(event) => setStorefrontTitle(event.target.value)}
                 />
               </label>
               <label className="grid gap-2">
-                <span className="text-sm font-bold text-on-surface">وصف واجهة المتجر</span>
+                <span className="text-sm font-bold text-on-surface">{t.storefrontDescLabel}</span>
                 <textarea
-                  className="input-field min-h-28 resize-y px-4 py-3 text-right leading-8"
+                  className="input-field min-h-28 resize-y px-4 py-3 text-start leading-8"
                   maxLength={220}
-                  placeholder="اكتب النص الذي يظهر للعملاء في واجهة المتجر."
+                  placeholder={t.storefrontDescPlaceholder}
                   value={storefrontDescription}
                   onChange={(event) => setStorefrontDescription(event.target.value)}
                 />
@@ -214,7 +214,7 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
             </div>
           </DashboardAccordion>
 
-          <DashboardAccordion title="روابط التواصل" description="القنوات التي تظهر في أسفل صفحات المتجر.">
+          <DashboardAccordion title={t.socialLinksAccordionTitle} description={t.socialLinksAccordionDesc}>
             <div className="grid gap-3 md:grid-cols-2">
               {socialFields.map((field) => (
                 <label key={field.key} className="grid gap-2">
@@ -237,7 +237,7 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
             </div>
           </DashboardAccordion>
 
-          <DashboardAccordion title="صور المتجر" description="أيقونة المتجر، البانر، وصورة واجهة المتجر.">
+          <DashboardAccordion title={t.storeImagesAccordionTitle} description={t.storeImagesAccordionDesc}>
             <div className="grid gap-4">
               {imageFields.map((field) => (
                 <ImageUploadField
@@ -248,6 +248,11 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
                   ratio={field.ratio}
                   uploading={uploadingField === field.key}
                   value={imageState[field.key]}
+                  noImageText={t.noImageYet}
+                  imageUrlOrUploadPlaceholder={t.imageUrlOrUploadPlaceholder}
+                  uploadingText={t.uploading}
+                  uploadImageText={t.uploadImageButton}
+                  deleteImageText={t.deleteImage}
                   onChange={setImageValue}
                   onUpload={handleImageUpload}
                 />
@@ -258,24 +263,24 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
           {message ? <p className="rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface">{message}</p> : null}
 
           <button className="primary-button w-fit px-8 py-3 disabled:opacity-60" disabled={isSaving || uploadingField !== null} type="submit">
-            {isSaving ? "جاري الحفظ..." : "حفظ واجهة المتجر"}
+            {isSaving ? t.saving : t.saveThemeButton}
           </button>
         </div>
 
         <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4">
-          <p className="text-sm font-bold text-on-surface-variant">معاينة آخر إعداد محفوظ</p>
+          <p className="text-sm font-bold text-on-surface-variant">{t.themePreviewLabel}</p>
           <div className="mt-4 overflow-hidden rounded-2xl border border-outline-variant/25 bg-surface-container-lowest">
             <div className="relative aspect-[16/7] bg-surface-container">
-              {previewTheme.bannerUrl || bannerUrl ? <Image alt="معاينة البانر" className="object-cover" src={previewTheme.bannerUrl || bannerUrl} fill sizes="360px" unoptimized /> : null}
+              {previewTheme.bannerUrl || bannerUrl ? <Image alt={t.bannerPreviewAlt} className="object-cover" src={previewTheme.bannerUrl || bannerUrl} fill sizes="360px" unoptimized /> : null}
             </div>
             <div className="-mt-8 px-4 pb-4">
               <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-white shadow-lg">
-                {previewTheme.logoUrl || logoUrl ? <Image alt="معاينة الأيقونة" className="object-contain p-1" src={previewTheme.logoUrl || logoUrl} fill sizes="64px" unoptimized /> : <span className="text-sm font-black text-primary">nmoo</span>}
+                {previewTheme.logoUrl || logoUrl ? <Image alt={t.iconPreviewAlt} className="object-contain p-1" src={previewTheme.logoUrl || logoUrl} fill sizes="64px" unoptimized /> : <span className="text-sm font-black text-primary">nmoo</span>}
               </div>
               <div className="mt-4 grid gap-3">
-                <PreviewBlock background={previewTheme.tokens.primary} color={previewTheme.tokens.onPrimary} label="زر أساسي" />
-                <PreviewBlock background={previewTheme.tokens.secondary} color={previewTheme.tokens.onSecondary} label="زر ثانوي" />
-                <PreviewBlock background="#ffffff" color={previewTheme.textColor ?? textColor} label="لون الخط" />
+                <PreviewBlock background={previewTheme.tokens.primary} color={previewTheme.tokens.onPrimary} label={t.primaryButtonPreviewLabel} subLabel={t.previewTextClear} />
+                <PreviewBlock background={previewTheme.tokens.secondary} color={previewTheme.tokens.onSecondary} label={t.secondaryButtonPreviewLabel} subLabel={t.previewTextClear} />
+                <PreviewBlock background="#ffffff" color={previewTheme.textColor ?? textColor} label={t.textColorLabel} subLabel={t.previewTextClear} />
               </div>
             </div>
           </div>
@@ -291,18 +296,26 @@ function TemplateSelector({
   textColor,
   selectedTemplateId,
   onChange,
+  templateSelected,
+  templateSelectorDesc,
+  locale,
 }: {
   primaryColor: string;
   secondaryColor: string;
   textColor: string;
   selectedTemplateId: StoreTemplateId;
   onChange: (value: StoreTemplateId) => void;
+  templateSelected: string;
+  templateSelectorDesc: string;
+  locale: string;
 }) {
   return (
     <section className="grid gap-4 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
       <div>
-        <h5 className="font-black text-on-surface">قالب تصميم المتجر</h5>
-        <p className="mt-1 text-sm leading-6 text-on-surface-variant">اختر شكل واجهة المتجر. كل قالب يستخدم اللون الأساسي والثانوي الخاصين بمتجرك في كل الصفحات.</p>
+        <h5 className="font-black text-on-surface">
+          {/* title shown via DashboardAccordion above */}
+        </h5>
+        <p className="mt-1 text-sm leading-6 text-on-surface-variant">{templateSelectorDesc}</p>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {storeTemplates.map((template) => (
@@ -314,6 +327,8 @@ function TemplateSelector({
             selected={selectedTemplateId === template.id}
             template={template}
             onChange={onChange}
+            templateSelected={templateSelected}
+            locale={locale}
           />
         ))}
       </div>
@@ -328,6 +343,8 @@ function TemplateOption({
   selected,
   template,
   onChange,
+  templateSelected,
+  locale,
 }: {
   primaryColor: string;
   secondaryColor: string;
@@ -335,10 +352,12 @@ function TemplateOption({
   selected: boolean;
   template: StoreTemplate;
   onChange: (value: StoreTemplateId) => void;
+  templateSelected: string;
+  locale: string;
 }) {
   return (
     <label
-      className={`template-option-card group cursor-pointer overflow-hidden rounded-[1.6rem] border bg-white text-right transition duration-300 ${
+      className={`template-option-card group cursor-pointer overflow-hidden rounded-[1.6rem] border bg-white text-start transition duration-300 ${
         selected
           ? "is-selected border-primary shadow-[0_18px_42px_rgba(23,28,31,0.12)] ring-2 ring-primary-container"
           : "border-outline-variant/25 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_14px_34px_rgba(23,28,31,0.10)]"
@@ -348,10 +367,10 @@ function TemplateOption({
       <input checked={selected} className="sr-only" name="store-template" type="radio" value={template.id} onChange={() => onChange(template.id)} />
       <TemplatePreview primaryColor={primaryColor} secondaryColor={secondaryColor} textColor={textColor} templateId={template.id} />
       <div className="grid gap-2 p-5">
-        <span className="text-base font-black text-on-surface">{template.name}</span>
-        <span className="text-sm leading-6 text-on-surface-variant">{template.description}</span>
+        <span className="text-base font-black text-on-surface">{locale === "en" ? template.nameEn : template.name}</span>
+        <span className="text-sm leading-6 text-on-surface-variant">{locale === "en" ? template.descriptionEn : template.description}</span>
         <span className="mt-2 w-fit rounded-full px-3 py-1 text-xs font-black" style={{ backgroundColor: primaryColor, color: readablePreviewText(primaryColor) }}>
-          {selected ? "محدد" : template.previewTone}
+          {selected ? templateSelected : (locale === "en" ? template.previewToneEn : template.previewTone)}
         </span>
       </div>
     </label>
@@ -441,6 +460,11 @@ function ImageUploadField({
   ratio,
   uploading,
   value,
+  noImageText,
+  imageUrlOrUploadPlaceholder,
+  uploadingText,
+  uploadImageText,
+  deleteImageText,
   onChange,
   onUpload,
 }: {
@@ -450,28 +474,33 @@ function ImageUploadField({
   ratio: string;
   uploading: boolean;
   value: string;
+  noImageText: string;
+  imageUrlOrUploadPlaceholder: string;
+  uploadingText: string;
+  uploadImageText: string;
+  deleteImageText: string;
   onChange: (field: ImageField, value: string) => void;
   onUpload: (field: ImageField, event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div className="grid gap-3 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4 md:grid-cols-[180px_1fr] md:items-center">
       <div className={`relative overflow-hidden rounded-xl border border-outline-variant/25 bg-surface-container-low ${ratio}`}>
-        {value ? <Image alt={label} className="object-cover" src={value} fill sizes="180px" unoptimized /> : <div className="flex h-full w-full items-center justify-center text-sm font-bold text-on-surface-variant">لا توجد صورة</div>}
+        {value ? <Image alt={label} className="object-cover" src={value} fill sizes="180px" unoptimized /> : <div className="flex h-full w-full items-center justify-center text-sm font-bold text-on-surface-variant">{noImageText}</div>}
       </div>
       <div className="grid gap-3">
         <div>
           <h5 className="font-black text-on-surface">{label}</h5>
           <p className="mt-1 text-sm leading-6 text-on-surface-variant">{helper}</p>
         </div>
-        <input className="input-field px-4 py-3 text-left" dir="ltr" placeholder="رابط الصورة أو ارفع ملف" value={value} onChange={(event) => onChange(field, event.target.value)} />
+        <input className="input-field px-4 py-3 text-left" dir="ltr" placeholder={imageUrlOrUploadPlaceholder} value={value} onChange={(event) => onChange(field, event.target.value)} />
         <div className="flex flex-wrap gap-2">
           <label className="secondary-button cursor-pointer px-5 py-3 text-sm">
-            {uploading ? "جاري الرفع..." : "رفع صورة"}
+            {uploading ? uploadingText : uploadImageText}
             <input className="sr-only" accept="image/png,image/jpeg,image/webp" disabled={uploading} type="file" onChange={(event) => onUpload(field, event)} />
           </label>
           {value ? (
             <button className="secondary-button px-5 py-3 text-sm" type="button" onClick={() => onChange(field, "")}>
-              حذف الصورة
+              {deleteImageText}
             </button>
           ) : null}
         </div>
@@ -480,11 +509,11 @@ function ImageUploadField({
   );
 }
 
-function PreviewBlock({ background, color, label }: { background: string; color: string; label: string }) {
+function PreviewBlock({ background, color, label, subLabel }: { background: string; color: string; label: string; subLabel: string }) {
   return (
     <div className="rounded-xl px-4 py-4 font-black" style={{ background, color }}>
       {label}
-      <span className="mt-1 block text-sm font-bold opacity-85">النص واضح حسب اللون المختار</span>
+      <span className="mt-1 block text-sm font-bold opacity-85">{subLabel}</span>
     </div>
   );
 }

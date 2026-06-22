@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ApiError, createShippingMethod, ShippingDeliveryLocation, ShippingMethod, updateShippingMethod } from "@/lib/api";
 import { countries, saRegions } from "@/lib/location-data";
 import { DashboardAccordion } from "./DashboardAccordion";
+import { useI18n } from "@/lib/i18n/context";
 
 type Draft = {
   code: string;
@@ -32,6 +33,7 @@ const emptyLocation: LocationDraft = { country: "SA", region: "", city: "" };
 
 export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [draft, setDraft] = useState<Draft>({
     code: method?.code ?? "",
     name: method?.name ?? "",
@@ -42,7 +44,6 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
     enabled: method?.enabled ?? true,
     cashOnDeliveryEnabled: method?.cashOnDeliveryEnabled ?? false,
     freeShippingEnabled: method?.freeShippingEnabled ?? false,
-    freeShippingMinimum: method?.freeShippingMinimum ? String(method.freeShippingMinimum) : "",
     isPickup: method?.isPickup ?? false,
     pickupAddress: method?.pickupAddress ?? "",
     deliveryLocations: method?.deliveryLocations ?? [],
@@ -111,67 +112,67 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
       router.push("/dashboard/shipping");
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر حفظ شركة الشحن.");
+      setMessage(error instanceof ApiError ? error.message : t.carriersSaveError);
       setIsSaving(false);
     }
   }
 
   return (
     <section className="dashboard-panel overflow-hidden">
-      <div className="border-b border-outline-variant/15 p-5 text-right">
-        <h4 className="text-xl font-black text-on-surface">{method ? "تعديل شركة الشحن" : "إضافة شركة شحن"}</h4>
-        <p className="mt-1 text-sm leading-6 text-on-surface-variant">حدد بيانات الشركة ومناطق التوصيل وخيار الدفع عند الاستلام لهذه الشركة فقط.</p>
+      <div className="border-b border-outline-variant/15 p-5 text-start">
+        <h4 className="text-xl font-black text-on-surface">{method ? t.editShippingMethod : t.addShippingMethod2}</h4>
+        <p className="mt-1 text-sm leading-6 text-on-surface-variant">{t.shippingFormDesc}</p>
       </div>
 
-      <form className="grid gap-5 p-5 text-right" dir="rtl" onSubmit={handleSubmit}>
+      <form className="grid gap-5 p-5 text-start" onSubmit={handleSubmit}>
         <div className="grid gap-4 lg:grid-cols-6">
-          <Field label="كود الشركة" required>
-            <input className="input-field px-4 py-3 text-left" dir="ltr" placeholder="spl" required value={draft.code} onChange={(event) => setDraft({ ...draft, code: event.target.value })} />
+          <Field label={t.carrierCode} required>
+            <input className="input-field px-4 py-3 text-left" dir="ltr" placeholder={t.carrierCodePlaceholder} required value={draft.code} onChange={(event) => setDraft({ ...draft, code: event.target.value })} />
           </Field>
-          <Field className="lg:col-span-2" label="اسم الشركة" required>
-            <input className="input-field px-4 py-3 text-right" required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
+          <Field className="lg:col-span-2" label={t.carrierName} required>
+            <input className="input-field px-4 py-3 text-start" required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
           </Field>
-          <Field label="رسوم الشحن" required>
+          <Field label={t.shippingFee} required>
             <input className="input-field px-4 py-3 text-left" dir="ltr" min="0" required step="0.01" type="number" value={draft.fee} onChange={(event) => setDraft({ ...draft, fee: event.target.value })} />
           </Field>
-          <Field className="lg:col-span-2" label="مدة التوصيل">
-            <input className="input-field px-4 py-3 text-right" placeholder="2 - 5 أيام عمل" value={draft.eta} onChange={(event) => setDraft({ ...draft, eta: event.target.value })} />
+          <Field className="lg:col-span-2" label={t.deliveryDuration}>
+            <input className="input-field px-4 py-3 text-start" placeholder={t.deliveryDurationPlaceholder} value={draft.eta} onChange={(event) => setDraft({ ...draft, eta: event.target.value })} />
           </Field>
         </div>
 
-        <Field label="وصف مختصر">
-          <input className="input-field px-4 py-3 text-right" value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
+        <Field label={t.shortDescription}>
+          <input className="input-field px-4 py-3 text-start" value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
         </Field>
 
-        <DashboardAccordion title="خيارات الشركة والدفع" defaultOpen>
+        <DashboardAccordion title={t.carrierOptionsTitle} defaultOpen>
           <div className="grid gap-3 md:grid-cols-2">
-            <Toggle label="مفعلة للعملاء" checked={draft.enabled} onChange={(enabled) => setDraft({ ...draft, enabled })} />
-            <Toggle label="توفير الدفع عند الاستلام لهذه الشركة" checked={draft.cashOnDeliveryEnabled} onChange={(cashOnDeliveryEnabled) => setDraft({ ...draft, cashOnDeliveryEnabled })} />
-            <Toggle label="استلام من المتجر (بدون شحن)" checked={draft.isPickup} onChange={(isPickup) => setDraft({ ...draft, isPickup })} />
+            <Toggle label={t.enabledForCustomers} checked={draft.enabled} onChange={(enabled) => setDraft({ ...draft, enabled })} />
+            <Toggle label={t.enableCashOnDelivery} checked={draft.cashOnDeliveryEnabled} onChange={(cashOnDeliveryEnabled) => setDraft({ ...draft, cashOnDeliveryEnabled })} />
+            <Toggle label={t.isPickupOption} checked={draft.isPickup} onChange={(isPickup) => setDraft({ ...draft, isPickup })} />
             {draft.isPickup && (
               <div className="grid gap-2 md:col-span-2">
-                <span className="text-sm font-bold text-on-surface">رابط الموقع على قوقل ماب</span>
+                <span className="text-sm font-bold text-on-surface">{t.googleMapsLink}</span>
                 <input
                   className="input-field px-4 py-3 text-left"
                   dir="ltr"
-                  placeholder="https://maps.google.com/..."
+                  placeholder={t.googleMapsPlaceholder}
                   required={draft.isPickup}
                   type="url"
                   value={draft.pickupAddress}
                   onChange={(e) => setDraft({ ...draft, pickupAddress: e.target.value })}
                 />
-                <p className="text-xs text-on-surface-variant">افتح قوقل ماب، ابحث عن موقع متجرك، ثم انسخ الرابط والصقه هنا</p>
+                <p className="text-xs text-on-surface-variant">{t.googleMapsHint}</p>
               </div>
             )}
-            <Toggle label="شحن مجاني عند حد أدنى" checked={draft.freeShippingEnabled} onChange={(freeShippingEnabled) => setDraft({ ...draft, freeShippingEnabled })} />
+            <Toggle label={t.freeShippingWithMinimum} checked={draft.freeShippingEnabled} onChange={(freeShippingEnabled) => setDraft({ ...draft, freeShippingEnabled })} />
             {draft.freeShippingEnabled && (
               <div className="grid gap-2">
-                <span className="text-sm font-bold text-on-surface">الحد الأدنى للشحن المجاني (ر.س)</span>
+                <span className="text-sm font-bold text-on-surface">{t.freeShippingMinimumLabel}</span>
                 <input
                   className="input-field px-4 py-3 text-left"
                   dir="ltr"
                   min="0"
-                  placeholder="مثال: 200"
+                  placeholder={t.freeShippingMinimumPlaceholder}
                   required={draft.freeShippingEnabled}
                   step="0.01"
                   type="number"
@@ -183,17 +184,17 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
           </div>
         </DashboardAccordion>
 
-        <DashboardAccordion title="مناطق التوصيل المتاحة" description="اختر الدول والمناطق والمدن التي تدعمها شركة الشحن.">
+        <DashboardAccordion title={t.deliveryZonesTitle} description={t.deliveryZonesDesc}>
           <div>
-            <h5 className="font-black text-on-surface">مناطق التوصيل المتاحة</h5>
-            <p className="mt-1 text-sm leading-6 text-on-surface-variant">اترك المنطقة فارغة لتغطية الدولة كاملة، واترك المدينة فارغة لتغطية المنطقة كاملة.</p>
+            <h5 className="font-black text-on-surface">{t.deliveryZonesTitle}</h5>
+            <p className="mt-1 text-sm leading-6 text-on-surface-variant">{t.deliveryZonesInfo}</p>
           </div>
-          <LocationBuilder draft={locationDraft} onAdd={addLocation} onChange={setLocationDraft} />
+          <LocationBuilder draft={locationDraft} onAdd={addLocation} onChange={setLocationDraft} t={t} />
           {draft.deliveryLocations.length ? (
             <div className="flex flex-wrap justify-end gap-2">
               {draft.deliveryLocations.map((location, index) => (
                 <span key={locationKey(location)} className="inline-flex items-center gap-2 rounded-full bg-primary-container px-3 py-2 text-sm font-bold text-on-primary-container">
-                  <button className="text-lg leading-none" type="button" onClick={() => removeLocation(index)} aria-label="حذف الموقع">
+                  <button className="text-lg leading-none" type="button" onClick={() => removeLocation(index)} aria-label={t.deleteLocation}>
                     ×
                   </button>
                   {formatLocation(location)}
@@ -201,7 +202,7 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
               ))}
             </div>
           ) : (
-            <p className="rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface-variant">بدون تحديد مناطق، ستكون الشركة متاحة لكل المواقع.</p>
+            <p className="rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface-variant">{t.noZonesSelected}</p>
           )}
         </DashboardAccordion>
 
@@ -209,10 +210,10 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           <Link className="secondary-button px-6 py-3 text-center" href="/dashboard/shipping">
-            إلغاء
+            {t.cancel}
           </Link>
           <button className="primary-button px-8 py-3 disabled:opacity-60" disabled={isSaving} type="submit">
-            {isSaving ? "جاري الحفظ..." : "حفظ شركة الشحن"}
+            {isSaving ? t.savingShipping : t.saveShipping}
           </button>
         </div>
       </form>
@@ -220,14 +221,14 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
   );
 }
 
-function LocationBuilder({ draft, onAdd, onChange }: { draft: LocationDraft; onAdd: () => void; onChange: (draft: LocationDraft) => void }) {
+function LocationBuilder({ draft, onAdd, onChange, t }: { draft: LocationDraft; onAdd: () => void; onChange: (draft: LocationDraft) => void; t: ReturnType<typeof useI18n>["t"] }) {
   const isSaudiArabia = draft.country === "SA";
   const regions = Object.keys(saRegions);
   const cities = isSaudiArabia && draft.region ? saRegions[draft.region] ?? [] : [];
 
   return (
     <div className="grid gap-3 rounded-2xl bg-surface-container-low p-4 lg:grid-cols-4">
-      <Field label="الدولة">
+      <Field label={t.country}>
         <select className="input-field px-4 py-3" value={draft.country} onChange={(event) => onChange({ country: event.target.value, region: "", city: "" })}>
           {countries.map((country) => (
             <option key={country.value} value={country.value}>
@@ -236,10 +237,10 @@ function LocationBuilder({ draft, onAdd, onChange }: { draft: LocationDraft; onA
           ))}
         </select>
       </Field>
-      <Field label="المنطقة أو الولاية">
+      <Field label={t.regionOrState}>
         {isSaudiArabia ? (
           <select className="input-field px-4 py-3" value={draft.region} onChange={(event) => onChange({ ...draft, region: event.target.value, city: "" })}>
-            <option value="">كل الدولة</option>
+            <option value="">{t.allCountry}</option>
             {regions.map((region) => (
               <option key={region} value={region}>
                 {region}
@@ -247,13 +248,13 @@ function LocationBuilder({ draft, onAdd, onChange }: { draft: LocationDraft; onA
             ))}
           </select>
         ) : (
-          <input className="input-field px-4 py-3 text-right" value={draft.region} onChange={(event) => onChange({ ...draft, region: event.target.value, city: "" })} />
+          <input className="input-field px-4 py-3 text-start" value={draft.region} onChange={(event) => onChange({ ...draft, region: event.target.value, city: "" })} />
         )}
       </Field>
-      <Field label="المدينة أو المحافظة">
+      <Field label={t.cityOrProvince}>
         {isSaudiArabia && draft.region ? (
           <select className="input-field px-4 py-3" value={draft.city} onChange={(event) => onChange({ ...draft, city: event.target.value })}>
-            <option value="">كل المنطقة</option>
+            <option value="">{t.allRegion}</option>
             {cities.map((city) => (
               <option key={city} value={city}>
                 {city}
@@ -261,12 +262,12 @@ function LocationBuilder({ draft, onAdd, onChange }: { draft: LocationDraft; onA
             ))}
           </select>
         ) : (
-          <input className="input-field px-4 py-3 text-right" disabled={!draft.region.trim()} value={draft.city} onChange={(event) => onChange({ ...draft, city: event.target.value })} />
+          <input className="input-field px-4 py-3 text-start" disabled={!draft.region.trim()} value={draft.city} onChange={(event) => onChange({ ...draft, city: event.target.value })} />
         )}
       </Field>
       <div className="flex items-end">
         <button className="primary-button w-full px-5 py-3" type="button" onClick={onAdd}>
-          إضافة الموقع
+          {t.addLocation}
         </button>
       </div>
     </div>

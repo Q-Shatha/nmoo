@@ -4,8 +4,10 @@ import Image from "next/image";
 import { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, ApiUser, uploadMyAvatar } from "@/lib/api";
+import { useI18n } from "@/lib/i18n/context";
 
 export function AvatarSettings({ user }: { user: ApiUser }) {
+  const { t } = useI18n();
   const router = useRouter();
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "");
   const [message, setMessage] = useState("");
@@ -26,32 +28,32 @@ export function AvatarSettings({ user }: { user: ApiUser }) {
       const token = readCookie("nmoo_access_token");
       const updatedUser = await uploadMyAvatar(file, token);
       setAvatarUrl(updatedUser.avatarUrl ?? "");
-      setMessage("تم تحديث صورة الحساب.");
+      setMessage(t.avatarUpdated);
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر رفع صورة الحساب.");
+      setMessage(error instanceof ApiError ? error.message : t.failedToUploadAvatar);
     } finally {
       setIsUploading(false);
     }
   }
 
   return (
-    <section className="rounded-xl bg-surface-container-low p-5 text-right">
+    <section className="rounded-xl bg-surface-container-low p-5 text-start">
       <div className="flex items-center gap-4">
         <div className="relative h-20 w-20 shrink-0">
           <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-primary-container text-3xl font-black text-on-primary-container">
             {avatarUrl ? <Image alt={user.name} className="object-cover" src={avatarUrl} fill sizes="80px" unoptimized /> : user.name.trim()[0] ?? "ن"}
           </div>
-          <label className="absolute bottom-0 left-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-surface-container-low bg-primary text-on-primary shadow-sm transition hover:bg-primary/90" title="تغيير صورة الحساب" aria-label="تغيير صورة الحساب">
+          <label className="absolute bottom-0 left-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-surface-container-low bg-primary text-on-primary shadow-sm transition hover:bg-primary/90" title={t.changeAvatarLabel} aria-label={t.changeAvatarLabel}>
             {isUploading ? <span className="h-3 w-3 animate-pulse rounded-full bg-current" aria-hidden="true" /> : <CameraIcon />}
             <input className="sr-only" accept="image/png,image/jpeg,image/webp" disabled={isUploading} type="file" onChange={handleUpload} />
           </label>
         </div>
 
         <div>
-          <h3 className="text-xl font-black text-on-surface">صورة الحساب</h3>
-          <p className="mt-1 text-sm leading-7 text-on-surface-variant">تظهر صورتك بجانب مراجعاتك وفي حسابك.</p>
-          <span className="mt-1 block text-xs font-bold text-on-surface-variant">{isUploading ? "جاري رفع الصورة..." : "اضغط أيقونة الكاميرا لتغيير الصورة"}</span>
+          <h3 className="text-xl font-black text-on-surface">{t.avatarTitle}</h3>
+          <p className="mt-1 text-sm leading-7 text-on-surface-variant">{t.avatarDesc}</p>
+          <span className="mt-1 block text-xs font-bold text-on-surface-variant">{isUploading ? t.avatarUploading : t.avatarClickHint}</span>
         </div>
       </div>
 

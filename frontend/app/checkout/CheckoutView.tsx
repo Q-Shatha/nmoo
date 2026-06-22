@@ -5,8 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import { ApiError, ApiUser, CheckoutShippingOption, createOrder, DiscountValidationResult, getCheckoutShippingOptions, getMe, ShippingCarrier, validateDiscountCode } from "@/lib/api";
 import { getCountryLabel } from "@/lib/location-data";
 import { CartItem, clearVendorCart, getCartItemKey, getCartSummary, readCart, subscribeToCart } from "@/lib/cart";
+import { useI18n } from "@/lib/i18n/context";
 
 export function CheckoutView({ vendorId }: { vendorId?: string }) {
+  const { t } = useI18n();
   const items = useCartItems(vendorId);
   const summary = useMemo(() => getCartSummary(items), [items]);
   const [buyer, setBuyer] = useState<ApiUser | null>(null);
@@ -113,7 +115,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
         if (isMounted) {
           setShippingOptions([]);
           setShippingCarrier("");
-          setErrorMessage(error instanceof ApiError ? error.message : "تعذر تحميل خيارات الشحن.");
+          setErrorMessage(error instanceof ApiError ? error.message : t.checkoutFailedShipping);
         }
       })
       .finally(() => {
@@ -125,7 +127,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
     return () => {
       isMounted = false;
     };
-  }, [items, buyer?.country, buyer?.region, buyer?.city]);
+  }, [items, buyer?.country, buyer?.region, buyer?.city, t.checkoutFailedShipping]);
 
   useEffect(() => {
     let isMounted = true;
@@ -150,12 +152,12 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
     const code = discountCode.trim();
 
     if (!token) {
-      setDiscountMessage("سجل الدخول أولا حتى نقدر نتحقق من حد استخدام الكود.");
+      setDiscountMessage(t.checkoutDiscountLoginFirst);
       return;
     }
 
     if (!code) {
-      setDiscountMessage("اكتب كود التخفيض أولا.");
+      setDiscountMessage(t.checkoutEnterCode);
       return;
     }
 
@@ -175,9 +177,9 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
       );
       setAppliedDiscount(discount);
       setDiscountCode(discount.code);
-      setDiscountMessage(`تم تطبيق خصم ${formatPrice(Number(discount.amount))}.`);
+      setDiscountMessage(t.checkoutDiscountApplied(formatPrice(Number(discount.amount), t.currency, t.numberLocale)));
     } catch (error) {
-      setDiscountMessage(error instanceof ApiError ? error.message : "تعذر تطبيق كود التخفيض.");
+      setDiscountMessage(error instanceof ApiError ? error.message : t.checkoutFailedDiscount);
     } finally {
       setIsApplyingDiscount(false);
     }
@@ -189,17 +191,17 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
     const token = readCookie("nmoo_access_token");
 
     if (!token) {
-      setErrorMessage("سجل الدخول أولا حتى نقدر ننشئ الطلب بحسابك.");
+      setErrorMessage(t.checkoutLoginFirst);
       return;
     }
 
     if (!buyer || !hasCompleteAddress(buyer)) {
-      setErrorMessage("أكمل عنوانك أولا قبل المتابعة للدفع.");
+      setErrorMessage(t.checkoutFillAddress);
       return;
     }
 
     if (!selectedShipping) {
-      setErrorMessage("اختر شركة شحن متاحة قبل المتابعة.");
+      setErrorMessage(t.checkoutSelectShipping);
       return;
     }
 
@@ -223,7 +225,7 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
       clearVendorCart(vendorId);
       window.location.href = `/payment/${order.id}`;
     } catch (error) {
-      setErrorMessage(error instanceof ApiError ? error.message : "تعذر إنشاء الطلب. حاول مرة أخرى.");
+      setErrorMessage(error instanceof ApiError ? error.message : t.checkoutFailedOrder);
       setIsSubmitting(false);
     }
   }
@@ -231,34 +233,32 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
   if (items.length === 0) {
     return (
       <section className="panel mx-auto max-w-2xl p-10 text-center">
-        <h1 className="text-3xl font-black text-primary">لا توجد منتجات للدفع</h1>
-        <p className="mt-3 text-on-surface-variant">ارجع للسلة أو المتجر لإضافة منتجات قبل إكمال الطلب.</p>
+        <h1 className="text-3xl font-black text-primary">{t.checkoutEmptyTitle}</h1>
+        <p className="mt-3 text-on-surface-variant">{t.checkoutEmptyDesc}</p>
         <Link className="primary-button mt-6 px-8 py-3" href="/">
-          فتح المتجر
+          {t.checkoutOpenStore}
         </Link>
       </section>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]" dir="rtl">
-      <section className="grid gap-6 text-right">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
+      <section className="grid gap-6 text-start">
         <div className="panel p-6">
-          <h1 className="text-3xl font-black text-primary">تأكيد عنوان الشحن</h1>
-          <p className="mt-3 leading-8 text-on-surface-variant">
-            قبل الانتقال للدفع، تأكد أن العنوان المحفوظ في حسابك صحيح. تقدر تعدله ثم ترجع لإتمام الشراء.
-          </p>
+          <h1 className="text-3xl font-black text-primary">{t.checkoutConfirmAddressTitle}</h1>
+          <p className="mt-3 leading-8 text-on-surface-variant">{t.checkoutConfirmAddressDesc}</p>
 
           {isLoadingBuyer ? (
             <div className="mt-8 h-48 animate-pulse rounded-2xl bg-surface-container-low" />
           ) : buyer ? (
-            <AddressConfirmation user={buyer} />
+            <AddressConfirmation user={buyer} t={t} />
           ) : (
-            <div className="mt-8 rounded-2xl bg-error-container/50 p-5 text-right">
-              <h2 className="text-xl font-black text-error">تحتاج تسجيل دخول</h2>
-              <p className="mt-2 leading-7 text-on-surface-variant">سجل الدخول حتى نعرض عنوانك ونكمل إنشاء الطلب.</p>
+            <div className="mt-8 rounded-2xl bg-error-container/50 p-5 text-start">
+              <h2 className="text-xl font-black text-error">{t.checkoutNeedLoginTitle}</h2>
+              <p className="mt-2 leading-7 text-on-surface-variant">{t.checkoutNeedLoginDesc}</p>
               <Link className="primary-button mt-5 px-6 py-3" href="/login?next=/checkout">
-                تسجيل الدخول
+                {t.checkoutLoginBtn}
               </Link>
             </div>
           )}
@@ -267,18 +267,18 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
         <section className="panel p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-2xl font-black text-on-surface">اختيار شركة الشحن</h2>
-              <p className="mt-2 text-on-surface-variant">تظهر هنا الشركات التي فعلها التاجر للمنتجات الموجودة في السلة.</p>
+              <h2 className="text-2xl font-black text-on-surface">{t.checkoutShippingTitle}</h2>
+              <p className="mt-2 text-on-surface-variant">{t.checkoutShippingDesc}</p>
             </div>
-            <span className="chip px-4 py-2 text-sm">رسوم التاجر</span>
+            <span className="chip px-4 py-2 text-sm">{t.checkoutMerchantFees}</span>
           </div>
 
           {isLoadingShipping ? <div className="mt-5 h-32 animate-pulse rounded-2xl bg-surface-container-low" /> : null}
 
           {!isLoadingShipping && shippingOptions.length === 0 ? (
             <div className="mt-5 rounded-2xl bg-error-container/50 p-5">
-              <h3 className="font-black text-error">لا توجد شركة شحن متاحة</h3>
-              <p className="mt-2 leading-7 text-on-surface-variant">التاجر لم يضف شركات شحن مشتركة لهذه المنتجات بعد. تواصل مع التاجر أو عدل السلة.</p>
+              <h3 className="font-black text-error">{t.checkoutNoShipping}</h3>
+              <p className="mt-2 leading-7 text-on-surface-variant">{t.checkoutNoShippingDesc}</p>
             </div>
           ) : null}
 
@@ -303,9 +303,9 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
                     <h3 className="text-lg font-black text-on-surface">{option.name}</h3>
                     {option.description ? <p className="mt-2 leading-7 text-on-surface-variant">{option.description}</p> : null}
                     {option.eta ? <p className="mt-2 text-sm font-bold text-primary">{option.eta}</p> : null}
-                    {option.vendorCount > 1 ? <p className="mt-1 text-xs font-bold text-on-surface-variant">تشمل {option.vendorCount} تجار</p> : null}
+                    {option.vendorCount > 1 ? <p className="mt-1 text-xs font-bold text-on-surface-variant">{t.checkoutVendorCount(option.vendorCount)}</p> : null}
                   </div>
-                  <strong className="whitespace-nowrap text-lg text-primary">{formatPrice(Number(option.fee))}</strong>
+                  <strong className="whitespace-nowrap text-lg text-primary">{formatPrice(Number(option.fee), t.currency, t.numberLocale, t.checkoutFreeShipping)}</strong>
                 </div>
               </label>
             ))}
@@ -313,50 +313,44 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
         </section>
 
         <section className="panel p-6">
-          <h2 className="text-2xl font-black text-on-surface">خيارات الدفع</h2>
-          <p className="mt-2 text-on-surface-variant">اختر طريقة الدفع المناسبة لهذا الطلب.</p>
+          <h2 className="text-2xl font-black text-on-surface">{t.checkoutPaymentTitle}</h2>
+          <p className="mt-2 text-on-surface-variant">{t.checkoutPaymentDesc}</p>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <PaymentOption checked={paymentMethod === "ONLINE"} description="ادفع عبر بوابة الدفع بعد إنشاء الطلب." label="الدفع الإلكتروني" onChange={() => setPaymentMethod("ONLINE")} />
+            <PaymentOption checked={paymentMethod === "ONLINE"} description={t.checkoutOnlineDesc} label={t.checkoutOnlineLabel} onChange={() => setPaymentMethod("ONLINE")} />
             {cashOnDeliveryEnabled ? (
-              <PaymentOption checked={paymentMethod === "CASH_ON_DELIVERY"} description="ادفع عند وصول الطلب حسب سياسة المتجر." label="الدفع عند الاستلام" onChange={() => setPaymentMethod("CASH_ON_DELIVERY")} />
+              <PaymentOption checked={paymentMethod === "CASH_ON_DELIVERY"} description={t.checkoutCodDesc} label={t.checkoutCodLabel} onChange={() => setPaymentMethod("CASH_ON_DELIVERY")} />
             ) : (
-              <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-4 text-right opacity-75">
-                <h3 className="font-black text-on-surface">الدفع عند الاستلام</h3>
-                <p className="mt-2 text-sm leading-6 text-on-surface-variant">هذا الخيار غير متاح حالياً من هذا المتجر.</p>
+              <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-4 text-start opacity-75">
+                <h3 className="font-black text-on-surface">{t.checkoutCodUnavailable}</h3>
+                <p className="mt-2 text-sm leading-6 text-on-surface-variant">{t.checkoutCodUnavailableDesc}</p>
               </div>
             )}
           </div>
         </section>
       </section>
 
-      <aside className="panel h-fit p-6 text-right">
-        <h2 className="text-xl font-black text-on-surface">مراجعة الطلب</h2>
+      <aside className="panel h-fit p-6 text-start">
+        <h2 className="text-xl font-black text-on-surface">{t.checkoutOrderReview}</h2>
         <div className="mt-5 divide-y divide-outline-variant/15">
           {items.map((item) => (
-            <CheckoutLine key={getCartItemKey(item)} item={item} />
+            <CheckoutLine key={getCartItemKey(item)} item={item} t={t} />
           ))}
-          {false ? items.map((item) => (
-            <div key={item.productId} className="flex items-center justify-between gap-4 py-4">
-              <div>
-                <h3 className="font-bold text-on-surface">{item.title}</h3>
-                <p className="mt-1 text-sm text-on-surface-variant">الكمية: {item.quantity}</p>
-              </div>
-              <span className="font-black text-primary">{formatPrice(item.price * item.quantity)}</span>
-            </div>
-          )) : null}
         </div>
         <div className="mt-5 grid gap-3 border-t border-outline-variant/20 pt-5">
-          <SummaryRow label="المجموع الفرعي" value={formatPrice(summary.subtotal)} />
-          <SummaryRow label={`الشحن (${selectedShipping?.name ?? "غير محدد"})`} value={selectedShipping ? formatPrice(Number(selectedShipping.fee)) : "-"} />
+          <SummaryRow label={t.checkoutSubtotal} value={formatPrice(summary.subtotal, t.currency, t.numberLocale)} />
+          <SummaryRow
+            label={t.checkoutShipping(selectedShipping?.name ?? t.checkoutShippingUnset)}
+            value={selectedShipping ? formatPrice(Number(selectedShipping.fee), t.currency, t.numberLocale, t.checkoutFreeShipping) : "-"}
+          />
           <div className="rounded-2xl bg-surface-container-low p-4">
             <label className="text-sm font-bold text-on-surface-variant" htmlFor="discount-code">
-              كود التخفيض
+              {t.checkoutDiscountCode}
             </label>
             <div className="mt-2 flex gap-2">
               <input
                 id="discount-code"
                 className="input-field min-w-0 flex-1"
-                placeholder="مثال: WELCOME10"
+                placeholder="WELCOME10"
                 value={discountCode}
                 onChange={(event) => {
                   setDiscountCode(event.target.value.toUpperCase());
@@ -365,18 +359,18 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
                 }}
               />
               <button className="secondary-button shrink-0 px-4 py-3 disabled:opacity-60" disabled={isApplyingDiscount} type="button" onClick={handleApplyDiscount}>
-                {isApplyingDiscount ? "جاري..." : "تطبيق"}
+                {isApplyingDiscount ? t.checkoutApplying : t.checkoutApply}
               </button>
             </div>
             {discountMessage ? <p className={`mt-2 text-sm font-bold ${appliedDiscount ? "text-green-700" : "text-error"}`}>{discountMessage}</p> : null}
           </div>
-          {appliedDiscount ? <SummaryRow label={`الخصم (${appliedDiscount.code})`} value={`- ${formatPrice(discountAmount)}`} valueClassName="text-red-600" /> : null}
+          {appliedDiscount ? <SummaryRow label={t.checkoutDiscount(appliedDiscount.code)} value={`- ${formatPrice(discountAmount, t.currency, t.numberLocale)}`} valueClassName="text-red-600" /> : null}
           <div className="flex items-center justify-between rounded-2xl bg-primary-container/30 p-4">
-            <span className="font-black text-on-surface">الإجمالي قبل الدفع</span>
-            <span className="text-2xl font-black text-primary">{formatPrice(payableTotal)}</span>
+            <span className="font-black text-on-surface">{t.checkoutTotal}</span>
+            <span className="text-2xl font-black text-primary">{formatPrice(payableTotal, t.currency, t.numberLocale)}</span>
           </div>
         </div>
-        <p className="mt-3 text-sm leading-6 text-on-surface-variant">{paymentMethod === "CASH_ON_DELIVERY" ? "سيتم إنشاء الطلب كطلب دفع عند الاستلام." : "سيتم إنشاء الطلب أولاً، ثم تنتقل إلى صفحة الدفع الخاصة به."}</p>
+        <p className="mt-3 text-sm leading-6 text-on-surface-variant">{paymentMethod === "CASH_ON_DELIVERY" ? t.checkoutCodNote : t.checkoutOnlineNote}</p>
         {errorMessage ? <p className="mt-4 rounded-xl bg-error-container/60 px-4 py-3 text-sm font-bold text-error">{errorMessage}</p> : null}
         <button
           className="primary-button mt-6 w-full py-4 disabled:cursor-not-allowed disabled:opacity-60"
@@ -384,22 +378,24 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
           type="button"
           onClick={handleConfirmAddress}
         >
-          {isSubmitting ? "جاري إنشاء الطلب..." : paymentMethod === "CASH_ON_DELIVERY" ? "تأكيد الطلب والدفع عند الاستلام" : "تأكيد العنوان والمتابعة للدفع"}
+          {isSubmitting ? t.checkoutCreatingOrder : paymentMethod === "CASH_ON_DELIVERY" ? t.checkoutConfirmCod : t.checkoutConfirmOnline}
         </button>
         <Link className="secondary-button mt-3 w-full py-3" href="/account/address?next=/checkout">
-          تعديل العنوان
+          {t.checkoutEditAddress}
         </Link>
         <Link className="secondary-button mt-3 w-full py-3" href={vendorId ? `/cart?vendorId=${encodeURIComponent(vendorId)}` : "/cart"}>
-          تعديل السلة
+          {t.checkoutEditCart}
         </Link>
       </aside>
     </div>
   );
 }
 
+type T = ReturnType<typeof useI18n>["t"];
+
 function PaymentOption({ checked, description, label, onChange }: { checked: boolean; description: string; label: string; onChange: () => void }) {
   return (
-    <label className={`cursor-pointer rounded-2xl border p-4 text-right transition ${checked ? "border-primary bg-primary-container/30 shadow-sm" : "border-outline-variant/30 bg-white hover:border-primary/50"}`}>
+    <label className={`cursor-pointer rounded-2xl border p-4 text-start transition ${checked ? "border-primary bg-primary-container/30 shadow-sm" : "border-outline-variant/30 bg-white hover:border-primary/50"}`}>
       <input checked={checked} className="sr-only" name="paymentMethod" type="radio" onChange={onChange} />
       <h3 className="font-black text-on-surface">{label}</h3>
       <p className="mt-2 text-sm leading-6 text-on-surface-variant">{description}</p>
@@ -407,7 +403,7 @@ function PaymentOption({ checked, description, label, onChange }: { checked: boo
   );
 }
 
-function CheckoutLine({ item }: { item: CartItem }) {
+function CheckoutLine({ item, t }: { item: CartItem; t: T }) {
   const selectedOptions = Object.entries(item.selectedOptions ?? {});
   const selectedAddons = item.selectedAddons ?? [];
 
@@ -416,7 +412,7 @@ function CheckoutLine({ item }: { item: CartItem }) {
       <div>
         <h3 className="font-bold text-on-surface">{item.title}</h3>
         {selectedOptions.length > 0 ? (
-          <div className="mt-2 flex flex-wrap justify-end gap-2">
+          <div className="mt-2 flex flex-wrap justify-start gap-2">
             {selectedOptions.map(([name, value]) => (
               <span key={`${name}-${value}`} className="rounded-full bg-surface-container-low px-3 py-1 text-xs font-bold text-on-surface-variant">
                 {name}: {value}
@@ -425,57 +421,57 @@ function CheckoutLine({ item }: { item: CartItem }) {
           </div>
         ) : null}
         {selectedAddons.length > 0 ? (
-          <div className="mt-2 flex flex-wrap justify-end gap-2">
+          <div className="mt-2 flex flex-wrap justify-start gap-2">
             {selectedAddons.map((addon) => (
               <span key={addon.id} className="rounded-full bg-primary-container/35 px-3 py-1 text-xs font-bold text-primary">
-                {addon.name} + {formatPrice(addon.price)}
+                {addon.name} + {formatPrice(addon.price, t.currency, t.numberLocale)}
               </span>
             ))}
           </div>
         ) : null}
-        <p className="mt-1 text-sm text-on-surface-variant">الكمية: {item.quantity}</p>
+        <p className="mt-1 text-sm text-on-surface-variant">{t.checkoutQty(item.quantity)}</p>
       </div>
-      <span className="font-black text-primary">{formatPrice(item.price * item.quantity)}</span>
+      <span className="font-black text-primary">{formatPrice(item.price * item.quantity, t.currency, t.numberLocale)}</span>
     </div>
   );
 }
 
-function AddressConfirmation({ user }: { user: ApiUser }) {
+function AddressConfirmation({ user, t }: { user: ApiUser; t: T }) {
   const complete = hasCompleteAddress(user);
 
   return (
     <div className={`mt-8 rounded-2xl border p-5 ${complete ? "border-outline-variant/30 bg-white" : "border-error/30 bg-error-container/40"}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-black text-on-surface">العنوان المحفوظ</h2>
-          <p className="mt-1 text-sm text-on-surface-variant">{complete ? "راجع البيانات ثم اختر شركة الشحن للمتابعة." : "عنوانك ناقص. أكمله قبل الدفع."}</p>
+          <h2 className="text-xl font-black text-on-surface">{t.checkoutSavedAddress}</h2>
+          <p className="mt-1 text-sm text-on-surface-variant">{complete ? t.checkoutAddressComplete : t.checkoutAddressIncomplete}</p>
         </div>
         <Link className="secondary-button px-5 py-3" href="/account/address?next=/checkout">
-          تعديل العنوان
+          {t.checkoutEditAddress}
         </Link>
       </div>
 
       <dl className="mt-5 grid gap-3 md:grid-cols-2">
-        <Info label="الاسم" value={user.name} />
-        <Info label="رقم الجوال" value={user.phoneNumber} />
-        <Info label="البلد" value={formatCountry(user.country)} />
-        <Info label="المنطقة" value={user.region} />
-        <Info label="المدينة" value={user.city} />
-        <Info label="الحي" value={user.district} />
-        <Info label="الشارع" value={user.street} />
-        <Info label="رقم المبنى أو البيت" value={user.buildingNumber} />
-        <Info label="الرمز البريدي" value={user.postalCode} />
-        {user.country === "SA" ? <Info label="العنوان الوطني" value={user.nationalAddress} /> : null}
+        <Info label={t.name} value={user.name} incomplete={t.checkoutIncomplete} />
+        <Info label={t.mobileNumber} value={user.phoneNumber} incomplete={t.checkoutIncomplete} />
+        <Info label={t.countryLabel} value={formatCountry(user.country)} incomplete={t.checkoutIncomplete} />
+        <Info label={t.regionLabel} value={user.region} incomplete={t.checkoutIncomplete} />
+        <Info label={t.cityLabel} value={user.city} incomplete={t.checkoutIncomplete} />
+        <Info label={t.districtLabel} value={user.district} incomplete={t.checkoutIncomplete} />
+        <Info label={t.streetLabel} value={user.street} incomplete={t.checkoutIncomplete} />
+        <Info label={t.buildingNumber} value={user.buildingNumber} incomplete={t.checkoutIncomplete} />
+        <Info label={t.postalCode} value={user.postalCode} incomplete={t.checkoutIncomplete} />
+        {user.country === "SA" ? <Info label={t.nationalAddress} value={user.nationalAddress} incomplete={t.checkoutIncomplete} /> : null}
       </dl>
     </div>
   );
 }
 
-function Info({ label, value }: { label: string; value?: string | null }) {
+function Info({ label, value, incomplete }: { label: string; value?: string | null; incomplete: string }) {
   return (
     <div className={`rounded-xl p-4 ${value ? "bg-surface-container-low" : "bg-error-container/40"}`}>
       <dt className="text-sm font-bold text-on-surface-variant">{label}</dt>
-      <dd className="mt-1 font-black text-on-surface">{value || "غير مكتمل"}</dd>
+      <dd className="mt-1 font-black text-on-surface">{value || incomplete}</dd>
     </div>
   );
 }
@@ -521,15 +517,15 @@ function readCookie(name: string) {
   return cookie ? decodeURIComponent(cookie) : "";
 }
 
-function formatPrice(value: number) {
-  if (value === 0) {
-    return "مجانا";
+function formatPrice(value: number, currency: string, locale = "ar-SA", freeLabel?: string) {
+  if (value === 0 && freeLabel) {
+    return freeLabel;
   }
 
-  return `${value.toLocaleString("ar-SA", {
+  return `${value.toLocaleString(locale, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  })} ر.س`;
+  })} ${currency}`;
 }
 
 function formatCountry(country?: string | null) {

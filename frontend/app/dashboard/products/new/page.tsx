@@ -1,17 +1,19 @@
 import { ApiError, getMyCategories } from "@/lib/api";
+import { getT } from "@/lib/i18n/server";
 import { DashboardShell, DashboardUnavailable } from "../../DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "../../dashboard-data";
 import { AddProductForm } from "./AddProductForm";
 
 export default async function NewProductPage() {
-  const data = await loadPageData();
+  const t = await getT();
+  const data = await loadPageData(t.addProductPageError);
 
   return (
     <DashboardShell
       active="products"
-      title="إضافة منتج"
-      description="أدخل بيانات المنتج والصور والكمية من صفحة مخصصة"
-      userName={data.ok ? data.userName : "التاجر"}
+      title={t.addProduct}
+      description={t.addProductPageDesc}
+      userName={data.ok ? data.userName : t.defaultMerchant}
       logoUrl={data.ok ? data.logoUrl : null}
       storeHref={data.ok ? data.storeHref : undefined}
     >
@@ -20,7 +22,7 @@ export default async function NewProductPage() {
   );
 }
 
-async function loadPageData() {
+async function loadPageData(errorMessage: string) {
   const base = await loadVendorDashboardBase();
 
   if (!base.ok) {
@@ -39,7 +41,7 @@ async function loadPageData() {
     return {
       ok: false as const,
       needsLogin: false,
-      message: error instanceof ApiError ? error.message : "تعذر تحميل صفحة إضافة المنتج.",
+      message: error instanceof ApiError ? error.message : errorMessage,
     };
   }
 }

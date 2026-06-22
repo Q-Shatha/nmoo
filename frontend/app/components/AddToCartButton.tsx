@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { addCartItem, CartItem } from "@/lib/cart";
+import { useI18n } from "@/lib/i18n/context";
 import { CartIcon } from "./CartIcon";
 
 type AddToCartButtonProps = {
@@ -11,8 +12,9 @@ type AddToCartButtonProps = {
 };
 
 export function AddToCartButton({ item, className = "primary-button flex h-11 w-11 items-center justify-center p-0", disabled }: AddToCartButtonProps) {
+  const { t } = useI18n();
   const [status, setStatus] = useState<"idle" | "added">("idle");
-  const label = item.stock <= 0 ? "غير متوفر" : status === "added" ? "تمت الإضافة" : "أضف إلى السلة";
+  const label = item.stock <= 0 ? t.outOfStock : status === "added" ? t.addedToCart : t.addToCart;
 
   function handleAddToCart() {
     addCartItem(item);

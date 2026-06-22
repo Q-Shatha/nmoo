@@ -1,22 +1,24 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { ApiError, getOrder, Order } from "@/lib/api";
+import { getT } from "@/lib/i18n/server";
 import { PrintButtons } from "../PrintButtons";
 
 type Props = { params: Promise<{ orderId: string }> };
 
 export default async function InvoicePage({ params }: Props) {
+  const t = await getT();
   const { orderId } = await params;
   const cookieStore = await cookies();
   const token = cookieStore.get("nmoo_access_token")?.value;
-  if (!token) return <p className="p-8 text-center">غير مصرح</p>;
+  if (!token) return <p className="p-8 text-center">{t.unauthorized}</p>;
 
   let order: Order;
   try {
     order = await getOrder(orderId, token);
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) notFound();
-    return <p className="p-8 text-center">تعذر تحميل الطلب</p>;
+    return <p className="p-8 text-center">{t.orderLoadError}</p>;
   }
 
   const vendor = order.items[0]?.product?.vendor;
@@ -62,34 +64,34 @@ export default async function InvoicePage({ params }: Props) {
 
           <div className="inv-header">
             <div>
-              <div className="inv-store-name">{vendor?.name ?? "المتجر"}</div>
+              <div className="inv-store-name">{vendor?.name ?? t.defaultStoreName2}</div>
               {vendor?.storeUsername && <div className="inv-store-sub">nmoo.store/{vendor.storeUsername}</div>}
               {vendor?.phoneNumber && <div className="inv-store-sub">{vendor.phoneNumber}</div>}
             </div>
             <div>
-              <div className="inv-label">فاتورة</div>
+              <div className="inv-label">{t.invoiceLabel}</div>
               <div className="inv-meta">
-                <div>رقم: #{order.id.slice(0, 8).toUpperCase()}</div>
-                <div>التاريخ: {formatDate(order.createdAt)}</div>
-                <div>الحالة: {formatStatus(order.status)}</div>
+                <div>{t.invoiceNumber} #{order.id.slice(0, 8).toUpperCase()}</div>
+                <div>{t.invoiceDate} {formatDate(order.createdAt, t.numberLocale)}</div>
+                <div>{t.statusLabel2} {formatStatus(order.status, t)}</div>
               </div>
             </div>
           </div>
 
           <div className="inv-parties">
             <div>
-              <div className="inv-party-label">المورد</div>
+              <div className="inv-party-label">{t.supplierLabel}</div>
               <div className="inv-party-name">{vendor?.name ?? "—"}</div>
               <div className="inv-party-info">{vendor?.email}</div>
             </div>
             <div>
-              <div className="inv-party-label">العميل</div>
+              <div className="inv-party-label">{t.buyerLabel}</div>
               <div className="inv-party-name">{order.buyer?.name ?? "—"}</div>
               <div className="inv-party-info">
                 {order.buyer?.email}
                 {order.buyer?.phoneNumber && <><br />{order.buyer.phoneNumber}</>}
                 {[order.buyer?.street, order.buyer?.district, order.buyer?.city, order.buyer?.region, order.buyer?.country]
-                  .filter(Boolean).join("، ")}
+                  .filter(Boolean).join(t.addressSeparator)}
               </div>
             </div>
           </div>
@@ -97,40 +99,40 @@ export default async function InvoicePage({ params }: Props) {
           <table className="inv-table">
             <thead>
               <tr>
-                <th className="inv-th" style={{ textAlign: "right" }}>المنتج</th>
-                <th className="inv-th" style={{ textAlign: "center" }}>الكمية</th>
-                <th className="inv-th" style={{ textAlign: "left" }}>سعر الوحدة</th>
-                <th className="inv-th" style={{ textAlign: "left" }}>الإجمالي</th>
+                <th className="inv-th" style={{ textAlign: "start" }}>{t.invProductColumn}</th>
+                <th className="inv-th" style={{ textAlign: "center" }}>{t.quantityColumn}</th>
+                <th className="inv-th" style={{ textAlign: "end" }}>{t.unitPriceColumn}</th>
+                <th className="inv-th" style={{ textAlign: "end" }}>{t.totalColumn}</th>
               </tr>
             </thead>
             <tbody>
               {order.items.map((item) => (
                 <tr key={item.id}>
                   <td className="inv-td">
-                    <div style={{ fontWeight: 700 }}>{item.product?.title ?? "منتج"}</div>
+                    <div style={{ fontWeight: 700 }}>{item.product?.title ?? t.unknownProduct}</div>
                     {(item.selectedAddons ?? []).map((a) => (
-                      <div key={a.id} style={{ fontSize: 11, color: "#666" }}>+ {a.name} ({formatPrice(Number(a.price))})</div>
+                      <div key={a.id} style={{ fontSize: 11, color: "#666" }}>+ {a.name} ({formatPrice(Number(a.price), t.currency, t.numberLocale)})</div>
                     ))}
                   </td>
                   <td className="inv-td" style={{ textAlign: "center" }}>{item.quantity}</td>
-                  <td className="inv-td" style={{ textAlign: "left" }}>{formatPrice(Number(item.unitPrice))}</td>
-                  <td className="inv-td" style={{ textAlign: "left", fontWeight: 700 }}>{formatPrice(Number(item.unitPrice) * item.quantity)}</td>
+                  <td className="inv-td" style={{ textAlign: "end" }}>{formatPrice(Number(item.unitPrice), t.currency, t.numberLocale)}</td>
+                  <td className="inv-td" style={{ textAlign: "end", fontWeight: 700 }}>{formatPrice(Number(item.unitPrice) * item.quantity, t.currency, t.numberLocale)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
           <div className="inv-totals">
-            <div className="inv-total-row"><span>المجموع الفرعي</span><span>{formatPrice(itemsSubtotal)}</span></div>
-            <div className="inv-total-row"><span>الشحن ({order.shippingCarrier ?? "—"})</span><span>{formatPrice(shippingFee)}</span></div>
+            <div className="inv-total-row"><span>{t.subtotalLabel2}</span><span>{formatPrice(itemsSubtotal, t.currency, t.numberLocale)}</span></div>
+            <div className="inv-total-row"><span>{t.shippingLabel3} ({order.shippingCarrier ?? "—"})</span><span>{formatPrice(shippingFee, t.currency, t.numberLocale)}</span></div>
             {discountAmount > 0 && (
-              <div className="inv-total-row inv-discount"><span>الخصم ({order.discountCode ?? "كود"})</span><span>- {formatPrice(discountAmount)}</span></div>
+              <div className="inv-total-row inv-discount"><span>{t.discountLabel2} ({order.discountCode ?? "—"})</span><span>- {formatPrice(discountAmount, t.currency, t.numberLocale)}</span></div>
             )}
-            <div className="inv-total-row inv-grand"><span>الإجمالي</span><span>{formatPrice(total)}</span></div>
+            <div className="inv-total-row inv-grand"><span>{t.grandTotalLabel}</span><span>{formatPrice(total, t.currency, t.numberLocale)}</span></div>
           </div>
 
           <div className="inv-footer">
-            طريقة الدفع: {order.paymentMethod === "CASH_ON_DELIVERY" ? "الدفع عند الاستلام" : "دفع إلكتروني"} — شكراً لتعاملكم معنا
+            {t.paymentMethodLabel} {order.paymentMethod === "CASH_ON_DELIVERY" ? t.cashOnDelivery : t.onlinePayment} — {t.invoiceThankYou}
           </div>
         </div>
       </div>
@@ -138,15 +140,24 @@ export default async function InvoicePage({ params }: Props) {
   );
 }
 
-function formatPrice(v: number) {
-  return `${v.toLocaleString("ar-SA", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ر.س`;
+function formatPrice(v: number, currency: string, locale = "ar-SA") {
+  return `${v.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${currency}`;
 }
 
-function formatDate(v: string) {
-  return new Intl.DateTimeFormat("ar-SA", { dateStyle: "medium" }).format(new Date(v));
+function formatDate(v: string, locale = "ar-SA") {
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(v));
 }
 
-function formatStatus(s: Order["status"]) {
-  const m: Record<string, string> = { PENDING: "بانتظار الدفع", PAID: "مدفوع", PROCESSING: "قيد التنفيذ", SHIPPED: "تم الشحن", COMPLETED: "مكتمل", CANCELLED: "ملغي" };
+import type { Translations } from "@/lib/i18n/types";
+
+function formatStatus(s: Order["status"], t: Translations) {
+  const m: Record<string, string> = {
+    PENDING: t.statusPending,
+    PAID: t.statusPaid,
+    PROCESSING: t.statusProcessing,
+    SHIPPED: t.statusShipped,
+    COMPLETED: t.statusCompleted,
+    CANCELLED: t.statusCancelled,
+  };
   return m[s] ?? s;
 }

@@ -11,7 +11,7 @@ type DashboardAccordionProps = {
 export function DashboardAccordion({ title, description, children, defaultOpen = false, className = "" }: DashboardAccordionProps) {
   return (
     <details className={`dashboard-accordion group rounded-2xl border border-outline-variant/25 bg-surface-container-lowest ${className}`} open={defaultOpen}>
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-right marker:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-start marker:hidden">
         <span className="grid gap-1">
           <span className="font-black text-on-surface">{title}</span>
           {description ? <span className="text-sm leading-6 text-on-surface-variant">{description}</span> : null}

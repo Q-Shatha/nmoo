@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
 import { ApiError, ApiUser, getMe } from "@/lib/api";
+import { useI18n } from "@/lib/i18n/context";
 
 type AccountMenuProps = {
   compact?: boolean;
@@ -76,6 +77,7 @@ export function AccountMenu({ compact = false, initialUser = null }: AccountMenu
 }
 
 function MobileAccountMenu({ isLoading, user, onLogout }: { isLoading: boolean; user: ApiUser | null; onLogout: () => void }) {
+  const { t: tMobile } = useI18n();
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
   function closeMenu() {
@@ -88,15 +90,15 @@ function MobileAccountMenu({ isLoading, user, onLogout }: { isLoading: boolean; 
     <details ref={detailsRef} className="group relative">
       <summary
         className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full border border-outline-variant/45 bg-surface-container-lowest text-primary shadow-sm transition hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden"
-        aria-label="قائمة الحساب"
+        aria-label={tMobile.accountMenuLabel}
       >
         <MenuIcon />
       </summary>
       <div className="fixed inset-0 z-[80] hidden h-dvh group-open:block" role="presentation">
-        <button className="absolute inset-0 h-full w-full bg-black/35" type="button" aria-label="إغلاق القائمة" data-mobile-menu-close onClick={closeMenu} />
-        <aside className="absolute right-0 top-0 flex h-dvh w-[84vw] max-w-80 flex-col overflow-hidden rounded-l-3xl border-l border-outline-variant/40 bg-surface-container-lowest p-4 text-right shadow-2xl" dir="rtl" role="menu">
+        <button className="absolute inset-0 h-full w-full bg-black/35" type="button" aria-label={tMobile.closeMenu} data-mobile-menu-close onClick={closeMenu} />
+        <aside className="absolute right-0 top-0 flex h-dvh w-[84vw] max-w-80 flex-col overflow-hidden rounded-l-3xl border-l border-outline-variant/40 bg-surface-container-lowest p-4 text-start shadow-2xl" role="menu">
           <div className="mb-3 flex items-center justify-start border-b border-outline-variant/20 pb-4">
-            <button className="icon-button border border-outline-variant bg-surface-container-lowest" type="button" aria-label="إغلاق القائمة" data-mobile-menu-close onClick={closeMenu}>
+            <button className="icon-button border border-outline-variant bg-surface-container-lowest" type="button" aria-label={tMobile.closeMenu} data-mobile-menu-close onClick={closeMenu}>
               <CloseIcon />
             </button>
           </div>
@@ -118,17 +120,17 @@ function MobileAccountMenu({ isLoading, user, onLogout }: { isLoading: boolean; 
                     <p className="mt-1 truncate text-xs text-on-surface-variant">{user.email}</p>
                   </div>
                 </div>
-                <MenuLink href="/orders" label="طلباتي" onClick={closeMenu} />
-                <MenuLink href="/account" label="إعدادات الحساب" onClick={closeMenu} />
-                {user.role === "BUYER" ? <MenuLink href="/account/address" label="عنوان الشحن" onClick={closeMenu} /> : null}
-                {user.role !== "BUYER" ? <MenuLink href="/dashboard" label="لوحة التحكم" onClick={closeMenu} /> : null}
-                {user.role === "VENDOR" ? <MenuLink href={user.storeUsername ? `/${user.storeUsername}` : `/vendors/${user.id}`} label="المتجر" onClick={closeMenu} /> : null}
-                <LogoutLink onLogout={onLogout} />
+                <MenuLink href="/orders" label={tMobile.myOrdersLink} onClick={closeMenu} />
+                <MenuLink href="/account" label={tMobile.accountSettings} onClick={closeMenu} />
+                {user.role === "BUYER" ? <MenuLink href="/account/address" label={tMobile.shippingAddress} onClick={closeMenu} /> : null}
+                {user.role !== "BUYER" ? <MenuLink href="/dashboard" label={tMobile.dashboard} onClick={closeMenu} /> : null}
+                {user.role === "VENDOR" ? <MenuLink href={user.storeUsername ? `/${user.storeUsername}` : `/vendors/${user.id}`} label={tMobile.storeLink} onClick={closeMenu} /> : null}
+                <LogoutLink onLogout={onLogout} t={tMobile} />
               </>
             ) : (
               <>
-                <MenuLink href="/login" label="تسجيل الدخول" onClick={closeMenu} />
-                <MenuLink href="/register" label="إنشاء حساب" onClick={closeMenu} />
+                <MenuLink href="/login" label={tMobile.loginLink} onClick={closeMenu} />
+                <MenuLink href="/register" label={tMobile.registerLink} onClick={closeMenu} />
               </>
             )}
           </div>
@@ -155,6 +157,8 @@ function DesktopAccountMenu({
   user: ApiUser | null;
   onLogout: () => void;
 }) {
+  const { t } = useI18n();
+
   if (isLoading) {
     return <div className="h-11 w-11 animate-pulse rounded-full bg-surface-container-low" aria-hidden="true" />;
   }
@@ -166,7 +170,7 @@ function DesktopAccountMenu({
           <button
             className="flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/45 bg-surface-container-lowest text-primary shadow-sm transition hover:bg-surface-container-low"
             type="button"
-            aria-label="قائمة الحساب"
+            aria-label={t.accountMenuLabel}
             aria-expanded={isOpen}
             aria-haspopup="menu"
             onClick={() => setIsOpen((value) => !value)}
@@ -175,9 +179,9 @@ function DesktopAccountMenu({
           </button>
 
           {isOpen ? (
-            <div className="absolute left-0 top-full z-50 mt-3 w-56 overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-2 text-right shadow-xl" role="menu">
-              <MenuLink href="/login" label="تسجيل الدخول" onClick={() => setIsOpen(false)} />
-              <MenuLink href="/register" label="إنشاء حساب" onClick={() => setIsOpen(false)} />
+            <div className="absolute left-0 top-full z-50 mt-3 w-56 overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-2 text-start shadow-xl" role="menu">
+              <MenuLink href="/login" label={t.loginLink} onClick={() => setIsOpen(false)} />
+              <MenuLink href="/register" label={t.registerLink} onClick={() => setIsOpen(false)} />
             </div>
           ) : null}
         </div>
@@ -187,10 +191,10 @@ function DesktopAccountMenu({
     return (
       <div className="flex items-center gap-2">
         <Link href="/login" className="hidden rounded-full px-4 py-3 text-sm font-bold text-primary hover:bg-primary-container/25 sm:block">
-          تسجيل الدخول
+          {t.loginLink}
         </Link>
         <Link href="/register" className="primary-button px-4 py-3 text-sm">
-          ابدأ مجانًا
+          {t.startFree}
         </Link>
       </div>
     );
@@ -199,9 +203,9 @@ function DesktopAccountMenu({
   return (
     <div ref={menuRef} className="relative">
       <button
-        className={`${compact ? "h-11 w-11 justify-center rounded-full p-0" : "gap-2 rounded-xl px-3 py-2"} flex items-center border border-outline-variant/45 bg-surface-container-lowest text-right shadow-sm transition hover:bg-surface-container-low`}
+        className={`${compact ? "h-11 w-11 justify-center rounded-full p-0" : "gap-2 rounded-xl px-3 py-2"} flex items-center border border-outline-variant/45 bg-surface-container-lowest text-start shadow-sm transition hover:bg-surface-container-low`}
         type="button"
-        aria-label={`${user.name} - ${formatRole(user.role)}`}
+        aria-label={`${user.name} - ${formatRole(user.role, t)}`}
         aria-expanded={isOpen}
         aria-haspopup="menu"
         onClick={() => setIsOpen((value) => !value)}
@@ -210,29 +214,29 @@ function DesktopAccountMenu({
           <MenuIcon />
         ) : (
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-container font-black text-on-primary-container">
-            {user.name.trim()[0] ?? "ن"}
+            {user.name.trim()[0] ?? "?"}
           </span>
         )}
         {!compact ? (
           <span className="hidden min-w-0 sm:block">
             <span className="block max-w-28 truncate text-sm font-bold text-on-surface">{user.name}</span>
-            <span className="block text-xs text-on-surface-variant">{formatRole(user.role)}</span>
+            <span className="block text-xs text-on-surface-variant">{formatRole(user.role, t)}</span>
           </span>
         ) : null}
       </button>
 
       {isOpen ? (
-        <div className="absolute left-0 top-full z-50 mt-3 w-64 overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-2 text-right shadow-xl" role="menu">
+        <div className="absolute left-0 top-full z-50 mt-3 w-64 overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-2 text-start shadow-xl" role="menu">
           <div className="border-b border-outline-variant/20 px-3 py-3">
             <p className="font-black text-on-surface">{user.name}</p>
             <p className="mt-1 truncate text-xs text-on-surface-variant">{user.email}</p>
           </div>
-          <MenuLink href="/orders" label="طلباتي" onClick={() => setIsOpen(false)} />
-          <MenuLink href="/account" label="إعدادات الحساب" onClick={() => setIsOpen(false)} />
-          {user.role === "BUYER" ? <MenuLink href="/account/address" label="عنوان الشحن" onClick={() => setIsOpen(false)} /> : null}
-          {user.role !== "BUYER" ? <MenuLink href="/dashboard" label="لوحة التحكم" onClick={() => setIsOpen(false)} /> : null}
-          {user.role === "VENDOR" ? <MenuLink href={user.storeUsername ? `/${user.storeUsername}` : `/vendors/${user.id}`} label="المتجر" onClick={() => setIsOpen(false)} /> : null}
-          <LogoutLink onLogout={onLogout} />
+          <MenuLink href="/orders" label={t.myOrdersLink} onClick={() => setIsOpen(false)} />
+          <MenuLink href="/account" label={t.accountSettings} onClick={() => setIsOpen(false)} />
+          {user.role === "BUYER" ? <MenuLink href="/account/address" label={t.shippingAddress} onClick={() => setIsOpen(false)} /> : null}
+          {user.role !== "BUYER" ? <MenuLink href="/dashboard" label={t.dashboard} onClick={() => setIsOpen(false)} /> : null}
+          {user.role === "VENDOR" ? <MenuLink href={user.storeUsername ? `/${user.storeUsername}` : `/vendors/${user.id}`} label={t.storeLink} onClick={() => setIsOpen(false)} /> : null}
+          <LogoutLink onLogout={onLogout} t={t} />
         </div>
       ) : null}
     </div>
@@ -247,10 +251,10 @@ function MenuLink({ href, label, onClick }: { href: string; label: string; onCli
   );
 }
 
-function LogoutLink({ onLogout }: { onLogout: () => void }) {
+function LogoutLink({ onLogout, t }: { onLogout: () => void; t: ReturnType<typeof useI18n>["t"] }) {
   return (
-    <a className="mt-2 block w-full rounded-lg px-3 py-3 text-right font-bold text-error hover:bg-error-container/50" href="/logout" role="menuitem" data-mobile-logout onClick={onLogout}>
-      تسجيل الخروج
+    <a className="mt-2 block w-full rounded-lg px-3 py-3 text-start font-bold text-error hover:bg-error-container/50" href="/logout" role="menuitem" data-mobile-logout onClick={onLogout}>
+      {t.logout}
     </a>
   );
 }
@@ -286,14 +290,14 @@ function clearAuthCookie() {
   document.cookie = "nmoo_access_token=; path=/; max-age=0; samesite=lax";
 }
 
-function formatRole(role: ApiUser["role"]) {
+function formatRole(role: ApiUser["role"], t: ReturnType<typeof useI18n>["t"]) {
   if (role === "ADMIN") {
-    return "مدير";
+    return t.roleAdmin;
   }
 
   if (role === "VENDOR") {
-    return "تاجر";
+    return t.roleVendor;
   }
 
-  return "عميل";
+  return t.roleBuyer;
 }

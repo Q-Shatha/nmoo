@@ -1,10 +1,12 @@
 import { cookies } from "next/headers";
 import { ApiError, getOrders, Order } from "@/lib/api";
 import { PrintButtons } from "../[orderId]/PrintButtons";
+import { getT } from "@/lib/i18n/server";
 
 type Props = { searchParams?: Promise<{ q?: string; from?: string; to?: string }> };
 
 export default async function PrintAllLabelsPage({ searchParams }: Props) {
+  const t = await getT();
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const query = resolvedSearchParams.q?.trim() ?? "";
   const fromDate = resolvedSearchParams.from ? new Date(resolvedSearchParams.from) : null;
@@ -12,13 +14,13 @@ export default async function PrintAllLabelsPage({ searchParams }: Props) {
 
   const cookieStore = await cookies();
   const token = cookieStore.get("nmoo_access_token")?.value;
-  if (!token) return <p className="p-8 text-center">غير مصرح</p>;
+  if (!token) return <p className="p-8 text-center">{t.unauthorized}</p>;
 
   let orders: Order[];
   try {
     orders = await getOrders(token);
   } catch (e) {
-    return <p className="p-8 text-center">تعذر تحميل الطلبات{e instanceof ApiError ? `: ${e.message}` : ""}</p>;
+    return <p className="p-8 text-center">{t.ordersLoadError}{e instanceof ApiError ? `: ${e.message}` : ""}</p>;
   }
 
   if (query) {
@@ -62,7 +64,7 @@ export default async function PrintAllLabelsPage({ searchParams }: Props) {
       <div id="print-root">
         <div className="no-print" style={{ display: "flex", gap: 12, padding: "24px 32px" }}>
           <PrintButtons />
-          <span style={{ alignSelf: "center", fontSize: 13, color: "#666" }}>{orders.length} بوليصة</span>
+          <span style={{ alignSelf: "center", fontSize: 13, color: "#666" }}>{t.labelCount(orders.length)}</span>
         </div>
 
         {orders.map((order, idx) => {
@@ -73,40 +75,40 @@ export default async function PrintAllLabelsPage({ searchParams }: Props) {
             order.buyer?.city,
             order.buyer?.region,
             order.buyer?.country,
-          ].filter(Boolean).join("، ");
+          ].filter(Boolean).join(t.addressSeparator);
 
           return (
             <div key={order.id} className={idx < orders.length - 1 ? "page-break" : ""}>
               <div className="lbl-wrap">
                 <div className="lbl-card">
                   <div className="lbl-header">
-                    <div className="lbl-title">بوليصة شحن</div>
+                    <div className="lbl-title">{t.shippingLabelTitle}</div>
                     <div className="lbl-order">#{order.id.slice(0, 8).toUpperCase()}</div>
                   </div>
                   <div className="lbl-body">
                     <div className="lbl-section">
-                      <div className="lbl-section-label">المُرسَل إليه</div>
+                      <div className="lbl-section-label">{t.recipientLabel}</div>
                       <div className="lbl-big-name">{order.buyer?.name ?? "—"}</div>
-                      <div className="lbl-address">{buyerAddress || "العنوان غير محدد"}</div>
+                      <div className="lbl-address">{buyerAddress || t.noAddressLabel}</div>
                       {order.buyer?.phoneNumber && <div className="lbl-phone">{order.buyer.phoneNumber}</div>}
                     </div>
                     <div className="lbl-section">
-                      <div className="lbl-section-label">المُرسِل</div>
-                      <div className="lbl-big-name">{vendor?.name ?? "المتجر"}</div>
+                      <div className="lbl-section-label">{t.senderLabel}</div>
+                      <div className="lbl-big-name">{vendor?.name ?? t.defaultStoreName2}</div>
                       {vendor?.phoneNumber && <div className="lbl-phone">{vendor.phoneNumber}</div>}
                     </div>
                     <div className="lbl-section">
-                      <div className="lbl-section-label">المحتويات</div>
+                      <div className="lbl-section-label">{t.contentsLabel}</div>
                       <div className="lbl-items">
                         {order.items.map((item) => (
-                          <div key={item.id}>• {item.product?.title ?? "منتج"} × {item.quantity}</div>
+                          <div key={item.id}>• {item.product?.title ?? t.unknownProduct} × {item.quantity}</div>
                         ))}
                       </div>
                     </div>
                     <div className="lbl-section">
-                      <div className="lbl-section-label">الشحن</div>
+                      <div className="lbl-section-label">{t.shippingInfoLabel}</div>
                       {order.shippingCarrier && <span className="lbl-carrier">{order.shippingCarrier}</span>}
-                      <div className="lbl-date">تاريخ الطلب: {formatDate(order.createdAt)}</div>
+                      <div className="lbl-date">{t.orderDateLabel2} {formatDate(order.createdAt, t.numberLocale)}</div>
                     </div>
                   </div>
                 </div>
@@ -119,6 +121,6 @@ export default async function PrintAllLabelsPage({ searchParams }: Props) {
   );
 }
 
-function formatDate(v: string) {
-  return new Intl.DateTimeFormat("ar-SA", { dateStyle: "medium" }).format(new Date(v));
+function formatDate(v: string, locale = "ar-SA") {
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(v));
 }

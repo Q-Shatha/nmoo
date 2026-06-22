@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { addCartItem, CartItem } from "@/lib/cart";
+import { useI18n } from "@/lib/i18n/context";
 import { CartIcon } from "./CartIcon";
 
 type AddToCartWithQuantityProps = {
@@ -21,12 +22,13 @@ export function AddToCartWithQuantity({
   initialQuantity = 1,
   layout = "stacked",
 }: AddToCartWithQuantityProps) {
+  const { t } = useI18n();
   const maxQuantity = Math.max(1, item.stock);
   const [quantity, setQuantity] = useState(() => clampQuantity(initialQuantity, maxQuantity));
   const [status, setStatus] = useState<"idle" | "added">("idle");
   const unavailable = disabled || item.stock <= 0;
   const isInline = layout === "inline";
-  const buttonLabel = item.stock <= 0 ? "غير متوفر" : status === "added" ? "تمت الإضافة" : "أضف إلى السلة";
+  const buttonLabel = item.stock <= 0 ? t.outOfStock : status === "added" ? t.addedToCart : t.addToCart;
 
   function updateQuantity(nextQuantity: number) {
     setQuantity(clampQuantity(nextQuantity, maxQuantity));
@@ -49,13 +51,13 @@ export function AddToCartWithQuantity({
   }, [maxQuantity]);
 
   return (
-    <div className={className} data-cart-form dir="rtl" style={{ width: "100%" }}>
+    <div className={className} data-cart-form style={{ width: "100%" }}>
       <input name="cartItem" type="hidden" value={fallbackItem} />
-      <label className="grid min-w-0 gap-1 text-right" style={{ width: quantityWidth, minWidth: isInline ? quantityWidth : "14rem" }}>
-        <span className="text-xs font-bold text-on-surface-variant">الكمية</span>
+      <label className="grid min-w-0 gap-1 text-start" style={{ width: quantityWidth, minWidth: isInline ? quantityWidth : "14rem" }}>
+        <span className="text-xs font-bold text-on-surface-variant">{t.quantityInputLabel}</span>
         <div className="flex h-12 min-w-0 items-center overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest" style={{ width: quantityWidth }}>
           <button
-            aria-label="تقليل الكمية"
+            aria-label={t.decreaseQuantity}
             className="flex h-full w-12 shrink-0 items-center justify-center text-lg font-black text-primary disabled:cursor-not-allowed disabled:opacity-40"
             data-quantity-action="decrease"
             disabled={unavailable || quantity <= 1}
@@ -65,7 +67,7 @@ export function AddToCartWithQuantity({
             -
           </button>
           <input
-            aria-label="الكمية"
+            aria-label={t.quantityInputLabel}
             className="h-full min-w-0 flex-1 border-x border-outline-variant bg-transparent text-center text-lg font-black text-on-surface outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             data-quantity-input
             disabled={unavailable}
@@ -76,7 +78,7 @@ export function AddToCartWithQuantity({
             onChange={(event) => updateQuantity(Number(event.target.value))}
           />
           <button
-            aria-label="زيادة الكمية"
+            aria-label={t.increaseQuantity}
             className="flex h-full w-12 shrink-0 items-center justify-center text-lg font-black text-primary disabled:cursor-not-allowed disabled:opacity-40"
             data-quantity-action="increase"
             disabled={unavailable || quantity >= maxQuantity}

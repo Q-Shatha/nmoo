@@ -3,12 +3,14 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
 import { ApiError, ApiUser, updateMyProfile } from "@/lib/api";
+import { useI18n } from "@/lib/i18n/context";
 
 type EditableNameProps = {
   user: ApiUser;
 };
 
 export function EditableName({ user }: EditableNameProps) {
+  const { t } = useI18n();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user.name);
@@ -27,7 +29,7 @@ export function EditableName({ user }: EditableNameProps) {
     const nextName = draftName.trim();
 
     if (nextName.length < 2) {
-      setMessage("الاسم لازم يكون حرفين على الأقل.");
+      setMessage(t.nameTooShort);
       return;
     }
 
@@ -36,11 +38,11 @@ export function EditableName({ user }: EditableNameProps) {
         const updatedUser = await updateMyProfile({ name: nextName }, getToken());
         setName(updatedUser.name);
         setDraftName(updatedUser.name);
-        setMessage("تم تحديث الاسم.");
+        setMessage(t.nameUpdated);
         setIsEditing(false);
         router.refresh();
       } catch (error) {
-        setMessage(error instanceof ApiError ? error.message : "تعذر تحديث الاسم.");
+        setMessage(error instanceof ApiError ? error.message : t.failedToUpdateName);
       }
     });
   }
@@ -49,10 +51,10 @@ export function EditableName({ user }: EditableNameProps) {
     return (
       <form className="mt-1 grid w-full min-w-0 gap-2 sm:flex sm:flex-row sm:items-center" onSubmit={handleSubmit}>
         <label className="sr-only" htmlFor="account-name">
-          الاسم
+          {t.name}
         </label>
         <input
-          className="min-h-12 w-full min-w-0 rounded-2xl border border-outline-variant bg-surface px-4 text-right text-xl font-black text-on-surface outline-none transition focus:border-primary sm:w-auto sm:min-w-72"
+          className="min-h-12 w-full min-w-0 rounded-2xl border border-outline-variant bg-surface px-4 text-start text-xl font-black text-on-surface outline-none transition focus:border-primary sm:w-auto sm:min-w-72"
           disabled={isPending}
           id="account-name"
           maxLength={120}
@@ -62,13 +64,13 @@ export function EditableName({ user }: EditableNameProps) {
         />
         <div className="flex w-full justify-end gap-2 sm:w-auto">
           <button className="primary-button min-w-20 px-4 py-2 text-sm" disabled={isPending} type="submit">
-            حفظ
+            {t.save}
           </button>
           <button className="secondary-button min-w-20 px-4 py-2 text-sm" disabled={isPending} onClick={cancelEdit} type="button">
-            إلغاء
+            {t.cancel}
           </button>
         </div>
-        {message ? <p className="text-sm font-bold text-primary sm:mr-2">{message}</p> : null}
+        {message ? <p className="text-sm font-bold text-primary sm:ms-2">{message}</p> : null}
       </form>
     );
   }
@@ -78,7 +80,7 @@ export function EditableName({ user }: EditableNameProps) {
       <div className="flex items-center gap-2">
         <h2 className="text-2xl font-black text-on-surface">{name}</h2>
         <button
-          aria-label="تعديل الاسم"
+          aria-label={t.editNameLabel}
           className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant bg-surface text-primary transition hover:bg-primary-container hover:text-on-primary-container"
           onClick={() => {
             setMessage("");

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/api";
 import { themeToStyle } from "@/lib/theme";
+import { getT } from "@/lib/i18n/server";
 import { ProductCardCartButton } from "./ProductCardCartButton";
 
 const defaultFallbackImage =
@@ -14,16 +15,17 @@ type ProductCardProps = {
   showVendor?: boolean;
 };
 
-export function ProductCard({ product, fallbackImage = defaultFallbackImage, index = 0, showVendor = false }: ProductCardProps) {
+export async function ProductCard({ product, fallbackImage = defaultFallbackImage, index = 0, showVendor = false }: ProductCardProps) {
+  const t = await getT();
   const imageUrl = product.imageUrl || product.images?.[0]?.url || fallbackImage;
   const rating = (4.7 + (index % 3) * 0.1).toFixed(1);
   const hasDiscount = Boolean(product.hasDiscount && product.salePrice && Number(product.salePrice) < Number(product.price));
   const displayPrice = hasDiscount ? product.salePrice! : product.price;
-  const badge = hasDiscount ? "خصم" : product.badgeLabel?.trim();
+  const badge = hasDiscount ? t.discount : product.badgeLabel?.trim();
   const themeStyle = product.vendor?.theme ? themeToStyle(product.vendor.theme) : undefined;
   const vendorHref = product.vendor?.storeUsername ? `/${product.vendor.storeUsername}` : product.vendor ? `/vendors/${product.vendor.id}` : `/vendors/${product.vendorId}`;
   const productHref = `${vendorHref}/products/${product.id}`;
-  const storeName = product.vendor?.theme?.storeName?.trim() || product.vendor?.name || "متجر التاجر";
+  const storeName = product.vendor?.theme?.storeName?.trim() || product.vendor?.name || t.defaultStoreName;
 
   return (
     <article
@@ -37,9 +39,9 @@ export function ProductCard({ product, fallbackImage = defaultFallbackImage, ind
         </div>
       </Link>
 
-      <div className="store-product-card-body flex flex-1 flex-col p-3 text-right sm:p-5">
+      <div className="store-product-card-body flex flex-1 flex-col p-3 text-start sm:p-5">
         <div className="flex items-center justify-between gap-2 sm:gap-3">
-          <p className="text-xs font-bold text-primary">{product.category?.name ?? "منتج"}</p>
+          <p className="text-xs font-bold text-primary">{product.category?.name ?? t.productChip}</p>
           {showVendor && product.vendor ? (
             <Link className="text-xs font-bold text-on-surface-variant underline-offset-4 hover:text-primary hover:underline" href={vendorHref}>
               {storeName}
@@ -59,6 +61,7 @@ export function ProductCard({ product, fallbackImage = defaultFallbackImage, ind
             fallbackPrice={Number(displayPrice)}
             fallbackStock={product.stock}
             addons={product.addons}
+            currency={t.currency}
             item={{
               productId: product.id,
               vendorId: product.vendorId,
@@ -71,9 +74,9 @@ export function ProductCard({ product, fallbackImage = defaultFallbackImage, ind
             }}
             options={product.options}
           />
-          <div className="text-left">
-            {hasDiscount ? <p className="text-xs text-on-surface-variant line-through sm:text-sm">{formatPrice(product.price)}</p> : null}
-            <p className={`text-base font-black sm:text-lg ${hasDiscount ? "text-red-600" : "text-primary"}`}>{formatPrice(displayPrice)}</p>
+          <div className="text-end">
+            {hasDiscount ? <p className="text-xs text-on-surface-variant line-through sm:text-sm">{formatPrice(product.price, t.currency, t.numberLocale)}</p> : null}
+            <p className={`text-base font-black sm:text-lg ${hasDiscount ? "text-red-600" : "text-primary"}`}>{formatPrice(displayPrice, t.currency, t.numberLocale)}</p>
           </div>
         </div>
       </div>
@@ -81,9 +84,9 @@ export function ProductCard({ product, fallbackImage = defaultFallbackImage, ind
   );
 }
 
-export function formatPrice(price: string | number) {
-  return `${Number(price).toLocaleString("ar-SA", {
+export function formatPrice(price: string | number, currency: string, locale = "ar-SA") {
+  return `${Number(price).toLocaleString(locale, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  })} ر.س`;
+  })} ${currency}`;
 }

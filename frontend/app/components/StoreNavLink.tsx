@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getVendorTheme } from "@/lib/api";
 import { readCart, subscribeToCart } from "@/lib/cart";
+import { useI18n } from "@/lib/i18n/context";
 
 type StoreNavLinkProps = {
   active: boolean;
@@ -14,6 +15,7 @@ type StoreNavLinkProps = {
 };
 
 export function StoreNavLink({ active, href, logoUrl, label }: StoreNavLinkProps) {
+  const { t } = useI18n();
   const [resolvedHref, setResolvedHref] = useState(href ?? "/");
   const [resolvedLogoUrl, setResolvedLogoUrl] = useState<string | null>(logoUrl ?? null);
 
@@ -64,14 +66,14 @@ export function StoreNavLink({ active, href, logoUrl, label }: StoreNavLinkProps
         active ? "text-primary" : "text-on-surface hover:text-primary"
       }`}
       href={resolvedHref}
-      aria-label="بروفايل التاجر"
+      aria-label={t.storeNavLabel}
     >
       <span
         className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border bg-surface-container-lowest transition group-hover:border-primary ${
           active ? "border-primary bg-primary-container/35 shadow-sm" : "border-outline-variant/40"
         }`}
       >
-        {resolvedLogoUrl ? <Image className="h-full w-full object-cover" alt="أيقونة التاجر" src={resolvedLogoUrl} width={48} height={48} unoptimized /> : <StoreIcon />}
+        {resolvedLogoUrl ? <Image className="h-full w-full object-cover" alt={t.storeNavIconAlt} src={resolvedLogoUrl} width={48} height={48} unoptimized /> : <StoreIcon />}
       </span>
       {label ? <span className="max-w-28 truncate text-xs font-black leading-4">{label}</span> : null}
     </Link>

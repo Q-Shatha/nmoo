@@ -2,16 +2,17 @@ import { ApiError, getMyDiscountCodes, getMyProducts } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable } from "../DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "../dashboard-data";
 import { DiscountCodeManager } from "../DiscountCodeManager";
+import { getT } from "@/lib/i18n/server";
 
 export default async function DashboardDiscountsPage() {
-  const data = await loadPageData();
+  const [data, t] = await Promise.all([loadPageData(), getT()]);
 
   return (
     <DashboardShell
       active="discounts"
-      title="التخفيضات"
-      description="إدارة أكواد التخفيض وحدود استخدامها"
-      userName={data.ok ? data.userName : "التاجر"}
+      title={t.discounts}
+      description={t.discountsDesc}
+      userName={data.ok ? data.userName : t.defaultMerchant}
       logoUrl={data.ok ? data.logoUrl : null}
       storeHref={data.ok ? data.storeHref : undefined}
     >
@@ -44,7 +45,7 @@ async function loadPageData() {
     return {
       ok: false as const,
       needsLogin: false,
-      message: error instanceof ApiError ? error.message : "تعذر تحميل أكواد التخفيض.",
+      message: error instanceof ApiError ? error.message : "Failed to load discount codes.",
     };
   }
 }

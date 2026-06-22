@@ -4,12 +4,14 @@ import Image from "next/image";
 import { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, ApiUser, uploadMyAvatar } from "@/lib/api";
+import { useI18n } from "@/lib/i18n/context";
 
 type AccountAvatarProps = {
   user: ApiUser;
 };
 
 export function AccountAvatar({ user }: AccountAvatarProps) {
+  const { t } = useI18n();
   const router = useRouter();
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "");
   const [isUploading, setIsUploading] = useState(false);
@@ -29,7 +31,7 @@ export function AccountAvatar({ user }: AccountAvatarProps) {
       setAvatarUrl(updatedUser.avatarUrl ?? "");
       router.refresh();
     } catch (error) {
-      alert(error instanceof ApiError ? error.message : "تعذر رفع صورة الحساب.");
+      alert(error instanceof ApiError ? error.message : t.failedToUploadAvatar);
     } finally {
       setIsUploading(false);
     }
@@ -40,7 +42,7 @@ export function AccountAvatar({ user }: AccountAvatarProps) {
       <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-primary-container text-2xl font-black text-on-primary-container">
         {avatarUrl ? <Image alt={user.name} className="object-cover" src={avatarUrl} fill sizes="64px" unoptimized /> : user.name.trim()[0] ?? "ن"}
       </div>
-      <label className="absolute bottom-0 left-0 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-surface bg-primary text-on-primary shadow-sm transition hover:bg-primary/90" title="تغيير صورة الحساب" aria-label="تغيير صورة الحساب">
+      <label className="absolute bottom-0 left-0 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-surface bg-primary text-on-primary shadow-sm transition hover:bg-primary/90" title={t.changeAvatarLabel} aria-label={t.changeAvatarLabel}>
         {isUploading ? <span className="h-3 w-3 animate-pulse rounded-full bg-current" aria-hidden="true" /> : <CameraIcon />}
         <input className="sr-only" accept="image/png,image/jpeg,image/webp" disabled={isUploading} type="file" onChange={handleUpload} />
       </label>

@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { ApiError, getProductById, getProductReviews, getProducts, getVendorTheme, Product, Review, VendorTheme } from "@/lib/api";
 import { getStoreTemplate } from "@/lib/store-templates";
 import { themeToStyle } from "@/lib/theme";
+import { getT } from "@/lib/i18n/server";
 import { AddToCartWithQuantity } from "../../../../components/AddToCartWithQuantity";
 import { ProductCard } from "../../../../components/ProductCard";
 import { PublicFooter } from "../../../../components/PublicFooter";
@@ -22,8 +23,11 @@ type StoreProductPageProps = {
   }>;
 };
 
+type T = Awaited<ReturnType<typeof getT>>;
+
 export default async function StoreProductPage({ params }: StoreProductPageProps) {
   const { vendorId, productId } = await params;
+  const t = await getT();
   const product = await loadProduct(productId, vendorId);
   const relatedProducts = await loadRelatedProducts(product, vendorId);
   const reviews = await loadProductReviews(product.id);
@@ -34,10 +38,10 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
   const profileHref = product.vendor?.storeUsername ? `/${product.vendor.storeUsername}` : `/vendors/${vendorId}`;
   const storeHref = `${profileHref}/storefront`;
   const template = getStoreTemplate(theme?.templateId);
-  const storeName = theme?.storeName?.trim() || product.vendor?.name || "متجر التاجر";
+  const storeName = theme?.storeName?.trim() || product.vendor?.name || t.defaultStoreName;
 
   return (
-    <div className={`min-h-screen text-on-surface ${template.className}`} dir="rtl" style={theme ? { ...themeToStyle(theme), backgroundColor: "var(--color-background)" } : undefined}>
+    <div className={`min-h-screen text-on-surface ${template.className}`} style={theme ? { ...themeToStyle(theme), backgroundColor: "var(--color-background)" } : undefined}>
       <PublicHeader active="store" storeHref={storeHref} profileHref={profileHref} vendorId={product.vendorId} storeLogoUrl={theme?.logoUrl} storeName={storeName} />
 
       <main className="store-product-page app-container pt-8" style={theme ? { backgroundColor: "var(--color-background)" } : undefined}>
@@ -47,15 +51,15 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
           </Link>
           <span>/</span>
           <Link className="muted-link" href={`${storeHref}${product.category?.slug ? `?category=${product.category.slug}` : ""}#products`}>
-            {product.category?.name ?? "المنتجات"}
+            {product.category?.name ?? t.allProductsCategory}
           </Link>
           <span>/</span>
           <span className="text-on-surface">{product.title}</span>
         </nav>
 
         <section className={`store-product-detail store-product-detail-${template.id} grid grid-cols-1 gap-12 lg:grid-cols-2`}>
-          <div className="store-product-info has-interactive-purchase order-2 text-right lg:order-1">
-            <span className="chip mb-4 px-4 py-2 text-sm">{product.category?.name ?? "منتج"}</span>
+          <div className="store-product-info has-interactive-purchase order-2 text-start lg:order-1">
+            <span className="chip mb-4 px-4 py-2 text-sm">{product.category?.name ?? t.productChip}</span>
             <h1 className="section-title text-2xl leading-tight md:text-3xl">{product.title}</h1>
             <ProductPurchasePanel
               basePrice={product.price}
@@ -75,7 +79,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
 
             <div className="mt-5 flex flex-wrap items-center justify-start gap-3">
               <span className="rounded-full bg-secondary-container px-4 py-2 text-sm font-bold text-on-secondary-container">
-                {product.stock > 0 ? `${product.stock} متوفر` : "غير متوفر"}
+                {product.stock > 0 ? t.inStockCount(product.stock) : t.outOfStock}
               </span>
               <span className="rounded-full border border-outline-variant/40 px-4 py-2 text-sm font-bold text-on-surface-variant">
                 {storeName}
@@ -83,17 +87,17 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
             </div>
 
             <div className="mt-7 flex flex-wrap items-center justify-start gap-4">
-              {hasDiscount ? <span className="text-xl font-bold text-on-surface-variant line-through">{formatPrice(product.price)}</span> : null}
-              <span className={`text-4xl font-black ${hasDiscount ? "text-red-600" : "text-primary"}`}>{formatPrice(displayPrice)}</span>
+              {hasDiscount ? <span className="text-xl font-bold text-on-surface-variant line-through">{formatPrice(product.price, t.currency, t.numberLocale)}</span> : null}
+              <span className={`text-4xl font-black ${hasDiscount ? "text-red-600" : "text-primary"}`}>{formatPrice(displayPrice, t.currency, t.numberLocale)}</span>
             </div>
 
             <p className="section-copy mt-6 text-lg">
-              {product.description || "منتج من متجر نمو بتفاصيل محدثة مباشرة من قاعدة البيانات."}
+              {product.description || t.defaultProductDesc}
             </p>
 
             {product.options && product.options.length > 0 ? (
-              <div className="store-product-options mt-8 grid gap-4 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5 text-right" dir="rtl">
-                <h2 className="text-xl font-black text-on-surface">اختر نوع المنتج</h2>
+              <div className="store-product-options mt-8 grid gap-4 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5 text-start">
+                <h2 className="text-xl font-black text-on-surface">{t.chooseProductType}</h2>
                 {product.options.map((option) => (
                   <div key={option.id} className="grid gap-2">
                     <p className="font-bold text-on-surface">{option.name}</p>
@@ -103,8 +107,8 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
                           <input className="peer sr-only" defaultChecked={index === 0} name={`option-${option.id}`} type="radio" value={value} />
                           <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-2 font-bold text-on-surface-variant transition-colors peer-checked:border-primary peer-checked:bg-primary-container/35 peer-checked:text-primary">
                             <span>{value}</span>
-                            <span className="text-xs opacity-75">{option.valueQuantities?.[value] ?? 0} متوفر</span>
-                            <span className="text-xs opacity-75">{formatPrice(String(option.valuePrices?.[value] ?? displayPrice))}</span>
+                            <span className="text-xs opacity-75">{t.inStockCount(option.valueQuantities?.[value] ?? 0)}</span>
+                            <span className="text-xs opacity-75">{formatPrice(String(option.valuePrices?.[value] ?? displayPrice), t.currency, t.numberLocale)}</span>
                           </span>
                         </label>
                       ))}
@@ -115,10 +119,10 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
             ) : null}
 
             <div className="store-product-meta mt-8 grid gap-4 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5">
-              <InfoRow label="الحالة" value={<StatusBadge status={product.status} />} />
-              <InfoRow label="التصنيف" value={product.category?.name ?? "غير مصنف"} />
+              <InfoRow label={t.productStatusLabel} value={<StatusBadge status={product.status} t={t} />} />
+              <InfoRow label={t.productCategoryLabel} value={product.category?.name ?? t.uncategorized} />
               <InfoRow
-                label="التاجر"
+                label={t.merchantLabel}
                 value={
                   <Link className="text-primary underline-offset-4 hover:underline" href={storeHref}>
                     {storeName}
@@ -132,12 +136,12 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
                 buttonClassName="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
                 className="flex w-full max-w-sm items-end gap-3"
                 disabled={product.stock <= 0}
-            item={{
-              productId: product.id,
-              vendorId: product.vendorId,
-              vendorUsername: product.vendor?.storeUsername,
-              title: product.title,
-              price: Number(displayPrice),
+                item={{
+                  productId: product.id,
+                  vendorId: product.vendorId,
+                  vendorUsername: product.vendor?.storeUsername,
+                  title: product.title,
+                  price: Number(displayPrice),
                   imageUrl: images[0],
                   stock: product.stock,
                   quantity: 1,
@@ -151,26 +155,26 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
         </section>
 
         <section id="reviews" className="store-product-reviews mt-16 rounded-[28px] border border-outline-variant/25 bg-surface-container-lowest px-5 py-10 shadow-sm md:px-12 md:py-12">
-          <div className="flex justify-start text-right">
+          <div className="flex justify-start text-start">
             <Link className="hidden" href={`${profileHref}/reviews/new`}>
-              كتابة مراجعة
+              {t.writeReview}
             </Link>
-            <div className="text-right [&>p]:hidden">
-              <h2 className="text-2xl font-black text-on-surface">مراجعات المنتج</h2>
-              <p className="mt-2 text-on-surface-variant">آراء العملاء الذين اشتروا {product.title}</p>
+            <div className="text-start [&>p]:hidden">
+              <h2 className="text-2xl font-black text-on-surface">{t.productReviewsTitle}</h2>
+              <p className="mt-2 text-on-surface-variant">{t.productReviewsSubtitle(product.title)}</p>
             </div>
           </div>
           <ReviewsCarousel fallbackContext={product.title} reviews={reviews} />
           <div className="mt-8 flex justify-start">
             <Link className="primary-button px-7 py-3" href={`${profileHref}/reviews/new`}>
-              كتابة مراجعة
+              {t.writeReview}
             </Link>
           </div>
         </section>
 
         {relatedProducts.length > 0 ? (
           <section className="store-related-products mt-16 border-t border-outline-variant/20 pt-12">
-            <h2 className="section-title mb-8 text-center text-3xl">قد يعجبك أيضا</h2>
+            <h2 className="section-title mb-8 text-center text-3xl">{t.relatedProducts}</h2>
             <div className="store-related-products-grid grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
               {relatedProducts.map((relatedProduct, index) => (
                 <ProductCard key={relatedProduct.id} product={relatedProduct} index={index} fallbackImage={fallbackProductImage} />
@@ -253,29 +257,29 @@ function InfoRow({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
-function formatPrice(price: string) {
-  return `${Number(price).toLocaleString("ar-SA", {
+function formatPrice(price: string, currency: string, locale: string) {
+  return `${Number(price).toLocaleString(locale, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  })} ر.س`;
+  })} ${currency}`;
 }
 
-function formatStatus(status: Product["status"]) {
+function formatStatus(status: Product["status"], t: T) {
   const labels: Record<Product["status"], string> = {
-    ACTIVE: "نشط",
-    DRAFT: "مسودة",
-    ARCHIVED: "مؤرشف",
+    ACTIVE: t.productStatusActive,
+    DRAFT: t.productStatusDraft,
+    ARCHIVED: t.productStatusArchived,
   };
 
   return labels[status];
 }
 
-function StatusBadge({ status }: { status: Product["status"] }) {
+function StatusBadge({ status, t }: { status: Product["status"]; t: T }) {
   const classes: Record<Product["status"], string> = {
     ACTIVE: "bg-green-100 text-green-800",
     DRAFT: "bg-amber-100 text-amber-800",
     ARCHIVED: "bg-red-100 text-red-800",
   };
 
-  return <span className={`rounded-full px-3 py-1 text-sm font-bold ${classes[status]}`}>{formatStatus(status)}</span>;
+  return <span className={`rounded-full px-3 py-1 text-sm font-bold ${classes[status]}`}>{formatStatus(status, t)}</span>;
 }

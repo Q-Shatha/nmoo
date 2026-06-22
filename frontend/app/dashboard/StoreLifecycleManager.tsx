@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
 import { ApiError, deleteMyStore, StoreStatus, updateMyStoreStatus } from "@/lib/api";
+import { useI18n } from "@/lib/i18n/context";
 
 type StoreLifecycleManagerProps = {
   initialStatus?: StoreStatus;
@@ -10,6 +11,7 @@ type StoreLifecycleManagerProps = {
 
 export function StoreLifecycleManager({ initialStatus = "ACTIVE" }: StoreLifecycleManagerProps) {
   const router = useRouter();
+  const { t } = useI18n();
   const [status, setStatus] = useState<StoreStatus>(initialStatus);
   const [message, setMessage] = useState("");
   const [deleteText, setDeleteText] = useState("");
@@ -24,10 +26,10 @@ export function StoreLifecycleManager({ initialStatus = "ACTIVE" }: StoreLifecyc
       try {
         const theme = await updateMyStoreStatus(nextStatus, readToken());
         setStatus(theme.storeStatus ?? nextStatus);
-        setMessage(nextStatus === "PAUSED" ? "تم إيقاف المتجر مؤقتاً. لن يظهر للعملاء حتى تعيد تشغيله." : "تم تشغيل المتجر مرة أخرى.");
+        setMessage(nextStatus === "PAUSED" ? t.storePausedMsg : t.storeResumedMsg);
         router.refresh();
       } catch (error) {
-        setMessage(error instanceof ApiError ? error.message : "تعذر تحديث حالة المتجر.");
+        setMessage(error instanceof ApiError ? error.message : t.storeStatusUpdateError);
       }
     });
   }
@@ -35,8 +37,8 @@ export function StoreLifecycleManager({ initialStatus = "ACTIVE" }: StoreLifecyc
   function handleDelete(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (deleteText.trim() !== "حذف المتجر") {
-      setMessage("اكتب حذف المتجر للتأكيد قبل تنفيذ الحذف النهائي.");
+    if (deleteText.trim() !== t.deleteStoreConfirmText) {
+      setMessage(t.deleteStoreTypeHint);
       return;
     }
 
@@ -48,60 +50,60 @@ export function StoreLifecycleManager({ initialStatus = "ACTIVE" }: StoreLifecyc
         router.push("/account");
         router.refresh();
       } catch (error) {
-        setMessage(error instanceof ApiError ? error.message : "تعذر حذف المتجر.");
+        setMessage(error instanceof ApiError ? error.message : t.storeDeleteError);
       }
     });
   }
 
   return (
     <section className="dashboard-panel overflow-hidden">
-      <div className="border-b border-outline-variant/15 p-5 text-right">
-        <h4 className="text-xl font-black text-on-surface">حالة المتجر</h4>
-        <p className="mt-1 text-sm leading-6 text-on-surface-variant">أوقف المتجر مؤقتاً عند الحاجة، أو احذفه نهائياً إذا لم تعد تريد تشغيله.</p>
+      <div className="border-b border-outline-variant/15 p-5 text-start">
+        <h4 className="text-xl font-black text-on-surface">{t.storeStatusTitle}</h4>
+        <p className="mt-1 text-sm leading-6 text-on-surface-variant">{t.storeStatusDesc}</p>
       </div>
 
-      <div className="grid gap-5 p-5 text-right lg:grid-cols-2">
+      <div className="grid gap-5 p-5 text-start lg:grid-cols-2">
         <article className="rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-bold text-on-surface-variant">الحالة الحالية</p>
-              <h5 className="mt-2 text-2xl font-black text-on-surface">{formatStoreStatus(status)}</h5>
+              <p className="text-sm font-bold text-on-surface-variant">{t.currentStatusLabel}</p>
+              <h5 className="mt-2 text-2xl font-black text-on-surface">{formatStoreStatus(status, t)}</h5>
             </div>
             <span className={`w-fit rounded-full px-4 py-2 text-sm font-black ${isPaused ? "bg-amber-100 text-amber-800" : isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}>
-              {formatStoreStatus(status)}
+              {formatStoreStatus(status, t)}
             </span>
           </div>
           <p className="mt-4 text-sm leading-7 text-on-surface-variant">
-            عند الإيقاف المؤقت لن تظهر صفحة المتجر أو المنتجات للعملاء، ولن يتمكن العملاء من إتمام الشراء من هذا المتجر.
+            {t.storePauseWarning}
           </p>
           <div className="mt-5 flex flex-col gap-2 sm:flex-row">
             {isPaused ? (
               <button className="primary-button px-6 py-3" disabled={isPending || isDeleted} type="button" onClick={() => handleStatusChange("ACTIVE")}>
-                تشغيل المتجر
+                {t.resumeStore}
               </button>
             ) : (
               <button className="secondary-button px-6 py-3" disabled={isPending || isDeleted} type="button" onClick={() => handleStatusChange("PAUSED")}>
-                إيقاف مؤقت
+                {t.pauseStore}
               </button>
             )}
           </div>
         </article>
 
         <form className="rounded-2xl border border-red-200 bg-red-50 p-5" onSubmit={handleDelete}>
-          <h5 className="text-xl font-black text-red-800">حذف المتجر نهائياً</h5>
+          <h5 className="text-xl font-black text-red-800">{t.deleteStorePermanentTitle}</h5>
           <p className="mt-2 text-sm leading-7 text-red-700">
-            هذا الإجراء يرشف المنتجات، يوقف الشحن والتخفيضات، يخفي صفحات المتجر، ويلغي رابط المتجر. حسابك يبقى كحساب عميل.
+            {t.deleteStorePermanentDesc}
           </p>
           <label className="mt-4 grid gap-2">
-            <span className="text-sm font-bold text-red-800">اكتب: حذف المتجر</span>
+            <span className="text-sm font-bold text-red-800">{t.deleteStoreTypeLabel}</span>
             <input
-              className="input-field border-red-200 bg-white px-4 py-3 text-right"
+              className="input-field border-red-200 bg-white px-4 py-3 text-start"
               value={deleteText}
               onChange={(event) => setDeleteText(event.target.value)}
             />
           </label>
           <button className="mt-4 inline-flex rounded-xl bg-red-700 px-6 py-3 font-black text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60" disabled={isPending || isDeleted} type="submit">
-            حذف المتجر نهائياً
+            {t.deleteStorePermanentButton}
           </button>
         </form>
       </div>
@@ -111,14 +113,14 @@ export function StoreLifecycleManager({ initialStatus = "ACTIVE" }: StoreLifecyc
   );
 }
 
-function formatStoreStatus(status?: StoreStatus) {
+function formatStoreStatus(status: StoreStatus | undefined, t: ReturnType<typeof useI18n>["t"]) {
   if (status === "PAUSED") {
-    return "موقوف مؤقتاً";
+    return t.storeStatusPaused;
   }
   if (status === "DELETED") {
-    return "محذوف";
+    return t.storeStatusDeleted;
   }
-  return "نشط";
+  return t.storeStatusActive;
 }
 
 function readToken() {

@@ -2,16 +2,17 @@ import { ApiError, getDashboardReviews, Review } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable } from "../DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "../dashboard-data";
 import { ReviewModerationPanel } from "./ReviewModerationPanel";
+import { getT } from "@/lib/i18n/server";
 
 export default async function DashboardReviewsPage() {
-  const data = await loadPageData();
+  const [data, t] = await Promise.all([loadPageData(), getT()]);
 
   return (
     <DashboardShell
       active="reviews"
-      title="التقييمات"
-      description="راجع تقييمات العملاء وانشر ما تراه مناسباً"
-      userName={data.ok ? data.userName : "التاجر"}
+      title={t.reviews}
+      description={t.reviewsDesc}
+      userName={data.ok ? data.userName : t.defaultMerchant}
       logoUrl={data.ok ? data.logoUrl : null}
       storeHref={data.ok ? data.storeHref : undefined}
     >
@@ -44,7 +45,7 @@ async function loadPageData() {
     return {
       ok: false as const,
       needsLogin: false,
-      message: error instanceof ApiError ? error.message : "تعذر تحميل التقييمات.",
+      message: error instanceof ApiError ? error.message : "Failed to load reviews.",
     };
   }
 }

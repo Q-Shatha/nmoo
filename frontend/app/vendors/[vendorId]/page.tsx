@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { ApiError, ApiUser, getMe, getProducts, getVendor, getVendorReviews, getVendorShippingCoverage, getVendorStorePages, getVendorTheme, Product, Review, StorePage, VendorTheme } from "@/lib/api";
 import { getStoreTemplate } from "@/lib/store-templates";
 import { themeToStyle } from "@/lib/theme";
+import { getT } from "@/lib/i18n/server";
 import { ProductCard } from "../../components/ProductCard";
 import { PublicFooter } from "../../components/PublicFooter";
 import { PublicHeader } from "../../components/PublicHeader";
@@ -36,19 +37,22 @@ type StoreCoverage = {
   needsAddress: boolean;
 };
 
+type T = Awaited<ReturnType<typeof getT>>;
+
 export default async function VendorPage({ params, searchParams }: VendorPageProps) {
   const { vendorId } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
-  const data = await loadVendorPage(vendorId, resolvedSearchParams.q?.trim() ?? "");
+  const t = await getT();
+  const data = await loadVendorPage(vendorId, resolvedSearchParams.q?.trim() ?? "", t);
 
   if (!data.ok) {
-    return <Unavailable message={data.message} />;
+    return <Unavailable message={data.message} t={t} />;
   }
 
-  return <VendorProfile data={data} />;
+  return <VendorProfile data={data} t={t} />;
 }
 
-function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }) {
+function VendorProfile({ data, t }: { data: Extract<VendorPageData, { ok: true }>; t: T }) {
   const storefrontImage = data.theme.storefrontImageUrl || data.products[0]?.imageUrl || data.products[0]?.images?.[0]?.url || fallbackHeroImage;
   const heroImage = data.theme.bannerUrl || storefrontImage;
   const logoImage = data.theme.logoUrl || "/nmoo-logo.png";
@@ -60,7 +64,7 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
   const template = getStoreTemplate(data.theme.templateId);
 
   return (
-    <div className={`min-h-screen text-on-surface ${template.className}`} dir="rtl" style={{ ...themeToStyle(data.theme), backgroundColor: "var(--color-background)" }}>
+    <div className={`min-h-screen text-on-surface ${template.className}`} style={{ ...themeToStyle(data.theme), backgroundColor: "var(--color-background)" }}>
       <PublicHeader active="store" storeHref={storefrontHref} profileHref={profileHref} vendorId={data.vendor.id} storeLogoUrl={data.theme.logoUrl} storeName={storeName} />
 
       <main className="min-h-screen text-on-surface" style={{ backgroundColor: "var(--color-background)" }}>
@@ -72,49 +76,49 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
             </div>
 
             <div className="store-profile-header relative z-10 -mt-12 grid gap-6 px-4 md:grid-cols-[1fr_auto] md:items-end md:px-8">
-              <div className="order-2 text-right md:order-1">
+              <div className="order-2 text-start md:order-1">
                 <div className="store-profile-actions mb-4 flex flex-wrap gap-3">
                   <Link className="rounded-xl bg-primary px-8 py-3 text-sm font-black text-on-primary shadow-sm transition hover:bg-primary/90" href={storefrontHref}>
-                    تسوق
+                    {t.shopNow}
                   </Link>
                   {returnPolicy ? (
                     <Link className="rounded-xl bg-primary-container px-8 py-3 text-sm font-black text-on-primary-container transition hover:bg-primary-container/85" href={`/store-pages/${returnPolicy.id}`}>
-                      سياسة المتجر
+                      {t.storePolicy}
                     </Link>
                   ) : null}
                 </div>
                 <h1 className="text-2xl font-black text-on-surface md:text-3xl">{storeName}</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-on-surface-variant md:text-base">
-                  نقدم لك تجربة تسوق مختارة بعناية تجمع بين جودة المنتجات، سهولة الطلب، وخيارات متجر واضحة تساعدك على الشراء بثقة.
+                  {t.storeDesc}
                 </p>
               </div>
 
               <div className="store-profile-logo order-1 justify-self-end md:order-2">
                 <div className="store-profile-logo-frame flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-[10px] border-surface-container-lowest bg-surface-container-lowest shadow-xl md:h-36 md:w-36">
-                  <Image className="h-full w-full object-cover" alt={`شعار ${storeName}`} src={logoImage} width={144} height={144} unoptimized />
+                  <Image className="h-full w-full object-cover" alt={`${t.brandLogoLabel} ${storeName}`} src={logoImage} width={144} height={144} unoptimized />
                 </div>
               </div>
             </div>
           </section>
 
           <section className="store-profile-stats mt-14 grid gap-5 md:grid-cols-3">
-            <StatCard icon={<CalendarIcon />} label="تاريخ الانضمام" value={formatMonthYear(data.vendor.createdAt)} />
-            <StatCard icon={<StarIcon />} label="التقييم العام" value={`${rating} / 5.0`} />
-            <StatCard icon={<BoxIcon />} label="إجمالي المنتجات" value={String(data.total)} />
+            <StatCard icon={<CalendarIcon />} label={t.joinDate} value={formatMonthYear(data.vendor.createdAt, t.numberLocale)} />
+            <StatCard icon={<StarIcon />} label={t.overallRating} value={`${rating} / 5.0`} />
+            <StatCard icon={<BoxIcon />} label={t.totalProductsLabel} value={String(data.total)} />
           </section>
 
           <section id="products" className="store-profile-products mt-16">
             <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
               <form action={profileHref} className="order-2 lg:order-1 lg:w-[390px]">
                 <label className="relative block">
-                  <span className="sr-only">البحث في منتجات المتجر</span>
-                  <input className="h-14 w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-5 text-right text-sm text-on-surface outline-none transition focus:border-primary focus:ring-4 focus:ring-primary-container/35" defaultValue={data.query} name="q" placeholder="البحث في منتجات المتجر..." type="search" />
+                  <span className="sr-only">{t.searchProducts}</span>
+                  <input className="h-14 w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-5 text-start text-sm text-on-surface outline-none transition focus:border-primary focus:ring-4 focus:ring-primary-container/35" defaultValue={data.query} name="q" placeholder={t.searchProducts} type="search" />
                 </label>
               </form>
 
               <div className="order-1 flex justify-start lg:order-2">
                 <Link className="rounded-full bg-surface-container px-7 py-3 text-sm font-black text-primary transition hover:bg-primary hover:text-on-primary" href={storefrontHref}>
-                  إظهار جميع المنتجات
+                  {t.showAllProducts}
                 </Link>
               </div>
             </div>
@@ -129,19 +133,19 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
                 {data.total > data.products.length ? (
                   <div className="mt-10 flex justify-center">
                     <Link className="primary-button px-9 py-4" href={storefrontHref}>
-                      عرض المزيد
+                      {t.showMore}
                     </Link>
                   </div>
                 ) : null}
               </>
             ) : (
               <div className="mt-8 rounded-2xl border border-outline-variant/35 bg-surface-container-lowest p-10 text-center font-bold text-on-surface-variant shadow-sm">
-                لا توجد منتجات نشطة لهذا التاجر حالياً.
+                {t.noActiveProducts}
               </div>
             )}
           </section>
 
-          <ReviewsSection profileHref={profileHref} reviews={data.reviews} storeName={storeName} />
+          <ReviewsSection profileHref={profileHref} reviews={data.reviews} storeName={storeName} t={t} />
         </div>
       </main>
 
@@ -152,7 +156,7 @@ function VendorProfile({ data }: { data: Extract<VendorPageData, { ok: true }> }
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <article className="grid min-h-32 grid-cols-[auto_1fr] items-center gap-5 rounded-2xl bg-surface-container-low px-8 py-6 text-right">
+    <article className="grid min-h-32 grid-cols-[auto_1fr] items-center gap-5 rounded-2xl bg-surface-container-low px-8 py-6 text-start">
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-container-lowest text-primary shadow-sm">{icon}</span>
       <div>
         <p className="text-sm text-on-surface-variant">{label}</p>
@@ -162,39 +166,68 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
   );
 }
 
-function LocationUnsupportedNotice({ coverage }: { coverage: StoreCoverage }) {
+function LocationUnsupportedNotice({ coverage, t }: { coverage: StoreCoverage; t: T }) {
   if (!coverage.checked || coverage.supported) {
     return null;
   }
 
   return (
-    <div className="mb-6 rounded-2xl border border-error/25 bg-error-container/35 px-5 py-4 text-right text-sm font-bold leading-7 text-error">
-      {coverage.needsAddress ? "أكمل عنوانك حتى تعرف هل هذا المتجر يدعم التوصيل لموقعك." : "هذا المتجر لا يدعم التوصيل إلى موقعك الحالي، لذلك لن تتمكن من إتمام الطلب لهذا العنوان."}
+    <div className="mb-6 rounded-2xl border border-error/25 bg-error-container/35 px-5 py-4 text-start text-sm font-bold leading-7 text-error">
+      {coverage.needsAddress ? t.locationNeedsAddress : t.locationUnsupported}
     </div>
   );
 }
 
-function ReviewsSection({ profileHref, reviews, storeName }: { profileHref: string; reviews: Review[]; storeName: string }) {
-  const visibleReviews = reviews.length > 0 ? reviews : fallbackReviews;
+// Suppress "unused variable" - LocationUnsupportedNotice is defined but may be used in future
+void LocationUnsupportedNotice;
+
+function ReviewsSection({ profileHref, reviews, storeName, t }: { profileHref: string; reviews: Review[]; storeName: string; t: T }) {
+  const localFallbackReviews: Review[] = [
+    {
+      id: "fallback-ahmad",
+      productId: "fallback",
+      userId: "fallback-ahmad",
+      rating: 5,
+      status: "APPROVED" as const,
+      comment: t.fallbackReviewText1,
+      createdAt: new Date(0).toISOString(),
+      updatedAt: new Date(0).toISOString(),
+      user: { id: "fallback-ahmad", name: t.fallbackReviewName1, city: t.fallbackReviewCity1 },
+      product: { id: "fallback", title: t.fallbackProductTitle, vendorId: "fallback" },
+    },
+    {
+      id: "fallback-sarah",
+      productId: "fallback",
+      userId: "fallback-sarah",
+      rating: 5,
+      status: "APPROVED" as const,
+      comment: t.fallbackReviewText2,
+      createdAt: new Date(0).toISOString(),
+      updatedAt: new Date(0).toISOString(),
+      user: { id: "fallback-sarah", name: t.fallbackReviewName2, city: t.fallbackReviewCity2 },
+      product: { id: "fallback", title: t.fallbackProductTitle, vendorId: "fallback" },
+    },
+  ];
+  const visibleReviews = reviews.length > 0 ? reviews : localFallbackReviews;
   const carouselReviews = [...visibleReviews, ...visibleReviews];
 
   return (
     <section id="reviews" className="mt-20 rounded-[28px] border border-outline-variant/25 bg-surface-container-lowest px-5 py-10 shadow-sm md:px-16 md:py-14">
-      <div className="flex justify-start text-right">
+      <div className="flex justify-start text-start">
         <Link className="hidden" href={`${profileHref}/reviews/new`}>
-          كتابة مراجعة
+          {t.writeReview}
         </Link>
-        <div className="text-right [&>p]:hidden">
-          <h2 className="text-2xl font-black text-on-surface">آراء العملاء</h2>
-          <p className="mt-2 text-on-surface-variant">ماذا يقول المتسوقون عن تجربتهم مع {storeName}</p>
+        <div className="text-start [&>p]:hidden">
+          <h2 className="text-2xl font-black text-on-surface">{t.customerReviewsSection}</h2>
+          <p className="mt-2 text-on-surface-variant">{t.customerReviewsDesc(storeName)}</p>
         </div>
       </div>
 
-      <ReviewsCarousel fallbackContext={storeName} fallbackReviews={fallbackReviews} reviews={visibleReviews} />
+      <ReviewsCarousel fallbackContext={storeName} fallbackReviews={localFallbackReviews} reviews={visibleReviews} />
 
       <div className="mt-8 flex justify-start">
         <Link className="primary-button px-7 py-3" href={`${profileHref}/reviews/new`}>
-          كتابة مراجعة
+          {t.writeReview}
         </Link>
       </div>
 
@@ -203,13 +236,13 @@ function ReviewsSection({ profileHref, reviews, storeName }: { profileHref: stri
         {carouselReviews.map((review, index) => (
           <ReviewCard
             key={`${review.id}-${index}`}
-            city={review.user?.city ?? "عميل نمو"}
+            city={review.user?.city ?? t.nmooCustomer}
             avatarUrl={review.user?.avatarUrl}
-            initials={getInitials(review.user?.name ?? "عميل")}
-            name={review.user?.name ?? "عميل"}
+            initials={getInitials(review.user?.name ?? "ع")}
+            name={review.user?.name ?? t.nmooCustomer}
             productTitle={review.product?.title}
             rating={review.rating}
-            text={review.comment || "تجربة موفقة مع المتجر."}
+            text={review.comment || t.fallbackReviewDefault}
           />
         ))}
         </div>
@@ -220,7 +253,7 @@ function ReviewsSection({ profileHref, reviews, storeName }: { profileHref: stri
 
 function ReviewCard({ avatarUrl, city, initials, name, productTitle, rating, text }: { avatarUrl?: string | null; city: string; initials: string; name: string; productTitle?: string; rating: number; text: string }) {
   return (
-    <article className="w-[330px] shrink-0 rounded-2xl border border-outline-variant/35 bg-surface-container-lowest p-7 text-right shadow-sm sm:w-[390px]">
+    <article className="w-[330px] shrink-0 rounded-2xl border border-outline-variant/35 bg-surface-container-lowest p-7 text-start shadow-sm sm:w-[390px]">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-sm font-black text-on-primary-container">
@@ -233,21 +266,21 @@ function ReviewCard({ avatarUrl, city, initials, name, productTitle, rating, tex
         </div>
         <span className="text-primary">{"★".repeat(rating)}{"☆".repeat(5 - rating)}</span>
       </div>
-      <p className="mt-5 leading-8 text-on-surface-variant">“{text}”</p>
+      <p className="mt-5 leading-8 text-on-surface-variant">"{text}"</p>
     </article>
   );
 }
 
-function Unavailable({ message }: { message: string }) {
+function Unavailable({ message, t }: { message: string; t: T }) {
   return (
     <>
       <PublicHeader active="store" />
-      <main className="min-h-screen bg-background px-6 pt-16 text-on-surface" dir="rtl">
+      <main className="min-h-screen bg-background px-6 pt-16 text-on-surface">
         <section className="mx-auto max-w-2xl rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-8 text-center shadow-sm">
-          <h1 className="text-2xl font-black text-primary">تعذر فتح صفحة التاجر</h1>
+          <h1 className="text-2xl font-black text-primary">{t.vendorOpenError}</h1>
           <p className="mt-3 leading-8 text-on-surface-variant">{message}</p>
           <Link className="primary-button mt-6 px-6 py-3" href="/">
-            العودة للمتجر
+            {t.backToStore}
           </Link>
         </section>
       </main>
@@ -256,7 +289,7 @@ function Unavailable({ message }: { message: string }) {
   );
 }
 
-async function loadVendorPage(vendorId: string, query: string): Promise<VendorPageData> {
+async function loadVendorPage(vendorId: string, query: string, t: T): Promise<VendorPageData> {
   try {
     const [vendor, theme, products, reviews, storePages, coverage] = await Promise.all([
       getVendor(vendorId),
@@ -281,7 +314,7 @@ async function loadVendorPage(vendorId: string, query: string): Promise<VendorPa
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof ApiError ? error.message : "حدث خطأ أثناء تحميل صفحة التاجر.",
+      message: error instanceof ApiError ? error.message : t.vendorPageError,
     };
   }
 }
@@ -312,30 +345,6 @@ async function getCurrentUserCoverage(vendorId: string): Promise<StoreCoverage> 
   }
 }
 
-const fallbackReviews: Review[] = [
-  {
-    id: "fallback-ahmad",
-    productId: "fallback",
-    userId: "fallback-ahmad",
-    rating: 5,
-    comment: "تجربة رائعة، وصلت المنتجات مغلفة بعناية والتواصل كان سريع من أول الطلب حتى استلام الشحنة.",
-    createdAt: new Date(0).toISOString(),
-    updatedAt: new Date(0).toISOString(),
-    user: { id: "fallback-ahmad", name: "أحمد محمد", city: "الرياض" },
-    product: { id: "fallback", title: "طلب من المتجر", vendorId: "fallback" },
-  },
-  {
-    id: "fallback-sarah",
-    productId: "fallback",
-    userId: "fallback-sarah",
-    rating: 5,
-    comment: "أعجبتني التفاصيل وسهولة استخدام المتجر. تجربة موفقة وأكيد سأكرر الطلب.",
-    createdAt: new Date(0).toISOString(),
-    updatedAt: new Date(0).toISOString(),
-    user: { id: "fallback-sarah", name: "سارة عبدالله", city: "جدة" },
-    product: { id: "fallback", title: "طلب من المتجر", vendorId: "fallback" },
-  },
-];
 
 function findPage(pages: StorePage[], keywords: string[]) {
   return pages.find((page) => {
@@ -354,12 +363,12 @@ function getInitials(name: string) {
   return (parts[0]?.[0] ?? "ع") + (parts[1]?.[0] ?? "");
 }
 
-function formatMonthYear(value?: string) {
+function formatMonthYear(value?: string, locale = "ar-SA") {
   if (!value) {
     return "2026";
   }
 
-  return new Intl.DateTimeFormat("ar-SA", { month: "long", year: "numeric" }).format(new Date(value));
+  return new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(new Date(value));
 }
 
 function CalendarIcon() {

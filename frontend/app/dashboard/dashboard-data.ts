@@ -30,7 +30,7 @@ export async function loadVendorDashboardBase(nextPath = "/dashboard"): Promise<
       return {
         ok: false,
         needsLogin: false,
-        message: "لوحة التحكم مخصصة للتجار فقط.",
+        message: "VENDOR_ONLY",
       };
     }
 
@@ -48,7 +48,7 @@ export async function loadVendorDashboardBase(nextPath = "/dashboard"): Promise<
     return {
       ok: false,
       needsLogin: false,
-      message: error instanceof ApiError ? error.message : "تعذر تحميل بيانات لوحة التحكم.",
+      message: error instanceof ApiError ? error.message : "LOAD_ERROR",
     };
   }
 }

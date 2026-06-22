@@ -1,10 +1,12 @@
 import { cookies } from "next/headers";
 import { ApiError, getOrders, Order } from "@/lib/api";
 import { PrintButtons } from "../[orderId]/PrintButtons";
+import { getT } from "@/lib/i18n/server";
 
 type Props = { searchParams?: Promise<{ q?: string; from?: string; to?: string }> };
 
 export default async function PrintAllInvoicesPage({ searchParams }: Props) {
+  const t = await getT();
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const query = resolvedSearchParams.q?.trim() ?? "";
   const fromDate = resolvedSearchParams.from ? new Date(resolvedSearchParams.from) : null;
@@ -12,13 +14,13 @@ export default async function PrintAllInvoicesPage({ searchParams }: Props) {
 
   const cookieStore = await cookies();
   const token = cookieStore.get("nmoo_access_token")?.value;
-  if (!token) return <p className="p-8 text-center">غير مصرح</p>;
+  if (!token) return <p className="p-8 text-center">{t.unauthorized}</p>;
 
   let orders: Order[];
   try {
     orders = await getOrders(token);
   } catch (e) {
-    return <p className="p-8 text-center">تعذر تحميل الطلبات{e instanceof ApiError ? `: ${e.message}` : ""}</p>;
+    return <p className="p-8 text-center">{t.ordersLoadError}{e instanceof ApiError ? `: ${e.message}` : ""}</p>;
   }
 
   if (query) {
@@ -65,7 +67,7 @@ export default async function PrintAllInvoicesPage({ searchParams }: Props) {
       <div id="print-root">
         <div className="no-print" style={{ display: "flex", gap: 12, padding: "24px 32px" }}>
           <PrintButtons />
-          <span style={{ alignSelf: "center", fontSize: 13, color: "#666" }}>{orders.length} فاتورة</span>
+          <span style={{ alignSelf: "center", fontSize: 13, color: "#666" }}>{t.invoiceCount(orders.length)}</span>
         </div>
 
         {orders.map((order, idx) => {
@@ -80,33 +82,33 @@ export default async function PrintAllInvoicesPage({ searchParams }: Props) {
               <div className="inv-page">
                 <div className="inv-header">
                   <div>
-                    <div className="inv-store-name">{vendor?.name ?? "المتجر"}</div>
+                    <div className="inv-store-name">{vendor?.name ?? t.defaultStoreName2}</div>
                     {vendor?.storeUsername && <div className="inv-store-sub">nmoo.store/{vendor.storeUsername}</div>}
                     {vendor?.phoneNumber && <div className="inv-store-sub">{vendor.phoneNumber}</div>}
                   </div>
                   <div>
-                    <div className="inv-label">فاتورة</div>
+                    <div className="inv-label">{t.invoiceLabel}</div>
                     <div className="inv-meta">
-                      <div>رقم: #{order.id.slice(0, 8).toUpperCase()}</div>
-                      <div>التاريخ: {formatDate(order.createdAt)}</div>
+                      <div>{t.invoiceNumber} #{order.id.slice(0, 8).toUpperCase()}</div>
+                      <div>{t.invoiceDate} {formatDate(order.createdAt, t.numberLocale)}</div>
                     </div>
                   </div>
                 </div>
 
                 <div className="inv-parties">
                   <div>
-                    <div className="inv-party-label">المورد</div>
+                    <div className="inv-party-label">{t.supplierLabel}</div>
                     <div className="inv-party-name">{vendor?.name ?? "—"}</div>
                     <div className="inv-party-info">{vendor?.email}</div>
                   </div>
                   <div>
-                    <div className="inv-party-label">العميل</div>
+                    <div className="inv-party-label">{t.buyerLabel}</div>
                     <div className="inv-party-name">{order.buyer?.name ?? "—"}</div>
                     <div className="inv-party-info">
                       {order.buyer?.email}
                       {order.buyer?.phoneNumber && <><br />{order.buyer.phoneNumber}</>}
                       <br />
-                      {[order.buyer?.street, order.buyer?.district, order.buyer?.city, order.buyer?.region, order.buyer?.country].filter(Boolean).join("، ")}
+                      {[order.buyer?.street, order.buyer?.district, order.buyer?.city, order.buyer?.region, order.buyer?.country].filter(Boolean).join(t.addressSeparator)}
                     </div>
                   </div>
                 </div>
@@ -114,40 +116,40 @@ export default async function PrintAllInvoicesPage({ searchParams }: Props) {
                 <table>
                   <thead>
                     <tr>
-                      <th style={{ textAlign: "right" }}>المنتج</th>
-                      <th style={{ textAlign: "center" }}>الكمية</th>
-                      <th style={{ textAlign: "left" }}>سعر الوحدة</th>
-                      <th style={{ textAlign: "left" }}>الإجمالي</th>
+                      <th style={{ textAlign: "start" }}>{t.invProductColumn}</th>
+                      <th style={{ textAlign: "center" }}>{t.quantityColumn}</th>
+                      <th style={{ textAlign: "end" }}>{t.unitPriceColumn}</th>
+                      <th style={{ textAlign: "end" }}>{t.totalColumn}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {order.items.map((item) => (
                       <tr key={item.id}>
                         <td>
-                          <div style={{ fontWeight: 700 }}>{item.product?.title ?? "منتج"}</div>
+                          <div style={{ fontWeight: 700 }}>{item.product?.title ?? t.unknownProduct}</div>
                           {(item.selectedAddons ?? []).map((a) => (
-                            <div key={a.id} style={{ fontSize: 11, color: "#666" }}>+ {a.name} ({formatPrice(Number(a.price))})</div>
+                            <div key={a.id} style={{ fontSize: 11, color: "#666" }}>+ {a.name} ({formatPrice(Number(a.price), t.currency, t.numberLocale)})</div>
                           ))}
                         </td>
                         <td style={{ textAlign: "center" }}>{item.quantity}</td>
-                        <td style={{ textAlign: "left" }}>{formatPrice(Number(item.unitPrice))}</td>
-                        <td style={{ textAlign: "left", fontWeight: 700 }}>{formatPrice(Number(item.unitPrice) * item.quantity)}</td>
+                        <td style={{ textAlign: "end" }}>{formatPrice(Number(item.unitPrice), t.currency, t.numberLocale)}</td>
+                        <td style={{ textAlign: "end", fontWeight: 700 }}>{formatPrice(Number(item.unitPrice) * item.quantity, t.currency, t.numberLocale)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
 
                 <div className="inv-totals">
-                  <div className="inv-total-row"><span>المجموع الفرعي</span><span>{formatPrice(itemsSubtotal)}</span></div>
-                  <div className="inv-total-row"><span>الشحن</span><span>{formatPrice(shippingFee)}</span></div>
+                  <div className="inv-total-row"><span>{t.subtotalLabel2}</span><span>{formatPrice(itemsSubtotal, t.currency, t.numberLocale)}</span></div>
+                  <div className="inv-total-row"><span>{t.shippingLabel3}</span><span>{formatPrice(shippingFee, t.currency, t.numberLocale)}</span></div>
                   {discountAmount > 0 && (
-                    <div className="inv-total-row inv-discount"><span>الخصم</span><span>- {formatPrice(discountAmount)}</span></div>
+                    <div className="inv-total-row inv-discount"><span>{t.discountLabel2}</span><span>- {formatPrice(discountAmount, t.currency, t.numberLocale)}</span></div>
                   )}
-                  <div className="inv-total-row inv-grand"><span>الإجمالي</span><span>{formatPrice(total)}</span></div>
+                  <div className="inv-total-row inv-grand"><span>{t.grandTotalLabel}</span><span>{formatPrice(total, t.currency, t.numberLocale)}</span></div>
                 </div>
 
                 <div className="inv-footer">
-                  {order.paymentMethod === "CASH_ON_DELIVERY" ? "الدفع عند الاستلام" : "دفع إلكتروني"} — شكراً لتعاملكم معنا
+                  {order.paymentMethod === "CASH_ON_DELIVERY" ? t.cashOnDelivery : t.onlinePayment} — {t.invoiceThankYou}
                 </div>
               </div>
             </div>
@@ -158,10 +160,10 @@ export default async function PrintAllInvoicesPage({ searchParams }: Props) {
   );
 }
 
-function formatPrice(v: number) {
-  return `${v.toLocaleString("ar-SA", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ر.س`;
+function formatPrice(v: number, currency: string, locale = "ar-SA") {
+  return `${v.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${currency}`;
 }
 
-function formatDate(v: string) {
-  return new Intl.DateTimeFormat("ar-SA", { dateStyle: "medium" }).format(new Date(v));
+function formatDate(v: string, locale = "ar-SA") {
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(v));
 }

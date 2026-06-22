@@ -2,21 +2,32 @@
 
 import { useState } from "react";
 import { ApiError, Order, OrderStatus, updateOrderStatus } from "@/lib/api";
-
-const statusOptions: Array<{ value: OrderStatus; label: string }> = [
-  { value: "PENDING", label: "بانتظار الدفع" },
-  { value: "PAID", label: "مدفوع" },
-  { value: "PROCESSING", label: "قيد التنفيذ" },
-  { value: "SHIPPED", label: "تم الشحن" },
-  { value: "COMPLETED", label: "مكتمل" },
-  { value: "CANCELLED", label: "ملغي" },
-];
+import { useI18n } from "@/lib/i18n/context";
 
 export function OrderStatusEditor({ orderId, initialStatus }: { orderId: string; initialStatus: OrderStatus }) {
+  const { t } = useI18n();
   const [status, setStatus] = useState(initialStatus);
   const [savedStatus, setSavedStatus] = useState(initialStatus);
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  const statusOptions: Array<{ value: OrderStatus; label: string }> = [
+    { value: "PENDING", label: t.statusPending },
+    { value: "PAID", label: t.statusPaid },
+    { value: "PROCESSING", label: t.statusProcessing },
+    { value: "SHIPPED", label: t.statusShipped },
+    { value: "COMPLETED", label: t.statusCompleted },
+    { value: "CANCELLED", label: t.statusCancelled },
+  ];
+
+  const statusLabels: Record<Order["status"], string> = {
+    PENDING: t.statusPending,
+    PAID: t.statusPaid,
+    PROCESSING: t.statusProcessing,
+    SHIPPED: t.statusShipped,
+    COMPLETED: t.statusCompleted,
+    CANCELLED: t.statusCancelled,
+  };
 
   async function handleSave() {
     setMessage("");
@@ -27,26 +38,26 @@ export function OrderStatusEditor({ orderId, initialStatus }: { orderId: string;
       const order = await updateOrderStatus(orderId, status, token);
       setSavedStatus(order.status);
       setStatus(order.status);
-      setMessage("تم تحديث حالة الطلب.");
+      setMessage(t.orderStatusUpdated);
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : "تعذر تحديث حالة الطلب.");
+      setMessage(error instanceof ApiError ? error.message : t.orderStatusUpdateError);
     } finally {
       setIsSaving(false);
     }
   }
 
   return (
-    <section className="dashboard-panel p-6 text-right" dir="rtl">
+    <section className="dashboard-panel p-6 text-start">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-xl font-black text-on-surface">تعديل حالة الطلب</h2>
-          <p className="mt-1 text-sm text-on-surface-variant">اختر الحالة الحالية للطلب ثم احفظ التغيير.</p>
+          <h2 className="text-xl font-black text-on-surface">{t.editOrderStatus}</h2>
+          <p className="mt-1 text-sm text-on-surface-variant">{t.selectStatusHint}</p>
         </div>
-        <span className={`w-fit rounded-full px-3 py-1 text-sm font-bold ${statusClass(savedStatus)}`}>{formatOrderStatus(savedStatus)}</span>
+        <span className={`w-fit rounded-full px-3 py-1 text-sm font-bold ${statusClass(savedStatus)}`}>{statusLabels[savedStatus]}</span>
       </div>
 
       <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
-        <select className="input-field px-4 py-3 text-right" value={status} onChange={(event) => setStatus(event.target.value as OrderStatus)}>
+        <select className="input-field px-4 py-3 text-start" value={status} onChange={(event) => setStatus(event.target.value as OrderStatus)}>
           {statusOptions.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -54,7 +65,7 @@ export function OrderStatusEditor({ orderId, initialStatus }: { orderId: string;
           ))}
         </select>
         <button className="primary-button px-7 py-3 disabled:opacity-60" disabled={isSaving || status === savedStatus} type="button" onClick={handleSave}>
-          {isSaving ? "جاري الحفظ..." : "حفظ الحالة"}
+          {isSaving ? t.savingStatus : t.saveStatus}
         </button>
       </div>
 
@@ -70,19 +81,6 @@ function readCookie(name: string) {
     ?.split("=")[1];
 
   return cookie ? decodeURIComponent(cookie) : "";
-}
-
-function formatOrderStatus(status: Order["status"]) {
-  const labels: Record<Order["status"], string> = {
-    PENDING: "بانتظار الدفع",
-    PAID: "مدفوع",
-    PROCESSING: "قيد التنفيذ",
-    SHIPPED: "تم الشحن",
-    COMPLETED: "مكتمل",
-    CANCELLED: "ملغي",
-  };
-
-  return labels[status];
 }
 
 function statusClass(status: Order["status"]) {

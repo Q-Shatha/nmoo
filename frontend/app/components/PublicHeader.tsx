@@ -1,8 +1,10 @@
 import { cookies } from "next/headers";
 import { ApiError, ApiUser, getMe } from "@/lib/api";
+import { getT } from "@/lib/i18n/server";
 import { AccountMenu } from "./AccountMenu";
 import { CartLink } from "./CartLink";
 import { StoreNavLink } from "./StoreNavLink";
+import { LangSwitcher } from "./LangSwitcher";
 
 type PublicHeaderProps = {
   active?: "home" | "store";
@@ -15,7 +17,7 @@ type PublicHeaderProps = {
 };
 
 export async function PublicHeader({ active, storeHref, profileHref, vendorId, storeLogoUrl, storeName, hideCart = false }: PublicHeaderProps) {
-  const user = await loadHeaderUser();
+  const [user, t] = await Promise.all([loadHeaderUser(), getT()]);
 
   return (
     <header className="sticky inset-x-0 top-0 z-50 border-b border-outline-variant/25 bg-surface-container-lowest/95 backdrop-blur-xl">
@@ -26,7 +28,8 @@ export async function PublicHeader({ active, storeHref, profileHref, vendorId, s
           <StoreNavLink href={profileHref ?? storeHref} active={active === "store"} logoUrl={storeLogoUrl} label={storeName} />
         </div>
 
-        <div className="flex items-center justify-end gap-2 justify-self-end" aria-label="خيارات الحساب">
+        <div className="flex items-center justify-end gap-2 justify-self-end" aria-label={t.accountOptionsLabel}>
+          <LangSwitcher />
           <AccountMenu compact initialUser={user} />
         </div>
       </nav>

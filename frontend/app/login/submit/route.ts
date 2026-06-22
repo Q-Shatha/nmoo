@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getTranslations, LOCALE_COOKIE, parseLocale } from "@/lib/i18n";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:5000";
 const demoAccounts = {
@@ -14,6 +15,9 @@ type AuthResponse = {
 };
 
 export async function POST(request: NextRequest) {
+  const locale = parseLocale(request.cookies.get(LOCALE_COOKIE)?.value);
+  const t = getTranslations(locale);
+
   const formData = await request.formData();
   const demo = String(formData.get("demo") ?? "");
   const email = demo in demoAccounts ? demoAccounts[demo as keyof typeof demoAccounts] : String(formData.get("email") ?? "");
@@ -33,15 +37,15 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       if (response.status === 401 && expectedRole) {
-        return redirectToLogin(request, nextPath, getRoleMismatchMessage(expectedRole));
+        return redirectToLogin(request, nextPath, getRoleMismatchMessage(expectedRole, t));
       }
 
-      return redirectToLogin(request, nextPath, "تعذر تسجيل الدخول. تأكد من البيانات وحاول مرة أخرى.");
+      return redirectToLogin(request, nextPath, t.loginFailed);
     }
 
     const payload = (await response.json()) as AuthResponse;
     if (expectedRole && payload.user.role !== expectedRole) {
-      return redirectToLogin(request, nextPath, getRoleMismatchMessage(expectedRole));
+      return redirectToLogin(request, nextPath, getRoleMismatchMessage(expectedRole, t));
     }
 
     const fallbackPath = payload.user.role === "BUYER" ? "/" : "/dashboard";
@@ -55,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     return redirectResponse;
   } catch {
-    return redirectToLogin(request, nextPath, "تعذر الاتصال بالخادم. حاول مرة أخرى.");
+    return redirectToLogin(request, nextPath, t.loginServerError);
   }
 }
 
@@ -88,8 +92,8 @@ function getExpectedRole(demo: string, value: string): "BUYER" | "VENDOR" | unde
   return value === "BUYER" || value === "VENDOR" ? value : undefined;
 }
 
-function getRoleMismatchMessage(expectedRole: "BUYER" | "VENDOR") {
-  return expectedRole === "BUYER" ? "لا يمكن تسجيل الدخول من خانة العميل إلا بحساب عميل صحيح." : "لا يمكن تسجيل الدخول من خانة التاجر إلا بحساب تاجر صحيح.";
+function getRoleMismatchMessage(expectedRole: "BUYER" | "VENDOR", t: ReturnType<typeof getTranslations>) {
+  return expectedRole === "BUYER" ? t.loginRoleMismatchBuyer : t.loginRoleMismatchVendor;
 }
 
 function getSafeNextPath(nextPath: string, role: AuthResponse["user"]["role"]) {

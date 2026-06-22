@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ReactNode } from "react";
 import { VendorTheme } from "@/lib/api";
+import { getT } from "@/lib/i18n/server";
 import { PublicFooter } from "../components/PublicFooter";
 import { PublicHeader } from "../components/PublicHeader";
 
@@ -14,24 +15,25 @@ type DashboardShellProps = {
   children: ReactNode;
 };
 
-const navItems: Array<{ key: DashboardShellProps["active"]; label: string; icon: string; href: string }> = [
-  { key: "overview", label: "نظرة عامة", icon: "□", href: "/dashboard" },
-  { key: "orders", label: "الطلبات", icon: "▤", href: "/dashboard/orders" },
-  { key: "products", label: "المنتجات", icon: "▣", href: "/dashboard/products" },
-  { key: "shipping", label: "الشحن", icon: "⇄", href: "/dashboard/shipping" },
-  { key: "discounts", label: "التخفيضات", icon: "%", href: "/dashboard/discounts" },
-  { key: "reviews", label: "التقييمات", icon: "★", href: "/dashboard/reviews" },
-  { key: "analytics", label: "التقارير", icon: "↗", href: "/dashboard/analytics" },
-  { key: "settings", label: "الإعدادات", icon: "⚙", href: "/dashboard/settings" },
-];
+export async function DashboardShell({ active, title, description, logoUrl, storeHref, children }: DashboardShellProps) {
+  const t = await getT();
+  const navItems = [
+    { key: "overview" as const, label: t.overview, icon: "□", href: "/dashboard" },
+    { key: "orders" as const, label: t.orders, icon: "▤", href: "/dashboard/orders" },
+    { key: "products" as const, label: t.products, icon: "▣", href: "/dashboard/products" },
+    { key: "shipping" as const, label: t.shipping, icon: "⇄", href: "/dashboard/shipping" },
+    { key: "discounts" as const, label: t.discounts, icon: "%", href: "/dashboard/discounts" },
+    { key: "reviews" as const, label: t.reviews, icon: "★", href: "/dashboard/reviews" },
+    { key: "analytics" as const, label: t.analytics, icon: "↗", href: "/dashboard/analytics" },
+    { key: "settings" as const, label: t.settings, icon: "⚙", href: "/dashboard/settings" },
+  ];
 
-export function DashboardShell({ active, title, description, logoUrl, storeHref, children }: DashboardShellProps) {
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background text-on-surface" dir="rtl">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background text-on-surface">
       <PublicHeader active="store" storeHref={storeHref} storeLogoUrl={logoUrl} hideCart />
       <main className="min-h-screen min-w-0 max-w-full overflow-x-hidden">
         <DashboardHeader title={title} description={description} />
-        <DashboardNav active={active} />
+        <DashboardNav active={active} navItems={navItems} addProductLabel={t.addProduct} />
         <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 p-4 pb-24 md:gap-6 md:p-8">
           {children}
         </div>
@@ -41,7 +43,7 @@ export function DashboardShell({ active, title, description, logoUrl, storeHref,
   );
 }
 
-export function DashboardUnavailable({
+export async function DashboardUnavailable({
   title,
   description,
   message,
@@ -52,20 +54,27 @@ export function DashboardUnavailable({
   message?: string;
   needsLogin?: boolean;
 }) {
+  const t = await getT();
+  const resolvedMessage =
+    message === "VENDOR_ONLY"
+      ? t.dashboardVendorOnly
+      : message === "LOAD_ERROR"
+        ? t.dashboardLoadError
+        : message;
   return (
-    <div dir="rtl" className="flex flex-1 items-center justify-center py-12">
+    <div className="flex flex-1 items-center justify-center py-12">
       <div className="w-full rounded-3xl border border-outline-variant bg-surface px-10 py-12 text-center shadow-soft">
         <h1 className="text-2xl font-black leading-relaxed text-primary">
-          {title ?? (needsLogin ? "تحتاج تسجيل دخول" : "تعذر تحميل الصفحة")}
+          {title ?? (needsLogin ? t.needsLoginTitle : t.dashboardUnavailableTitle)}
         </h1>
         <p className="mt-4 text-base leading-8 text-on-surface-variant">
-          {description ?? message ?? "لم نتمكن من تحميل بيانات لوحة التحكم. حاول مرة أخرى بعد لحظات."}
+          {description ?? resolvedMessage ?? t.dashboardUnavailableDesc}
         </p>
         <Link
           href={needsLogin ? "/login" : "/dashboard"}
           className="mt-8 block rounded-2xl bg-primary px-6 py-4 text-center text-base font-bold text-white"
         >
-          {needsLogin ? "تسجيل الدخول" : "العودة للوحة التحكم"}
+          {needsLogin ? t.loginBtn : t.backToDashboard}
         </Link>
       </div>
     </div>
@@ -91,11 +100,19 @@ export function EmptyPanel({ title, description }: { title: string; description?
   );
 }
 
-function DashboardNav({ active }: { active: DashboardShellProps["active"] }) {
+function DashboardNav({
+  active,
+  navItems,
+  addProductLabel,
+}: {
+  active: DashboardShellProps["active"];
+  navItems: Array<{ key: DashboardShellProps["active"]; label: string; icon: string; href: string }>;
+  addProductLabel: string;
+}) {
   return (
     <nav
       className="sticky top-[73px] z-30 border-b border-outline-variant/20 bg-background/95 px-4 py-3 backdrop-blur-xl"
-      aria-label="تنقل لوحة التحكم"
+      aria-label="Dashboard navigation"
     >
       <div className="mx-auto flex w-full max-w-7xl gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {navItems.map((item) => {
@@ -120,7 +137,7 @@ function DashboardNav({ active }: { active: DashboardShellProps["active"] }) {
           className="flex shrink-0 items-center gap-2 rounded-2xl border border-primary/25 bg-primary/10 px-4 py-3 text-sm font-black text-primary transition hover:bg-primary hover:text-white"
         >
           <span aria-hidden="true">+</span>
-          <span>إضافة منتج</span>
+          <span>{addProductLabel}</span>
         </Link>
       </div>
     </nav>
@@ -130,7 +147,7 @@ function DashboardNav({ active }: { active: DashboardShellProps["active"] }) {
 function DashboardHeader({ title, description }: { title: string; description: string }) {
   return (
     <header className="bg-background">
-      <div className="mx-auto w-full max-w-7xl px-4 pt-6 text-right md:px-8 md:pt-8">
+      <div className="mx-auto w-full max-w-7xl px-4 pt-6 text-start md:px-8 md:pt-8">
         <h2 className="truncate text-xl font-black text-primary md:text-2xl">{title}</h2>
         <p className="mt-1 max-w-3xl text-xs leading-6 text-on-surface-variant md:text-sm">{description}</p>
       </div>
@@ -138,26 +155,37 @@ function DashboardHeader({ title, description }: { title: string; description: s
   );
 }
 
-export function formatDashboardPrice(value: number) {
-  return `${value.toLocaleString("ar-SA", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ر.س`;
+export function formatDashboardPrice(value: number, currency = "ر.س", locale = "ar-SA") {
+  return `${value.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${currency}`;
 }
 
-export function formatDashboardDate(value: string | Date) {
+export function formatDashboardDate(value: string | Date, locale = "ar-SA") {
   const date = typeof value === "string" ? new Date(value) : value;
   if (Number.isNaN(date.getTime())) {
-    return "غير محدد";
+    return "—";
   }
-  return date.toLocaleDateString("ar-SA", { year: "numeric", month: "short", day: "numeric" });
+  return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
 }
 
-export function formatOrderStatus(status: string) {
+export function formatOrderStatus(status: string, t?: { statusPending: string; statusPaid: string; statusProcessing: string; statusShipped: string; statusCompleted: string; statusCancelled: string }) {
+  if (t) {
+    const labels: Record<string, string> = {
+      PENDING: t.statusPending,
+      PAID: t.statusPaid,
+      PROCESSING: t.statusProcessing,
+      SHIPPED: t.statusShipped,
+      COMPLETED: t.statusCompleted,
+      CANCELLED: t.statusCancelled,
+    };
+    return labels[status] ?? status;
+  }
   const labels: Record<string, string> = {
-    PENDING: "بانتظار الدفع",
-    PAID: "مدفوع",
-    PROCESSING: "قيد التنفيذ",
-    SHIPPED: "تم الشحن",
-    COMPLETED: "مكتمل",
-    CANCELLED: "ملغي",
+    PENDING: "Pending",
+    PAID: "Paid",
+    PROCESSING: "Processing",
+    SHIPPED: "Shipped",
+    COMPLETED: "Completed",
+    CANCELLED: "Cancelled",
   };
   return labels[status] ?? status;
 }

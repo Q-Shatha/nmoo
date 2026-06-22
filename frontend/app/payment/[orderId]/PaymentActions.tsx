@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ApiError, createCheckoutSession } from "@/lib/api";
+import { useI18n } from "@/lib/i18n/context";
 
 export function PaymentActions({ orderId }: { orderId: string }) {
+  const { t } = useI18n();
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -15,7 +17,7 @@ export function PaymentActions({ orderId }: { orderId: string }) {
     const token = readCookie("nmoo_access_token");
 
     if (!token) {
-      setMessage("سجل الدخول أولا حتى تقدر تكمل الدفع.");
+      setMessage(t.paymentActionsLoginFirst);
       setIsLoading(false);
       return;
     }
@@ -28,12 +30,12 @@ export function PaymentActions({ orderId }: { orderId: string }) {
         return;
       }
 
-      setMessage("تعذر فتح صفحة الدفع. حاول مرة أخرى.");
+      setMessage(t.paymentActionsGatewayFailed);
     } catch (error) {
       setMessage(
         error instanceof ApiError && error.status === 503
-          ? "بوابة الدفع غير مفعلة حاليا. الطلب محفوظ وتقدر ترجع له من طلباتي."
-          : "تعذر بدء الدفع. حاول مرة أخرى.",
+          ? t.paymentActionsGatewayDisabled
+          : t.paymentActionsStartFailed,
       );
     } finally {
       setIsLoading(false);
@@ -44,10 +46,10 @@ export function PaymentActions({ orderId }: { orderId: string }) {
     <div className="mt-6 grid gap-3">
       {message ? <p className="rounded-xl bg-error-container/60 px-4 py-3 text-sm font-bold text-error">{message}</p> : null}
       <button className="primary-button w-full py-4 disabled:cursor-not-allowed disabled:opacity-60" disabled={isLoading} type="button" onClick={handlePayment}>
-        {isLoading ? "جاري فتح صفحة الدفع..." : "الدفع الآن"}
+        {isLoading ? t.paymentActionsOpening : t.paymentActionsPayNow}
       </button>
       <Link className="secondary-button w-full py-3" href="/orders">
-        العودة لطلباتي
+        {t.paymentActionsBackToOrders}
       </Link>
     </div>
   );

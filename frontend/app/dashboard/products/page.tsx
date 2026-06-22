@@ -2,16 +2,17 @@ import { ApiError, getMyCategories, getMyProducts } from "@/lib/api";
 import { DashboardProductManager } from "../DashboardProductManager";
 import { DashboardShell, DashboardUnavailable } from "../DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "../dashboard-data";
+import { getT } from "@/lib/i18n/server";
 
 export default async function DashboardProductsPage() {
-  const data = await loadPageData();
+  const [data, t] = await Promise.all([loadPageData(), getT()]);
 
   return (
     <DashboardShell
       active="products"
-      title="المنتجات"
-      description="إضافة وتعديل وحذف منتجات المتجر"
-      userName={data.ok ? data.userName : "التاجر"}
+      title={t.products}
+      description={t.productsDesc}
+      userName={data.ok ? data.userName : t.defaultMerchant}
       logoUrl={data.ok ? data.logoUrl : null}
       storeHref={data.ok ? data.storeHref : undefined}
     >
@@ -42,7 +43,7 @@ async function loadPageData() {
     return {
       ok: false as const,
       needsLogin: false,
-      message: error instanceof ApiError ? error.message : "تعذر تحميل المنتجات.",
+      message: error instanceof ApiError ? error.message : "Failed to load products.",
     };
   }
 }

@@ -2,22 +2,24 @@ import { cookies } from "next/headers";
 import { ApiError, getOrders, Order } from "@/lib/api";
 import { formatOrderStatus, statusClass } from "../../DashboardShell";
 import { PrintButtons } from "../[orderId]/PrintButtons";
+import { getT } from "@/lib/i18n/server";
 
 type Props = { searchParams?: Promise<{ q?: string }> };
 
 export default async function PrintAllOrdersPage({ searchParams }: Props) {
+  const t = await getT();
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const query = resolvedSearchParams.q?.trim() ?? "";
 
   const cookieStore = await cookies();
   const token = cookieStore.get("nmoo_access_token")?.value;
-  if (!token) return <p className="p-8 text-center">غير مصرح</p>;
+  if (!token) return <p className="p-8 text-center">{t.unauthorized}</p>;
 
   let orders: Order[];
   try {
     orders = await getOrders(token);
   } catch (e) {
-    return <p className="p-8 text-center">تعذر تحميل الطلبات{e instanceof ApiError ? `: ${e.message}` : ""}</p>;
+    return <p className="p-8 text-center">{t.ordersLoadError}{e instanceof ApiError ? `: ${e.message}` : ""}</p>;
   }
 
   if (query) {
@@ -63,24 +65,24 @@ export default async function PrintAllOrdersPage({ searchParams }: Props) {
 
           <div className="po-header">
             <div className="po-title">
-              {query ? `الطلبات — بحث: "${query}"` : "كل الطلبات"}
+              {t.printOrdersTitle(query || null)}
             </div>
             <div className="po-meta">
-              <div>التاريخ: {formatDate(new Date().toISOString())}</div>
-              <div>العدد: {orders.length} طلب</div>
+              <div>{t.printDate} {formatDate(new Date().toISOString(), t.numberLocale)}</div>
+              <div>{t.printCount(orders.length)}</div>
             </div>
           </div>
 
           <table>
             <thead>
               <tr>
-                <th>رقم الطلب</th>
-                <th>العميل</th>
-                <th>المنتجات</th>
-                <th>التاريخ</th>
-                <th>طريقة الدفع</th>
-                <th>الحالة</th>
-                <th style={{ textAlign: "left" }}>الإجمالي</th>
+                <th>{t.printOrderNumber}</th>
+                <th>{t.customer}</th>
+                <th>{t.printProducts}</th>
+                <th>{t.date}</th>
+                <th>{t.printPaymentMethod}</th>
+                <th>{t.status}</th>
+                <th style={{ textAlign: "start" }}>{t.amount}</th>
               </tr>
             </thead>
             <tbody>
@@ -96,15 +98,15 @@ export default async function PrintAllOrdersPage({ searchParams }: Props) {
                       <div key={item.id}>• {item.product?.title ?? "منتج"} × {item.quantity}</div>
                     ))}
                   </td>
-                  <td style={{ fontSize: 12, color: "#666", whiteSpace: "nowrap" }}>{formatDate(order.createdAt)}</td>
+                  <td style={{ fontSize: 12, color: "#666", whiteSpace: "nowrap" }}>{formatDate(order.createdAt, t.numberLocale)}</td>
                   <td style={{ fontSize: 12 }}>
-                    {order.paymentMethod === "CASH_ON_DELIVERY" ? "عند الاستلام" : "إلكتروني"}
+                    {order.paymentMethod === "CASH_ON_DELIVERY" ? t.cashOnDelivery : t.onlinePayment}
                   </td>
                   <td>
                     <span className={`status-badge ${statusClass(order.status)}`}>{formatOrderStatus(order.status)}</span>
                   </td>
                   <td style={{ fontWeight: 700, textAlign: "left", whiteSpace: "nowrap" }}>
-                    {formatPrice(Number(order.total))}
+                    {formatPrice(Number(order.total), t.currency, t.numberLocale)}
                   </td>
                 </tr>
               ))}
@@ -112,8 +114,8 @@ export default async function PrintAllOrdersPage({ searchParams }: Props) {
           </table>
 
           <div className="po-footer">
-            <div className="po-count">{orders.length} طلب</div>
-            <div className="po-total">الإجمالي الكلي: {formatPrice(grandTotal)}</div>
+            <div className="po-count">{t.printCount(orders.length)}</div>
+            <div className="po-total">{t.printGrandTotal(formatPrice(grandTotal, t.currency, t.numberLocale))}</div>
           </div>
         </div>
       </div>
@@ -121,10 +123,10 @@ export default async function PrintAllOrdersPage({ searchParams }: Props) {
   );
 }
 
-function formatPrice(v: number) {
-  return `${v.toLocaleString("ar-SA", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ر.س`;
+function formatPrice(v: number, currency = "ر.س", locale = "ar-SA") {
+  return `${v.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${currency}`;
 }
 
-function formatDate(v: string) {
-  return new Intl.DateTimeFormat("ar-SA", { dateStyle: "medium" }).format(new Date(v));
+function formatDate(v: string, locale = "ar-SA") {
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(v));
 }

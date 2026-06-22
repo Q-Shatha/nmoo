@@ -2,16 +2,17 @@ import { ApiError, getMyShippingMethods } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable } from "../DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "../dashboard-data";
 import { ShippingMethodManager } from "../ShippingMethodManager";
+import { getT } from "@/lib/i18n/server";
 
 export default async function DashboardShippingPage() {
-  const data = await loadPageData();
+  const [data, t] = await Promise.all([loadPageData(), getT()]);
 
   return (
     <DashboardShell
       active="shipping"
-      title="الشحن"
-      description="إدارة شركات الشحن المتاحة لمتجرك"
-      userName={data.ok ? data.userName : "التاجر"}
+      title={t.shipping}
+      description={t.shippingDesc}
+      userName={data.ok ? data.userName : t.defaultMerchant}
       logoUrl={data.ok ? data.logoUrl : null}
       storeHref={data.ok ? data.storeHref : undefined}
     >
@@ -39,7 +40,7 @@ async function loadPageData() {
     return {
       ok: false as const,
       needsLogin: false,
-      message: error instanceof ApiError ? error.message : "تعذر تحميل شركات الشحن.",
+      message: error instanceof ApiError ? error.message : "Failed to load carriers.",
     };
   }
 }

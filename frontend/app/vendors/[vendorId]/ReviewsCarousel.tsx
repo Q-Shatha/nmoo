@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { Review } from "@/lib/api";
+import { useI18n } from "@/lib/i18n/context";
 
 type ReviewsCarouselProps = {
   reviews: Review[];
@@ -10,7 +11,9 @@ type ReviewsCarouselProps = {
   fallbackContext?: string;
 };
 
-export function ReviewsCarousel({ reviews, fallbackReviews = [], fallbackContext = "المتجر" }: ReviewsCarouselProps) {
+export function ReviewsCarousel({ reviews, fallbackReviews = [], fallbackContext }: ReviewsCarouselProps) {
+  const { t } = useI18n();
+  const resolvedFallbackContext = fallbackContext ?? t.reviewsStoreFallback;
   const visibleReviews = reviews.length > 0 ? reviews : fallbackReviews;
   const [activeIndex, setActiveIndex] = useState(visibleReviews.length > 1 ? 1 : 0);
   const [isTransitioning, setIsTransitioning] = useState(true);
@@ -92,7 +95,7 @@ export function ReviewsCarousel({ reviews, fallbackReviews = [], fallbackContext
   if (visibleReviews.length === 0) {
     return (
       <div className="mt-8 rounded-2xl border border-outline-variant/35 bg-surface-container-lowest p-7 text-center font-bold text-on-surface-variant">
-        لا توجد مراجعات بعد.
+        {t.reviewsNone}
       </div>
     );
   }
@@ -101,7 +104,7 @@ export function ReviewsCarousel({ reviews, fallbackReviews = [], fallbackContext
     <div className="mt-8">
       <div className="mb-4 flex items-center justify-between gap-3">
         <button className="secondary-button px-5 py-3 text-sm text-primary" type="button" onClick={() => setIsModalOpen(true)}>
-          عرض كل المراجعات
+          {t.reviewsViewAll}
         </button>
         <span className="text-sm font-bold text-on-surface-variant">
           {visibleIndex + 1} / {visibleReviews.length}
@@ -109,38 +112,38 @@ export function ReviewsCarousel({ reviews, fallbackReviews = [], fallbackContext
       </div>
 
       <div className="relative px-12 sm:px-14">
-        <button aria-label="التقييم السابق" className="absolute right-0 top-1/2 z-10 -translate-y-1/2 border border-outline-variant bg-surface-container-lowest shadow-sm icon-button" onClick={movePrevious} type="button">
+        <button aria-label={t.reviewsPrevious} className="absolute right-0 top-1/2 z-10 -translate-y-1/2 border border-outline-variant bg-surface-container-lowest shadow-sm icon-button" onClick={movePrevious} type="button">
           <ArrowLeftIcon />
         </button>
 
         <div className="overflow-hidden" dir="ltr">
           <div className={`flex w-max gap-6 ${isTransitioning ? "transition-transform duration-700 ease-out" : ""}`} style={trackStyle} onTransitionEnd={handleTransitionEnd}>
             {displayReviews.map((review, reviewIndex) => (
-              <ReviewCard key={`${review.id}-${reviewIndex}`} fallbackContext={fallbackContext} review={review} />
+              <ReviewCard key={`${review.id}-${reviewIndex}`} fallbackContext={resolvedFallbackContext} review={review} t={t} />
             ))}
           </div>
         </div>
 
-        <button aria-label="التقييم التالي" className="absolute left-0 top-1/2 z-10 -translate-y-1/2 border border-outline-variant bg-surface-container-lowest shadow-sm icon-button" onClick={moveNext} type="button">
+        <button aria-label={t.reviewsNext} className="absolute left-0 top-1/2 z-10 -translate-y-1/2 border border-outline-variant bg-surface-container-lowest shadow-sm icon-button" onClick={moveNext} type="button">
           <ArrowRightIcon />
         </button>
       </div>
 
       {isModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true">
-          <div className="max-h-[86vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-surface-container-lowest shadow-2xl" dir="rtl">
+          <div className="max-h-[86vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-surface-container-lowest shadow-2xl">
             <div className="flex items-center justify-between gap-4 border-b border-outline-variant/25 px-6 py-5">
-              <button className="icon-button border border-outline-variant bg-surface-container-lowest" type="button" onClick={() => setIsModalOpen(false)} aria-label="إغلاق">
+              <button className="icon-button border border-outline-variant bg-surface-container-lowest" type="button" onClick={() => setIsModalOpen(false)} aria-label={t.reviewsClose}>
                 <CloseIcon />
               </button>
-              <div className="text-right">
-                <h3 className="text-2xl font-black text-on-surface">كل المراجعات</h3>
-                <p className="mt-1 text-sm text-on-surface-variant">{visibleReviews.length} مراجعة</p>
+              <div className="text-start">
+                <h3 className="text-2xl font-black text-on-surface">{t.reviewsAllTitle}</h3>
+                <p className="mt-1 text-sm text-on-surface-variant">{t.reviewsCount(visibleReviews.length)}</p>
               </div>
             </div>
             <div className="grid max-h-[68vh] gap-4 overflow-y-auto p-6 md:grid-cols-2">
               {visibleReviews.map((review) => (
-                <ReviewCard key={`modal-${review.id}`} fallbackContext={fallbackContext} review={review} compact />
+                <ReviewCard key={`modal-${review.id}`} fallbackContext={resolvedFallbackContext} review={review} compact t={t} />
               ))}
             </div>
           </div>
@@ -150,14 +153,16 @@ export function ReviewsCarousel({ reviews, fallbackReviews = [], fallbackContext
   );
 }
 
-function ReviewCard({ compact = false, fallbackContext, review }: { compact?: boolean; fallbackContext: string; review: Review }) {
-  const name = review.user?.name ?? "عميل";
-  const city = review.user?.city ?? "عميل نمو";
+type T = ReturnType<typeof useI18n>["t"];
+
+function ReviewCard({ compact = false, fallbackContext, review, t }: { compact?: boolean; fallbackContext: string; review: Review; t: T }) {
+  const name = review.user?.name ?? t.reviewsDefaultUser;
+  const city = review.user?.city ?? t.reviewsDefaultCity;
   const productTitle = review.product?.title;
-  const text = review.comment || `تجربة موفقة مع ${fallbackContext}.`;
+  const text = review.comment || t.reviewsDefaultText(fallbackContext);
 
   return (
-    <article className={`${compact ? "w-full" : "w-[330px] sm:w-[390px]"} shrink-0 rounded-2xl border border-outline-variant/35 bg-surface-container-lowest p-7 text-right shadow-sm`} dir="rtl">
+    <article className={`${compact ? "w-full" : "w-[330px] sm:w-[390px]"} shrink-0 rounded-2xl border border-outline-variant/35 bg-surface-container-lowest p-7 text-start shadow-sm`}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-sm font-black text-on-primary-container">
@@ -170,7 +175,7 @@ function ReviewCard({ compact = false, fallbackContext, review }: { compact?: bo
         </div>
         <span className="shrink-0 text-primary">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span>
       </div>
-      <p className={`${compact ? "" : "line-clamp-3"} mt-5 leading-8 text-on-surface-variant`}>“{text}”</p>
+      <p className={`${compact ? "" : "line-clamp-3"} mt-5 leading-8 text-on-surface-variant`}>"{text}"</p>
     </article>
   );
 }

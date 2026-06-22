@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getMyDiscountCodes, getMyProducts, getMyShippingMethods, getMyStorePages, getOrders, Order } from "@/lib/api";
 import { DashboardShell, DashboardUnavailable, EmptyPanel, formatDashboardDate, formatDashboardPrice, formatOrderStatus, statusClass } from "./DashboardShell";
 import { getVendorStoreHref, loadVendorDashboardBase } from "./dashboard-data";
+import { getT } from "@/lib/i18n/server";
 
 type DashboardData =
   | {
@@ -31,52 +32,52 @@ type DashboardData =
     };
 
 export default async function Dashboard() {
-  const data = await loadDashboardData();
+  const [data, t] = await Promise.all([loadDashboardData(), getT()]);
 
   return (
     <DashboardShell
       active="overview"
-      title="لوحة التحكم"
-      description="إحصائيات المتجر وآخر الطلبات"
-      userName={data.ok ? data.userName : "التاجر"}
+      title={t.dashboardTitle}
+      description={t.dashboardDesc}
+      userName={data.ok ? data.userName : t.defaultMerchant}
       logoUrl={data.ok ? data.logoUrl : null}
       storeHref={data.ok ? data.storeHref : undefined}
     >
-      {data.ok ? <DashboardOverview data={data} /> : <DashboardUnavailable message={data.message} needsLogin={data.needsLogin} />}
+      {data.ok ? <DashboardOverview data={data} t={t} /> : <DashboardUnavailable message={data.message} needsLogin={data.needsLogin} />}
     </DashboardShell>
   );
 }
 
-function DashboardOverview({ data }: { data: Extract<DashboardData, { ok: true }> }) {
+function DashboardOverview({ data, t }: { data: Extract<DashboardData, { ok: true }>; t: Awaited<ReturnType<typeof import("@/lib/i18n/server").getT>> }) {
   const latestOrders = data.orders.slice(0, 5);
 
   return (
     <>
-      <StatsShowcase stats={data.stats} orders={data.orders} />
+      <StatsShowcase stats={data.stats} orders={data.orders} t={t} />
 
       <section className="dashboard-panel overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-outline-variant/15 p-4 text-right sm:flex-row sm:items-center sm:justify-between md:p-5">
+        <div className="flex flex-col gap-3 border-b border-outline-variant/15 p-4 text-start sm:flex-row sm:items-center sm:justify-between md:p-5">
           <div>
-            <h2 className="text-xl font-black text-on-surface">آخر الطلبات</h2>
-            <p className="mt-1 text-sm text-on-surface-variant">أحدث الطلبات التي وصلت لمتجرك.</p>
+            <h2 className="text-xl font-black text-on-surface">{t.recentOrders}</h2>
+            <p className="mt-1 text-sm text-on-surface-variant">{t.recentOrdersDesc}</p>
           </div>
           <Link className="secondary-button w-full px-5 py-3 text-center sm:w-auto" href="/dashboard/orders">
-            عرض كل الطلبات
+            {t.viewAllOrders}
           </Link>
         </div>
-        {latestOrders.length > 0 ? <OrdersTable orders={latestOrders} /> : <EmptyPanel title="لا توجد طلبات بعد" />}
+        {latestOrders.length > 0 ? <OrdersTable orders={latestOrders} t={t} /> : <EmptyPanel title={t.noOrders} />}
       </section>
     </>
   );
 }
 
-function StatsShowcase({ stats, orders }: { stats: Extract<DashboardData, { ok: true }>["stats"]; orders: Order[] }) {
+function StatsShowcase({ stats, orders, t }: { stats: Extract<DashboardData, { ok: true }>["stats"]; orders: Order[]; t: Awaited<ReturnType<typeof import("@/lib/i18n/server").getT>> }) {
   const completedRate = percentage(stats.completedOrders, stats.totalOrders);
   const activeProductsRate = percentage(stats.activeProducts, stats.totalProducts);
   const activeShippingRate = percentage(stats.activeShippingMethods, stats.shippingMethods);
   const publishedPagesRate = percentage(stats.publishedStorePages, stats.storePages);
   const activeDiscountRate = percentage(stats.activeDiscountCodes, stats.discountCodes);
-  const salesSeries = buildSalesSeries(orders);
+  const salesSeries = buildSalesSeries(orders, t.numberLocale);
 
   return (
     <section className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
@@ -85,48 +86,48 @@ function StatsShowcase({ stats, orders }: { stats: Extract<DashboardData, { ok: 
         <div className="pointer-events-none absolute -bottom-20 right-8 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
         <div className="relative grid min-h-[18rem] content-between gap-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="min-w-0 flex-1 text-right md:min-w-[20rem]">
-              <p className="text-sm font-bold text-white/75">نبض المتجر اليومي</p>
-              <h2 className="mt-3 text-3xl font-black leading-tight md:text-5xl">{formatDashboardPrice(stats.totalSales)}</h2>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-white/75">إجمالي المبيعات من الطلبات المسجلة في المتجر.</p>
+            <div className="min-w-0 flex-1 text-start md:min-w-[20rem]">
+              <p className="text-sm font-bold text-white/75">{t.dailyPulse}</p>
+              <h2 className="mt-3 text-3xl font-black leading-tight md:text-5xl">{formatDashboardPrice(stats.totalSales, t.currency, t.numberLocale)}</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-white/75">{t.totalSalesDesc}</p>
             </div>
-            <div className="flex w-full flex-none items-center justify-between gap-4 rounded-3xl border border-white/20 bg-white/12 px-5 py-4 text-right backdrop-blur md:w-auto md:min-w-64 lg:min-w-72">
+            <div className="flex w-full flex-none items-center justify-between gap-4 rounded-3xl border border-white/20 bg-white/12 px-5 py-4 text-start backdrop-blur md:w-auto md:min-w-64 lg:min-w-72">
               <div className="min-w-0">
-                <span className="block whitespace-nowrap text-xs font-bold leading-6 text-white/70">إجمالي الطلبات</span>
-                <span className="mt-1 block whitespace-nowrap text-sm font-bold leading-6 text-white/80">المسجلة في المتجر</span>
+                <span className="block whitespace-nowrap text-xs font-bold leading-6 text-white/70">{t.totalOrdersRegistered}</span>
+                <span className="mt-1 block whitespace-nowrap text-sm font-bold leading-6 text-white/80">{t.totalOrdersRegisteredDesc}</span>
               </div>
               <strong className="text-4xl font-black leading-none">{stats.totalOrders}</strong>
             </div>
           </div>
 
-          <SalesSparkChart data={salesSeries} />
+          <SalesSparkChart data={salesSeries} t={t} />
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <HeroMiniStat label="طلبات مكتملة" value={stats.completedOrders} total={stats.totalOrders} rate={completedRate} />
-            <HeroMiniStat label="منتجات نشطة" value={stats.activeProducts} total={stats.totalProducts} rate={activeProductsRate} />
-            <HeroMiniStat label="خصومات فعالة" value={stats.activeDiscountCodes} total={stats.discountCodes} rate={activeDiscountRate} />
+            <HeroMiniStat label={t.completedOrders} value={stats.completedOrders} total={stats.totalOrders} rate={completedRate} t={t} />
+            <HeroMiniStat label={t.activeProducts} value={stats.activeProducts} total={stats.totalProducts} rate={activeProductsRate} t={t} />
+            <HeroMiniStat label={t.activeDiscounts} value={stats.activeDiscountCodes} total={stats.discountCodes} rate={activeDiscountRate} t={t} />
           </div>
         </div>
       </article>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-        <MetricTile label="المنتجات" value={stats.totalProducts} hint={`${stats.activeProducts} نشط`} rate={activeProductsRate} tone="primary" />
-        <MetricTile label="الشحن" value={stats.shippingMethods} hint={`${stats.activeShippingMethods} مفعلة`} rate={activeShippingRate} tone="blue" />
-        <MetricTile label="صفحات المتجر" value={stats.storePages} hint={`${stats.publishedStorePages} منشورة`} rate={publishedPagesRate} tone="amber" />
-        <MetricTile label="أكواد التخفيض" value={stats.discountCodes} hint={`${stats.activeDiscountCodes} نشط`} rate={activeDiscountRate} tone="rose" />
+        <MetricTile label={t.metricsProducts} value={stats.totalProducts} hint={t.metricActive(stats.activeProducts)} rate={activeProductsRate} tone="primary" />
+        <MetricTile label={t.metricsShipping} value={stats.shippingMethods} hint={t.metricEnabled(stats.activeShippingMethods)} rate={activeShippingRate} tone="blue" />
+        <MetricTile label={t.metricsStorePages} value={stats.storePages} hint={t.metricPublished(stats.publishedStorePages)} rate={publishedPagesRate} tone="amber" />
+        <MetricTile label={t.metricsDiscountCodes} value={stats.discountCodes} hint={t.metricActive(stats.activeDiscountCodes)} rate={activeDiscountRate} tone="rose" />
       </div>
     </section>
   );
 }
 
-function SalesSparkChart({ data }: { data: Array<{ label: string; total: number; count: number }> }) {
+function SalesSparkChart({ data, t }: { data: Array<{ label: string; total: number; count: number }>; t: Awaited<ReturnType<typeof import("@/lib/i18n/server").getT>> }) {
   const maxTotal = Math.max(...data.map((item) => item.total), 1);
 
   return (
     <div className="dashboard-bar-chart relative max-w-full overflow-hidden rounded-[1.75rem] border border-white/20 bg-white/14 p-4 text-white shadow-inner backdrop-blur md:p-5">
-      <div className="mb-2 flex items-center justify-between gap-3 text-xs font-black text-white/75" dir="rtl">
-        <span>آخر 7 أيام</span>
-        <span>حركة المبيعات</span>
+      <div className="mb-2 flex items-center justify-between gap-3 text-xs font-black text-white/75">
+        <span>{t.last7Days}</span>
+        <span>{t.salesMovement}</span>
       </div>
       <div className="relative grid h-56 max-w-full grid-cols-[2.5rem_minmax(0,1fr)] gap-3 overflow-hidden" dir="ltr">
         <div className="grid h-[calc(100%-2rem)] w-10 grid-rows-4 pt-2 text-left text-xs font-black text-white/35">
@@ -158,7 +159,7 @@ function SalesSparkChart({ data }: { data: Array<{ label: string; total: number;
                   <span
                     className={`dashboard-bar-fill relative z-0 w-full max-w-[3.5rem] rounded-t-sm ${barColor}`}
                     style={{ height: `${height}%` }}
-                    title={`${formatDashboardPrice(item.total)} - ${item.count} طلب`}
+                    title={`${formatDashboardPrice(item.total, t.currency, t.numberLocale)} - ${t.ordersCount(item.count)}`}
                   />
                 </div>
                 <span className="absolute bottom-1 truncate text-center text-[0.72rem] font-black text-white/55 md:text-xs">{item.label}</span>
@@ -172,7 +173,7 @@ function SalesSparkChart({ data }: { data: Array<{ label: string; total: number;
   );
 }
 
-function HeroMiniStat({ label, value, total, rate }: { label: string; value: number; total: number; rate: number }) {
+function HeroMiniStat({ label, value, total, rate, t }: { label: string; value: number; total: number; rate: number; t: Awaited<ReturnType<typeof import("@/lib/i18n/server").getT>> }) {
   return (
     <div className="rounded-3xl border border-white/15 bg-white/10 p-4 backdrop-blur">
       <div className="flex items-end justify-between gap-3">
@@ -182,7 +183,7 @@ function HeroMiniStat({ label, value, total, rate }: { label: string; value: num
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/15">
         <span className="block h-full rounded-full bg-white" style={{ width: `${rate}%` }} />
       </div>
-      <p className="mt-2 text-xs font-bold text-white/65">{rate}% من {total || 0}</p>
+      <p className="mt-2 text-xs font-bold text-white/65">{rate}{t.ofCount(total)}</p>
     </div>
   );
 }
@@ -210,7 +211,7 @@ function MetricTile({
   return (
     <article className="rounded-[1.5rem] border border-outline-variant/25 bg-surface-container-lowest p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
-        <div className="text-right">
+        <div className="text-start">
           <p className="text-sm font-bold text-on-surface-variant">{label}</p>
           <strong className="mt-2 block text-3xl font-black text-on-surface">{value}</strong>
         </div>
@@ -233,8 +234,8 @@ function percentage(value: number, total: number) {
   return Math.min(100, Math.round((value / total) * 100));
 }
 
-function buildSalesSeries(orders: Order[]) {
-  const formatter = new Intl.DateTimeFormat("ar-SA", { weekday: "short" });
+function buildSalesSeries(orders: Order[], locale = "ar-SA") {
+  const formatter = new Intl.DateTimeFormat(locale, { weekday: "short" });
   const today = new Date();
   const days = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);
@@ -263,12 +264,12 @@ function buildSalesSeries(orders: Order[]) {
   return days;
 }
 
-function OrdersTable({ orders }: { orders: Order[] }) {
+function OrdersTable({ orders, t }: { orders: Order[]; t: Awaited<ReturnType<typeof import("@/lib/i18n/server").getT>> }) {
   return (
     <>
       <div className="grid gap-3 p-4 md:hidden">
         {orders.map((order) => (
-          <article key={order.id} className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4 text-right shadow-sm">
+          <article key={order.id} className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4 text-start shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClass(order.status)}`}>{formatOrderStatus(order.status)}</span>
               <Link className="font-black text-primary underline-offset-4 hover:underline" href={`/dashboard/orders/${order.id}`}>
@@ -277,30 +278,30 @@ function OrdersTable({ orders }: { orders: Order[] }) {
             </div>
             <div className="mt-4 grid gap-2 text-sm">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-on-surface-variant">العميل</span>
-                <span className="font-bold text-on-surface">{order.buyer?.name ?? "عميل"}</span>
+                <span className="text-on-surface-variant">{t.customer}</span>
+                <span className="font-bold text-on-surface">{order.buyer?.name ?? t.roleBuyer}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="text-on-surface-variant">المبلغ</span>
-                <span className="font-black text-on-surface">{formatDashboardPrice(Number(order.total))}</span>
+                <span className="text-on-surface-variant">{t.amount}</span>
+                <span className="font-black text-on-surface">{formatDashboardPrice(Number(order.total), t.currency, t.numberLocale)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="text-on-surface-variant">التاريخ</span>
-                <span className="text-left font-bold text-on-surface">{formatDashboardDate(order.createdAt)}</span>
+                <span className="text-on-surface-variant">{t.date}</span>
+                <span className="text-left font-bold text-on-surface">{formatDashboardDate(order.createdAt, t.numberLocale)}</span>
               </div>
             </div>
             <Link className="secondary-button mt-4 w-full py-3 text-center text-sm" href={`/dashboard/orders/${order.id}`}>
-              التفاصيل
+              {t.details}
             </Link>
           </article>
         ))}
       </div>
       <div className="hidden overflow-x-auto md:block">
-      <table className="w-full min-w-[680px] text-right">
+      <table className="w-full min-w-[680px] text-start">
         <thead>
           <tr className="bg-surface-container-low/60">
-            {["رقم الطلب", "العميل", "التاريخ", "المبلغ", "الحالة"].map((heading) => (
-              <th key={heading} className="border-b border-outline-variant/15 px-5 py-3 text-sm font-bold text-on-surface-variant">
+            {[t.orderNumber, t.customer, t.date, t.amount, t.status].map((heading) => (
+              <th key={heading} className="border-b border-outline-variant/15 px-5 py-3 text-start text-sm font-bold text-on-surface-variant">
                 {heading}
               </th>
             ))}
@@ -314,13 +315,13 @@ function OrdersTable({ orders }: { orders: Order[] }) {
                   <span className="order-code">#{order.id.slice(0, 8)}</span>
                 </Link>
               </td>
-              <td className="px-5 py-4 font-semibold">{order.buyer?.name ?? "عميل"}</td>
-              <td className="px-5 py-4 text-on-surface-variant">{formatDashboardDate(order.createdAt)}</td>
-              <td className="px-5 py-4 font-bold text-on-surface">{formatDashboardPrice(Number(order.total))}</td>
+              <td className="px-5 py-4 font-semibold">{order.buyer?.name ?? t.roleBuyer}</td>
+              <td className="px-5 py-4 text-on-surface-variant">{formatDashboardDate(order.createdAt, t.numberLocale)}</td>
+              <td className="px-5 py-4 font-bold text-on-surface">{formatDashboardPrice(Number(order.total), t.currency, t.numberLocale)}</td>
               <td className="px-5 py-4">
                 <span className={`rounded-full px-3 py-1 text-sm font-bold ${statusClass(order.status)}`}>{formatOrderStatus(order.status)}</span>
                 <Link className="mt-2 block text-xs font-bold text-primary underline-offset-4 hover:underline" href={`/dashboard/orders/${order.id}`}>
-                  التفاصيل
+                  {t.details}
                 </Link>
               </td>
             </tr>
@@ -372,7 +373,7 @@ async function loadDashboardData(): Promise<DashboardData> {
     return {
       ok: false,
       needsLogin: false,
-      message: error instanceof Error ? error.message : "تعذر تحميل إحصائيات لوحة التحكم.",
+      message: error instanceof Error ? error.message : "Failed to load dashboard statistics.",
     };
   }
 }
