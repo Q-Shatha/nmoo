@@ -789,6 +789,14 @@ const en: Translations = {
   landingFeat9P3: "Return and exchange policy",
   landingFeat9P4: "Privacy policy and terms",
 
+  // LandingFeat10 — Multi-language products
+  landingFeat10Title: "Products in multiple languages",
+  landingFeat10Desc: "Add your product titles, descriptions, and categories in both Arabic and English. When a customer picks their language, they see everything in it automatically.",
+  landingFeat10P1: "Product title & description in Arabic and English",
+  landingFeat10P2: "Categories switch automatically with the customer's language",
+  landingFeat10P3: "A local shopping experience for every customer",
+  landingFeat10P4: "Full RTL and LTR language support",
+
   // LandingGlobal
   landingGlobalBadge: "Sell to the whole world",
   landingGlobalTitle: "Your store reaches every corner of the world",

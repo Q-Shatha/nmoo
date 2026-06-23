@@ -789,6 +789,14 @@ const ar: Translations = {
   landingFeat9P3: "سياسة الإرجاع والاستبدال",
   landingFeat9P4: "سياسة الخصوصية والشروط",
 
+  // LandingFeat10 — Multi-language products
+  landingFeat10Title: "منتجاتك بأكثر من لغة",
+  landingFeat10Desc: "أضف عنوان ووصف وتصنيفات منتجاتك بالعربي والإنجليزي، وعندما يختار العميل لغته تظهر له المعلومات بلغته مباشرة.",
+  landingFeat10P1: "عنوان ووصف المنتج بالعربي والإنجليزي",
+  landingFeat10P2: "التصنيفات تتغير تلقائياً حسب لغة العميل",
+  landingFeat10P3: "تجربة تسوق محلية لكل عميل",
+  landingFeat10P4: "دعم كامل للغات RTL و LTR",
+
   // LandingGlobal
   landingGlobalBadge: "بيع للعالم كله",
   landingGlobalTitle: "متجرك يصل لكل زاوية في العالم",

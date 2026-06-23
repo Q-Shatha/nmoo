@@ -755,6 +755,14 @@ export interface Translations {
   landingFeat9P3: string;
   landingFeat9P4: string;
 
+  // LandingFeat10 — Multi-language products
+  landingFeat10Title: string;
+  landingFeat10Desc: string;
+  landingFeat10P1: string;
+  landingFeat10P2: string;
+  landingFeat10P3: string;
+  landingFeat10P4: string;
+
   // LandingGlobal
   landingGlobalBadge: string;
   landingGlobalTitle: string;
