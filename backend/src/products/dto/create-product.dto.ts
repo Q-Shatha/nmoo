@@ -26,6 +26,18 @@ export class ProductOptionDto {
   @MaxLength(80)
   name!: string;
 
+  @ApiPropertyOptional({ example: "اللون", maxLength: 80 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  nameAr?: string;
+
+  @ApiPropertyOptional({ example: "Color", maxLength: 80 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  nameEn?: string;
+
   @ApiProperty({ type: [String], example: ["أحمر", "أزرق"] })
   @IsArray()
   @ArrayMinSize(1)
@@ -33,6 +45,20 @@ export class ProductOptionDto {
   @MinLength(1, { each: true })
   @MaxLength(80, { each: true })
   values!: string[];
+
+  @ApiPropertyOptional({ type: [String], example: ["أحمر", "أزرق"] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(80, { each: true })
+  valuesAr?: string[];
+
+  @ApiPropertyOptional({ type: [String], example: ["Red", "Blue"] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(80, { each: true })
+  valuesEn?: string[];
 
   @ApiPropertyOptional({ example: { "أحمر": 8, "أزرق": 5 } })
   @IsOptional()
@@ -51,6 +77,18 @@ export class ProductAddonDto {
   @MinLength(2)
   @MaxLength(80)
   name!: string;
+
+  @ApiPropertyOptional({ example: "تغليف هدية", maxLength: 80 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  nameAr?: string;
+
+  @ApiPropertyOptional({ example: "Gift wrapping", maxLength: 80 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  nameEn?: string;
 
   @ApiProperty({ example: 15, minimum: 0 })
   @Type(() => Number)
@@ -71,17 +109,53 @@ export class CreateProductDto {
   @MaxLength(140)
   title!: string;
 
+  @ApiPropertyOptional({ example: "حقيبة يومية", maxLength: 140 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(140)
+  titleAr?: string;
+
+  @ApiPropertyOptional({ example: "Daily Bag", maxLength: 140 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(140)
+  titleEn?: string;
+
   @ApiPropertyOptional({ example: "حقيبة أنيقة مناسبة للاستخدام اليومي.", maxLength: 1000 })
   @IsOptional()
   @IsString()
   @MaxLength(1000)
   description?: string;
 
+  @ApiPropertyOptional({ example: "حقيبة أنيقة مناسبة للاستخدام اليومي.", maxLength: 1000 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  descriptionAr?: string;
+
+  @ApiPropertyOptional({ example: "An elegant bag for everyday use.", maxLength: 1000 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  descriptionEn?: string;
+
   @ApiPropertyOptional({ example: "وصل حديثاً", maxLength: 40 })
   @IsOptional()
   @IsString()
   @MaxLength(40)
   badgeLabel?: string;
+
+  @ApiPropertyOptional({ example: "وصل حديثاً", maxLength: 40 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  badgeLabelAr?: string;
+
+  @ApiPropertyOptional({ example: "New Arrival", maxLength: 40 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  badgeLabelEn?: string;
 
   @ApiProperty({ example: 149.99, minimum: 0 })
   @Type(() => Number)
@@ -115,13 +189,13 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({ example: "https://example.com/product.jpg" })
   @IsOptional()
-  @IsUrl({ require_tld: false })
+  @IsString()
   imageUrl?: string;
 
   @ApiPropertyOptional({ type: [String], example: ["https://example.com/product-1.jpg"] })
   @IsOptional()
   @IsArray()
-  @IsUrl({ require_tld: false }, { each: true })
+  @IsString({ each: true })
   imageUrls?: string[];
 
   @ApiPropertyOptional({ type: [ProductOptionDto], example: [{ name: "اللون", values: ["أحمر", "أزرق"] }] })

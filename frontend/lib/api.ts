@@ -42,6 +42,8 @@ export type Category = {
   id: string;
   vendorId?: string | null;
   name: string;
+  nameAr?: string | null;
+  nameEn?: string | null;
   slug: string;
   createdAt: string;
   updatedAt: string;
@@ -62,7 +64,11 @@ export type ProductOption = {
   id: string;
   productId: string;
   name: string;
+  nameAr?: string | null;
+  nameEn?: string | null;
   values: string[];
+  valuesAr?: string[];
+  valuesEn?: string[];
   valueQuantities?: Record<string, number>;
   valuePrices?: Record<string, number>;
   sortOrder: number;
@@ -72,6 +78,8 @@ export type ProductAddon = {
   id: string;
   productId: string;
   name: string;
+  nameAr?: string | null;
+  nameEn?: string | null;
   price: string;
   enabled: boolean;
   sortOrder: number;
@@ -82,9 +90,15 @@ export type Product = {
   vendorId: string;
   categoryId?: string | null;
   title: string;
+  titleAr?: string | null;
+  titleEn?: string | null;
   slug: string;
   description?: string | null;
+  descriptionAr?: string | null;
+  descriptionEn?: string | null;
   badgeLabel?: string | null;
+  badgeLabelAr?: string | null;
+  badgeLabelEn?: string | null;
   price: string;
   discountType?: DiscountType | null;
   discountValue?: string | null;
@@ -188,8 +202,14 @@ export type LoginInput = {
 
 export type ProductInput = {
   title: string;
+  titleAr?: string;
+  titleEn?: string;
   description?: string;
+  descriptionAr?: string;
+  descriptionEn?: string;
   badgeLabel?: string;
+  badgeLabelAr?: string;
+  badgeLabelEn?: string;
   price: number;
   discountType?: DiscountType;
   discountValue?: number;
@@ -199,12 +219,18 @@ export type ProductInput = {
   imageUrls?: string[];
   options?: Array<{
     name: string;
+    nameAr?: string;
+    nameEn?: string;
     values: string[];
+    valuesAr?: string[];
+    valuesEn?: string[];
     valueQuantities?: Record<string, number>;
     valuePrices?: Record<string, number>;
   }>;
   addons?: Array<{
     name: string;
+    nameAr?: string;
+    nameEn?: string;
     price: number;
     enabled?: boolean;
   }>;
@@ -229,8 +255,14 @@ export type ShippingMethod = {
   vendorId: string;
   code: string;
   name: string;
+  nameAr?: string | null;
+  nameEn?: string | null;
   description?: string | null;
+  descriptionAr?: string | null;
+  descriptionEn?: string | null;
   eta?: string | null;
+  etaAr?: string | null;
+  etaEn?: string | null;
   fee: string;
   enabled: boolean;
   cashOnDeliveryEnabled: boolean;
@@ -248,8 +280,14 @@ export type ShippingMethod = {
 export type CheckoutShippingOption = {
   code: string;
   name: string;
+  nameAr?: string | null;
+  nameEn?: string | null;
   description?: string | null;
+  descriptionAr?: string | null;
+  descriptionEn?: string | null;
   eta?: string | null;
+  etaAr?: string | null;
+  etaEn?: string | null;
   fee: string;
   cashOnDeliveryEnabled: boolean;
   isPickup: boolean;
@@ -260,9 +298,15 @@ export type CheckoutShippingOption = {
 export type ShippingMethodInput = {
   code: string;
   name: string;
+  nameAr?: string;
+  nameEn?: string;
   fee: number;
   description?: string;
+  descriptionAr?: string;
+  descriptionEn?: string;
   eta?: string;
+  etaAr?: string;
+  etaEn?: string;
   enabled?: boolean;
   cashOnDeliveryEnabled?: boolean;
   freeShippingEnabled?: boolean;
@@ -282,8 +326,12 @@ export type StorePage = {
   id: string;
   vendorId: string;
   title: string;
+  titleAr?: string | null;
+  titleEn?: string | null;
   slug: string;
   content: string;
+  contentAr?: string | null;
+  contentEn?: string | null;
   published: boolean;
   createdAt: string;
   updatedAt: string;
@@ -292,8 +340,12 @@ export type StorePage = {
 
 export type StorePageInput = {
   title: string;
+  titleAr?: string;
+  titleEn?: string;
   slug?: string;
   content: string;
+  contentAr?: string;
+  contentEn?: string;
   published?: boolean;
 };
 
@@ -326,11 +378,17 @@ export type VendorTheme = {
   secondaryColor: string;
   textColor: string;
   storeName?: string | null;
+  storeNameAr?: string | null;
+  storeNameEn?: string | null;
   logoUrl?: string | null;
   bannerUrl?: string | null;
   storefrontImageUrl?: string | null;
   storefrontTitle?: string | null;
+  storefrontTitleAr?: string | null;
+  storefrontTitleEn?: string | null;
   storefrontDescription?: string | null;
+  storefrontDescriptionAr?: string | null;
+  storefrontDescriptionEn?: string | null;
   templateId?: string | null;
   storeStatus?: StoreStatus;
   storeDeletedAt?: string | null;
@@ -353,11 +411,17 @@ export type ThemeInput = {
   secondaryColor: string;
   textColor: string;
   storeName?: string;
+  storeNameAr?: string;
+  storeNameEn?: string;
   logoUrl?: string;
   bannerUrl?: string;
   storefrontImageUrl?: string;
   storefrontTitle?: string;
+  storefrontTitleAr?: string;
+  storefrontTitleEn?: string;
   storefrontDescription?: string;
+  storefrontDescriptionAr?: string;
+  storefrontDescriptionEn?: string;
   templateId?: string;
   cashOnDeliveryEnabled?: boolean;
   whatsappUrl?: string;

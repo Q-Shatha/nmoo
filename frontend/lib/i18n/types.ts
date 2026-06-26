@@ -256,6 +256,7 @@ export interface Translations {
   deleteCategoryAriaLabel: (name: string) => string;
 
   // ProductFields
+  defaultLangHint: string;
   productNameLabel: string;
   productBadge: string;
   productBadgePlaceholder: string;
@@ -682,6 +683,11 @@ export interface Translations {
   landingStatMerchants: string;
   landingStatOrders: string;
   landingStatSatisfaction: string;
+  landingStatFreeVal: string;
+  landingStatFree: string;
+  landingStatMinutes: string;
+  landingStatSupport: string;
+  landingStatLanguages: string;
 
   // LandingHowItWorks
   landingHowBadge: string;

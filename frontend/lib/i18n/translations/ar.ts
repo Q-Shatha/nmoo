@@ -289,6 +289,7 @@ const ar: Translations = {
   deleteCategoryAriaLabel: (name: string) => `حذف ${name}`,
 
   // ProductFields
+  defaultLangHint: "يظهر لكل اللغات إذا ما في ترجمة",
   productNameLabel: "اسم المنتج",
   productBadge: "شارة المنتج",
   productBadgePlaceholder: "مثال: جديد",
@@ -705,7 +706,7 @@ const ar: Translations = {
   landingCustomersLabel: "العملاء",
   landingWeeklySales: "مبيعات هذا الأسبوع (USD)",
   landingRecentOrders: "آخر الطلبات",
-  landingNewOrder: "طلب جديد 🇩🇪",
+  landingNewOrder: "طلب جديد",
   landingNewProducts: "+3 منتجات",
   landingOrderStatusCompleted: "مكتمل",
   landingOrderStatusShipping: "قيد التوصيل",
@@ -716,6 +717,11 @@ const ar: Translations = {
   landingStatMerchants: "تاجر نشط",
   landingStatOrders: "طلب مكتمل",
   landingStatSatisfaction: "رضا التجار",
+  landingStatFreeVal: "مجاني",
+  landingStatFree: "للبدء بدون رسوم",
+  landingStatMinutes: "دقائق لفتح متجرك",
+  landingStatSupport: "دعم",
+  landingStatLanguages: "عمولة على مبيعاتك",
 
   // LandingHowItWorks
   landingHowBadge: "كيف تبدأ؟",
@@ -843,7 +849,7 @@ const ar: Translations = {
   landingPricingDesc: "لا عمولات على مبيعاتك — فقط اشتراك ثابت وشفاف.",
   landingPlan1Name: "مجاني",
   landingPlan1Period: "للأبد",
-  landingPlan1F1: "حتى 10 منتجات",
+  landingPlan1F1: "حتى 3 منتجات",
   landingPlan1F2: "رابط متجر خاص",
   landingPlan1F3: "لوحة تحكم كاملة",
   landingPlan1F4: "إدارة الطلبات",
@@ -871,8 +877,8 @@ const ar: Translations = {
 
   // LandingCTA
   landingCtaBadge: "ابدأ اليوم — مجانًا",
-  landingCtaTitle: "متجرك الخاص ينتظرك",
-  landingCtaDesc: "انضم لآلاف التجار حول العالم الذين يديرون متاجرهم الخاصة برابطهم المميز على nmoo نمو.",
+  landingCtaTitle: "ابدأ متجرك اليوم",
+  landingCtaDesc: "منصة جديدة تهدف لتمكين كل شخص من إطلاق متجره الخاص برابط مميز وبدون تعقيدات — كن من أوائل التجار.",
   landingCtaPrimary: "افتح متجرك مجانًا",
   landingCtaSecondary: "تصفح متجر تجريبي",
 

@@ -9,13 +9,14 @@ import {
   LandingUniqueURL,
   LandingPricing,
   LandingCTA,
+  LandingSupportStory,
 } from "./components/LandingClient";
 
 export default function Home() {
   return (
     <>
       <PublicHeader active="home" />
-      <main className="overflow-hidden pt-8">
+      <main className="overflow-hidden pt-8" data-landing>
         <LandingHero />
         <LandingStats />
         <LandingHowItWorks />
@@ -24,6 +25,7 @@ export default function Home() {
         <LandingUniqueURL />
         <LandingPricing />
         <LandingCTA />
+        <LandingSupportStory />
       </main>
       <PublicFooter />
     </>

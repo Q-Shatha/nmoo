@@ -21,6 +21,16 @@ export class UpdateThemeDto {
   @IsString()
   storeName?: string;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  storeNameAr?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  storeNameEn?: string;
+
   @ApiProperty({ example: "https://cdn.example.com/store-logo.png", required: false })
   @IsOptional()
   @IsString()
@@ -41,10 +51,30 @@ export class UpdateThemeDto {
   @IsString()
   storefrontTitle?: string;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  storefrontTitleAr?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  storefrontTitleEn?: string;
+
   @ApiProperty({ example: "اكتب وصف واجهة المتجر الذي يظهر للعملاء.", required: false })
   @IsOptional()
   @IsString()
   storefrontDescription?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  storefrontDescriptionAr?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  storefrontDescriptionEn?: string;
 
   @ApiProperty({ example: "classic", enum: ["classic", "boutique", "gallery", "minimal", "market"], required: false })
   @IsOptional()

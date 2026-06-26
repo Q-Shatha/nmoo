@@ -71,8 +71,12 @@ export class StorePagesService {
         data: {
           vendorId: user.id,
           title: dto.title.trim(),
+          titleAr: dto.titleAr?.trim() || null,
+          titleEn: dto.titleEn?.trim() || null,
           slug,
           content: dto.content.trim(),
+          contentAr: dto.contentAr?.trim() || null,
+          contentEn: dto.contentEn?.trim() || null,
           published: dto.published ?? true,
         },
         include: this.includes(),
@@ -96,12 +100,28 @@ export class StorePagesService {
       data.title = dto.title.trim();
     }
 
+    if (dto.titleAr !== undefined) {
+      data.titleAr = dto.titleAr?.trim() || null;
+    }
+
+    if (dto.titleEn !== undefined) {
+      data.titleEn = dto.titleEn?.trim() || null;
+    }
+
     if (dto.slug !== undefined) {
       data.slug = this.slugify(dto.slug);
     }
 
     if (dto.content !== undefined) {
       data.content = dto.content.trim();
+    }
+
+    if (dto.contentAr !== undefined) {
+      data.contentAr = dto.contentAr?.trim() || null;
+    }
+
+    if (dto.contentEn !== undefined) {
+      data.contentEn = dto.contentEn?.trim() || null;
     }
 
     if (dto.published !== undefined) {

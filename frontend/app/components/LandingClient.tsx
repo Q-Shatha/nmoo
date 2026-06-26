@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { FiX } from "react-icons/fi";
 import {
   HiSparkles,
   HiShoppingBag,
   HiChartBar,
   HiArrowLeft,
+  HiArrowRight,
   HiCheckCircle,
   HiLightningBolt,
   HiGlobe,
@@ -23,6 +25,7 @@ import {
   HiCog,
   HiCash,
   HiSwitchHorizontal,
+  HiMail,
 } from "react-icons/hi";
 import { useI18n } from "@/lib/i18n/context";
 
@@ -58,42 +61,15 @@ function Orb({ className, style }: { className?: string; style?: React.CSSProper
   return <span aria-hidden className={`pointer-events-none absolute rounded-full blur-3xl ${className}`} style={style} />;
 }
 
-const barData = [35, 58, 42, 74, 62, 88, 76];
-const days   = ["1", "2", "3", "4", "5", "6", "7"];
-
 /* ════════════════════ HERO ════════════════════ */
 export function LandingHero() {
-  const { t } = useI18n();
-  const [barVisible, setBarVisible] = useState(false);
-  const barRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = barRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setBarVisible(true); obs.disconnect(); } },
-      { threshold: 0.3 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
+  const { t, locale } = useI18n();
+  const isEn = locale === "en";
 
   const trustBadges = [
     { icon: HiGlobe,         label: t.landingGlobal },
     { icon: HiLink,          label: t.landingUniqueUrl },
-    { icon: HiShieldCheck,   label: t.landingSecurePayment },
     { icon: HiLightningBolt, label: t.landingFastLaunch },
-  ];
-
-  const orderStatuses = [
-    { id: "#4821", status: t.landingOrderStatusCompleted, amount: "$320", dot: "bg-emerald-500", country: "🇸🇦" },
-    { id: "#4820", status: t.landingOrderStatusShipping,  amount: "$175", dot: "bg-blue-400",    country: "🇦🇪" },
-    { id: "#4819", status: t.landingOrderStatusProcessing,amount: "$540", dot: "bg-amber-400",   country: "🇺🇸" },
-  ];
-
-  const dashboardStats = [
-    { label: t.landingSalesLabel,    value: "12,450", unit: "$",  bg: "bg-primary-container/30", text: "text-primary" },
-    { label: t.landingOrdersLabel,   value: "184",    unit: "",   bg: "bg-violet-100",           text: "text-violet-600" },
-    { label: t.landingCustomersLabel,value: "937",    unit: "",   bg: "bg-emerald-100",          text: "text-emerald-600" },
   ];
 
   return (
@@ -133,20 +109,27 @@ export function LandingHero() {
             </div>
           </div>
 
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-end">
-            <Link href="/register" className="primary-button group relative overflow-hidden px-8 py-4 text-lg">
-              <span className="relative z-10 flex items-center gap-2">
-                {t.landingOpenFree}
-                <HiArrowLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
-              </span>
+          <div className="mt-10 flex w-full flex-col gap-4 sm:flex-row sm:justify-start">
+            <Link href="/register" className="primary-button group relative w-full overflow-hidden px-6 py-4 text-base sm:w-auto sm:px-8 sm:text-lg" style={{ alignSelf: "flex-start" }}>
+              {isEn ? (
+                <span className="relative z-10 flex items-center justify-center gap-2 whitespace-nowrap" dir="ltr">
+                  <span>{t.landingOpenFree}</span>
+                  <HiArrowRight className="shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              ) : (
+                <span className="relative z-10 flex items-center justify-center gap-2 whitespace-nowrap" dir="rtl">
+                  <span>{t.landingOpenFree}</span>
+                  <HiArrowLeft className="shrink-0 transition-transform duration-300 group-hover:-translate-x-1" />
+                </span>
+              )}
               <span className="btn-shimmer" aria-hidden />
             </Link>
-            <Link href="/register" className="secondary-button px-8 py-4 text-lg">
+            <Link href="/register" className="secondary-button px-8 py-4 text-lg" style={{ alignSelf: "flex-start" }}>
               {t.landingViewExample}
             </Link>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-end gap-5">
+          <div className="mt-8 flex flex-wrap items-center justify-start gap-5">
             {trustBadges.map((tb) => (
               <span key={tb.label} className="flex items-center gap-1.5 text-sm font-semibold text-on-surface-variant">
                 <tb.icon className="text-primary" />
@@ -156,66 +139,110 @@ export function LandingHero() {
           </div>
         </div>
 
-        {/* ── dashboard mockup ── */}
+        {/* ── store mockup ── */}
         <div className="order-2 lg:order-1"
           style={{ animation: "heroSlideUp 0.9s 0.15s cubic-bezier(.22,1,.36,1) both" }}>
-          <div className="panel relative overflow-hidden p-1.5 shadow-2xl shadow-primary/10">
-            <div className="overflow-hidden rounded-[14px] bg-surface-container-lowest">
-              <div className="flex items-center justify-between border-b border-outline-variant/20 bg-white/60 px-5 py-4 backdrop-blur-sm">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-red-400/80" />
-                  <div className="h-3 w-3 rounded-full bg-amber-400/80" />
-                  <div className="h-3 w-3 rounded-full bg-emerald-400/80" />
+          <div className="relative">
+          <div className="panel p-1.5 shadow-2xl shadow-primary/10">
+            <div className="rounded-[14px] bg-surface-container-lowest">
+
+              {/* browser chrome */}
+              <div className="flex items-center gap-2 border-b border-outline-variant/15 bg-surface-container-low/60 px-4 py-3">
+                <div className="flex gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
                 </div>
-                <p className="text-sm font-bold text-on-surface">{t.landingDashboardTitle}</p>
-                <div className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">{t.landingDashboardActive}</div>
+                <div className="flex flex-1 items-center gap-1.5 rounded-md bg-surface-container px-3 py-1">
+                  <HiLink className="shrink-0 text-xs text-on-surface-variant/50" />
+                  <span className="font-mono text-xs text-on-surface-variant/60" dir="ltr">
+                    nmoo.store/<span className="text-primary font-semibold">zaynah</span>
+                  </span>
+                </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 p-4">
-                {dashboardStats.map((s) => (
-                  <div key={s.label} className={`rounded-xl p-3 ${s.bg}`}>
-                    <p className="text-xs text-on-surface-variant">{s.label}</p>
-                    <p className={`mt-1 text-xl font-extrabold ${s.text}`}>
-                      {s.value}{s.unit && <span className="ms-1 text-xs font-semibold">{s.unit}</span>}
-                    </p>
-                  </div>
-                ))}
+              {/* store banner */}
+              <div className="relative h-32 overflow-hidden bg-surface-container">
+                <img
+                  src="http://localhost:5000/api/assets/cHJvZHVjdHMvODFkNjUzZGMtN2E0NS00ODU3LTg5YjQtOTVhYmI3YzBjZDY1LzA1NDQyOGJiLTU4NzctNDJlYy1iYTM1LTAwZWEwOWU2NDMzNi5qcGc"
+                  alt="store banner"
+                  className="h-full w-full object-cover"
+                />
               </div>
 
-              <div ref={barRef} className="mx-4 mb-4 rounded-xl bg-surface-container-low p-4">
-                <p className="mb-3 text-start text-xs font-semibold text-on-surface-variant">{t.landingWeeklySales}</p>
-                <div className="flex h-28 items-end gap-1.5">
-                  {barData.map((h, i) => (
-                    <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                      <div className="w-full rounded-t-lg bg-primary transition-all duration-700 ease-out"
-                        style={{ height: barVisible ? `${h}%` : "0%", transitionDelay: `${i * 80}ms`, opacity: barVisible ? 1 : 0 }} />
-                      <span className="text-[10px] text-on-surface-variant">{days[i]}</span>
+              {/* store header card — mirrors real store layout */}
+              <div className="relative mx-3 -mt-6 rounded-2xl bg-white p-4 shadow-md">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-3">
+                    {/* Shop / Store policy tabs */}
+                    <div className="flex gap-2">
+                      <span className="rounded-lg bg-primary px-4 py-1.5 text-xs font-bold text-on-primary">{locale === "en" ? "Shop" : "المتجر"}</span>
+                      <span className="rounded-lg bg-surface-container px-4 py-1.5 text-xs font-bold text-on-surface-variant">{locale === "en" ? "Store policy" : "سياسة المتجر"}</span>
                     </div>
-                  ))}
+                    <div>
+                      <p className="text-lg font-black text-on-surface">{locale === "en" ? "Zaynah" : "زينة"}</p>
+                      <p className="mt-0.5 text-[11px] leading-relaxed text-on-surface-variant">
+                        {locale === "en"
+                          ? "We offer you a carefully curated shopping experience combining product quality..."
+                          : "نقدم لك تجربة تسوق مختارة بعناية تجمع بين جودة المنتجات..."}
+                      </p>
+                    </div>
+                  </div>
+                  {/* logo */}
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-outline-variant/20 bg-white shadow-sm">
+                    <img
+                      src="http://localhost:5000/api/assets/cHJvZHVjdHMvODFkNjUzZGMtN2E0NS00ODU3LTg5YjQtOTVhYmI3YzBjZDY1LzRmMWY5YzE4LWIwZTItNDg1YS04ZDdmLTA3NTVkNDVkNDZkYy5wbmc"
+                      alt="logo"
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="border-t border-outline-variant/15 px-4 pb-4 pt-3">
-                <p className="mb-2 text-start text-xs font-bold text-on-surface-variant">{t.landingRecentOrders}</p>
-                {orderStatuses.map((o) => (
-                  <div key={o.id} className="flex items-center justify-between py-1.5 text-xs">
-                    <span className="flex items-center gap-1 font-mono text-on-surface-variant">{o.country} {o.amount}</span>
-                    <span className="flex items-center gap-1 text-on-surface-variant">
-                      <span className={`h-1.5 w-1.5 rounded-full ${o.dot}`} />
-                      {o.status}
-                    </span>
-                    <span className="font-bold text-primary">{o.id}</span>
+              {/* products grid */}
+              <div className="grid grid-cols-2 gap-3 p-4">
+                {[
+                  { img: "http://localhost:5000/api/assets/cHJvZHVjdHMvODFkNjUzZGMtN2E0NS00ODU3LTg5YjQtOTVhYmI3YzBjZDY1LzE2YjdkYmEyLWMwMzYtNDY4ZS1hNDMzLWQ1Njc4Nzc3MjI5Ni5qcGc", nameAr: "ورد الماتشا", nameEn: "Matcha Rose", price: "6", badge: null },
+                  { img: "http://localhost:5000/api/assets/cHJvZHVjdHMvODFkNjUzZGMtN2E0NS00ODU3LTg5YjQtOTVhYmI3YzBjZDY1LzdkNzQ2YTczLWEzYjEtNDM2OS04NzNlLWRiODRkMDRkYzY4MS53ZWJw", nameAr: "ادوات الماتشا", nameEn: "Matcha Tools Set", price: "71", oldPrice: "79", badge: "Sale" },
+                  { img: "http://localhost:5000/api/assets/cHJvZHVjdHMvODFkNjUzZGMtN2E0NS00ODU3LTg5YjQtOTVhYmI3YzBjZDY1L2QyZWJjNWIzLWY0NjMtNDJiYi1iNzY5LWY3MjlhNzI1NGJiMC5qcGc", nameAr: "كوب ماتشا", nameEn: "Matcha Cup", price: "25", badge: null },
+                  { img: "http://localhost:5000/api/assets/cHJvZHVjdHMvODFkNjUzZGMtN2E0NS00ODU3LTg5YjQtOTVhYmI3YzBjZDY1L2ZlMzAwOWY5LTQ1NGQtNGM2ZS1hNzQzLWFlMWVlYjYxMWFmNi5wbmc", nameAr: "حليب فانيلا نادك", nameEn: "Nadec Vanilla Milk", price: "20", oldPrice: "25", badge: "Sale" },
+                ].map((p) => (
+                  <div key={p.nameAr} className="overflow-hidden rounded-xl border border-outline-variant/15 bg-white">
+                    <div className="relative h-24 overflow-hidden bg-surface-container-low">
+                      <img src={p.img} alt={locale === "en" ? p.nameEn : p.nameAr} className="h-full w-full object-cover" />
+                      {p.badge && (
+                        <span className="absolute end-2 top-2 rounded-full bg-red-500 px-2 py-0.5 text-[9px] font-bold text-white">{p.badge}</span>
+                      )}
+                    </div>
+                    <div className="p-2.5 text-start">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          {p.oldPrice && <span className="me-1 text-[10px] text-on-surface-variant line-through">{p.oldPrice}</span>}
+                          <span className="text-sm font-black text-primary">{p.price} {locale === "en" ? "SAR" : "ر.س"}</span>
+                        </div>
+                        <button className="rounded-lg bg-primary px-2 py-1 text-[10px] font-bold text-on-primary">
+                          {locale === "en" ? "+ Add" : "+ أضف"}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="absolute -bottom-3 -left-3 flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 shadow-xl shadow-black/10"
-              style={{ animation: "floatBadge 3s ease-in-out infinite" }}>
-              <HiShoppingBag className="text-xl text-primary" />
-              <div className="text-start">
-                <p className="text-[11px] text-on-surface-variant">{t.landingNewOrder}</p>
-                <p className="text-sm font-bold text-on-surface">{t.landingNewProducts}</p>
+          </div>
+
+            {/* floating order badge — outside panel so it's not clipped */}
+            <div className="absolute -bottom-4 -left-4 z-10 rounded-2xl bg-white p-3 shadow-xl shadow-black/10"
+              style={{ animation: "floatBadge 3s ease-in-out infinite", minWidth: "180px" }}>
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-container/40">
+                  <HiShoppingBag className="text-base text-primary" />
+                </div>
+                <div className="text-start">
+                  <p className="text-sm font-black text-on-surface">{t.landingNewProducts}</p>
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-700">● {t.landingDashboardActive}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -230,23 +257,23 @@ export function LandingStats() {
   const { t } = useI18n();
 
   const stats = [
-    { target: 150,    suffix: "+",  label: t.landingStatCountries,    icon: HiGlobe },
-    { target: 5000,   suffix: "+",  label: t.landingStatMerchants,    icon: HiUsers },
-    { target: 120000, suffix: "+",  label: t.landingStatOrders,       icon: HiShoppingBag },
-    { target: 98,     suffix: "%",  label: t.landingStatSatisfaction, icon: HiStar },
-  ];
+    { target: 250, suffix: "+",       label: t.landingStatCountries, icon: HiGlobe },
+    { target: 5,  suffix: "",        label: t.landingStatMinutes,   icon: HiLightningBolt },
+    { target: 24, suffix: "/7",      label: t.landingStatSupport,   icon: HiShieldCheck },
+    { display: "0%",                   label: t.landingStatLanguages, icon: HiShieldCheck },
+  ] as { display?: string; target?: number; suffix?: string; label: string; icon: React.ElementType }[];
 
   return (
     <section className="border-y border-outline-variant/25 bg-white/50 py-10 backdrop-blur-sm">
       <div className="app-container">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center">
+          {stats.map((s, i) => (
+            <div key={i} className="text-center">
               <div className="mb-2 flex justify-center">
                 <s.icon className="text-2xl text-primary/60" />
               </div>
               <p className="text-4xl font-extrabold text-primary">
-                <Counter target={s.target} suffix={s.suffix} />
+                {s.display ? s.display : <Counter target={s.target!} suffix={s.suffix} />}
               </p>
               <p className="mt-1 text-sm text-on-surface-variant">{s.label}</p>
             </div>
@@ -617,13 +644,14 @@ export function LandingDashboardFeatures() {
             <span className="text-xl">🚀</span>
             <div>
               <p className="text-[11px] font-bold text-teal-600">{t.landingFeat6P1}</p>
-              <p className="text-[11px] text-on-surface-variant">1-2 {t.landingFeat6P4}</p>
+              <p className="text-[11px] text-on-surface-variant">{t.landingFeat6P4}</p>
             </div>
           </FloatCard>
           <FloatCard className="-top-4 -start-5" delay={1.6}>
             <span className="text-xl">🌍</span>
-            <div className="flex gap-0.5">
-              {"🇸🇦🇦🇪🇰🇼🇶🇦".match(/\p{Emoji_Presentation}/gu)?.map((f, i) => <span key={i} className="text-base">{f}</span>)}
+            <div>
+              <p className="text-xs font-bold text-on-surface">{t.landingGlobal}</p>
+              <p className="text-[11px] text-on-surface-variant">{t.landingFeat6P3}</p>
             </div>
           </FloatCard>
         </>
@@ -640,13 +668,6 @@ export function LandingDashboardFeatures() {
       mockup: <PaymentsMockup t={t} />,
       floatCards: (
         <>
-          <FloatCard className="-bottom-5 -start-6" delay={0}>
-            <span className="text-xl">💳</span>
-            <div>
-              <p className="text-[11px] text-on-surface-variant">{t.landingFeat7P3 ?? "معاملة ناجحة"}</p>
-              <p className="text-sm font-black text-emerald-600">+890 {t.currency}</p>
-            </div>
-          </FloatCard>
           <FloatCard className="-top-4 -end-4" delay={1.1}>
             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 text-lg">🔒</span>
             <p className="text-xs font-bold text-on-surface">{t.landingSecurePayment}</p>
@@ -729,25 +750,25 @@ export function LandingDashboardFeatures() {
             </div>
           </div>
           {/* two language columns */}
-          <div className="grid grid-cols-2 divide-x divide-outline-variant/20 rtl:divide-x-reverse">
-            {/* Arabic side */}
-            <div className="p-4 text-right" dir="rtl">
-              <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-primary">العربية</p>
-              <p className="text-sm font-bold text-on-surface">ورد الماتشا</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-on-surface-variant">وردة طازجة لتزيين مشروبات الماتشا</p>
-              <div className="mt-2 flex flex-wrap gap-1 justify-end">
-                <span className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-variant">زينة</span>
-                <span className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-variant">ماتشا</span>
-              </div>
-            </div>
-            {/* English side */}
-            <div className="p-4" dir="ltr">
+          <div className="grid grid-cols-2 divide-x divide-outline-variant/20" dir="ltr">
+            {/* English side - always left */}
+            <div className="p-4 text-left" dir="ltr">
               <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-secondary">English</p>
               <p className="text-sm font-bold text-on-surface">Matcha Rose</p>
               <p className="mt-1 text-[11px] leading-relaxed text-on-surface-variant">Fresh rose for decorating matcha drinks</p>
               <div className="mt-2 flex flex-wrap gap-1">
                 <span className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-variant">Decor</span>
                 <span className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-variant">Matcha</span>
+              </div>
+            </div>
+            {/* Arabic side - always right */}
+            <div className="p-4 text-right" dir="rtl">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-primary">العربية</p>
+              <p className="text-sm font-bold text-on-surface">ورد الماتشا</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-on-surface-variant">وردة طازجة لتزيين مشروبات الماتشا</p>
+              <div className="mt-2 flex flex-wrap gap-1">
+                <span className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-variant">زينة</span>
+                <span className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-variant">ماتشا</span>
               </div>
             </div>
           </div>
@@ -832,6 +853,145 @@ export function LandingDashboardFeatures() {
   );
 }
 
+/* ════════════════════ SPINNING EARTH ════════════════════ */
+function SpinningEarth({ size = 380 }: { size?: number }) {
+  const [t, setT] = useState(0);
+  const [active, setActive] = useState(false);
+  const startRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setActive(entry.isIntersecting),
+      { threshold: 0.2 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!active) return;
+    const loop = (now: number) => {
+      if (startRef.current === null) startRef.current = now;
+      setT((now - startRef.current) / 1000);
+      rafRef.current = requestAnimationFrame(loop);
+    };
+    rafRef.current = requestAnimationFrame(loop);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+      startRef.current = null;
+    };
+  }, [active]);
+
+  const period = 44;
+  const imgRatio = 740 / 357;
+  const imgW = size * imgRatio;
+  const TH = size / 2 / imgW;
+
+  const rotFrac = t / period;
+  const fracX = ((rotFrac % 1) + 1) % 1;
+  const x = (-fracX * 50).toFixed(4);
+  const floatY = (-(1 - Math.cos((2 * Math.PI * t) / 7)) * 4).toFixed(2);
+
+  const loopSec = 14;
+  const ph = (t % loopSec) / loopSec;
+  let zoom = 1, zop = 1;
+  if (ph < 0.12) { const k = ph / 0.12; const e = 1 - Math.pow(1 - k, 3); zoom = 0.18 + 0.82 * e; zop = Math.min(1, k * 1.5); }
+  else if (ph > 0.88) { const k = (ph - 0.88) / 0.12; const e = k * k * k; zoom = 1 - 0.82 * e; zop = Math.max(0, 1 - k * 1.25); }
+
+  const center = ((size / 2) / imgW + fracX) % 1;
+  const cloudFrac = ((t / (period * 2.2)) % 1 + 1) % 1;
+  const ccx = (-cloudFrac * 50).toFixed(4);
+
+  const cloudDefs = [
+    { l: 6, top: 20, f: 0.36, img: 1, op: 0.55 }, { l: 19, top: 42, f: 0.30, img: 2, op: 0.46 },
+    { l: 32, top: 13, f: 0.40, img: 3, op: 0.50 }, { l: 43, top: 56, f: 0.28, img: 1, op: 0.44 },
+    { l: 13, top: 66, f: 0.32, img: 1, op: 0.40 }, { l: 26, top: 30, f: 0.26, img: 2, op: 0.40 },
+    { l: 47, top: 26, f: 0.34, img: 3, op: 0.48 },
+  ];
+  const clouds: { src: string; left: number; top: number; w: number; op: number }[] = [];
+  cloudDefs.forEach((c) => {
+    const w = Math.round(c.f * size);
+    clouds.push({ src: `/earth-assets/cloud${c.img}.png`, left: c.l, top: c.top, w, op: c.op });
+    clouds.push({ src: `/earth-assets/cloud${c.img}.png`, left: c.l + 50, top: c.top, w, op: c.op });
+  });
+
+  const cities = [
+    { lon: -74.8, lat: 40.4 }, { lon: -118.2, lat: 34 }, { lon: -87.6, lat: 41.8 }, { lon: -105, lat: 39.7 },
+    { lon: -99.1, lat: 19.4 }, { lon: -43.2, lat: -22.9 }, { lon: -58.4, lat: -34.6 }, { lon: 31.2, lat: 30 },
+    { lon: 36.8, lat: -1.3 }, { lon: 46.7, lat: 24.7 }, { lon: 39.2, lat: 21.5 }, { lon: 49.9, lat: 25.8 },
+    { lon: 47.9, lat: 29.4 }, { lon: 55.8, lat: 24.8 }, { lon: 54.3, lat: 23.8 }, { lon: 51.4, lat: 24.8 },
+    { lon: 50.4, lat: 25.8 }, { lon: 58.2, lat: 22.8 }, { lon: 44.4, lat: 33.3 }, { lon: 35.9, lat: 31.9 },
+    { lon: 0.2, lat: 51.6 }, { lon: 2.3, lat: 48.9 }, { lon: -3.7, lat: 40.4 }, { lon: 13.4, lat: 52.5 },
+    { lon: 4.9, lat: 52.4 }, { lon: 18.3, lat: 57.1 }, { lon: 8.5, lat: 47.4 }, { lon: 12.6, lat: 55.7 },
+    { lon: 51.4, lat: 35.7 }, { lon: 77.2, lat: 28.6 }, { lon: 116.4, lat: 39.9 }, { lon: 139.7, lat: 35.7 },
+    { lon: 127, lat: 37.5 }, { lon: 37.6, lat: 55.8 }, { lon: 28.98, lat: 41 }, { lon: 121.5, lat: 31.2 },
+    { lon: 151.2, lat: -33.9 }, { lon: 101.7, lat: 3.1 },
+  ];
+  const wrap = (v: number) => { v = ((v % 1) + 1) % 1; return v > 0.5 ? v - 1 : v; };
+  const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
+  const VIS = TH * 0.66;
+
+  type Pin = { left: number; top: number; op: number; strikeY: number; sx: number; sy: number };
+  const pins: Pin[] = [];
+  cities.forEach((c) => {
+    const fx = (c.lon + 180) / 360;
+    const fy = (90 - c.lat) / 180;
+    const delta = wrap(fx - center);
+    if (Math.abs(delta) >= VIS) return;
+    const xpx = size / 2 + delta * imgW;
+    const ypx = fy * size;
+    const tEntry = (VIS - delta) * period;
+    const tToExit = (delta + VIS) * period;
+    const te = tEntry - 1.0;
+    if (te <= 0) return;
+    const ep = Math.max(0, Math.min(1, te / 0.95));
+    let strikeY = 0, sx = 1, sy = 1;
+    if (ep < 0.6) { strikeY = -85 * (1 - easeOut(ep / 0.6)); }
+    else { const q = (ep - 0.6) / 0.4; const env = Math.sin(q * Math.PI); sy = 1 - 0.36 * env; sx = 1 + 0.32 * env; }
+    const op = Math.max(0, Math.min(1, te / 0.30)) * Math.max(0, Math.min(1, tToExit / 2.0));
+    pins.push({ left: xpx, top: ypx, op, strikeY, sx, sy });
+  });
+
+  return (
+    <div ref={wrapRef} style={{ filter: "saturate(0.82)" }}>
+      <div style={{ position: "relative", width: size, height: size, transformOrigin: "50% 50%", transform: `translateY(${floatY}px) scale(${zoom.toFixed(3)})`, opacity: zop, willChange: "transform, opacity" }}>
+        <div style={{ position: "absolute", inset: "-9%", borderRadius: "50%", pointerEvents: "none", background: "radial-gradient(circle, rgba(110,190,240,0) 56%, rgba(110,190,240,.30) 69%, rgba(110,190,240,0) 84%)" }} />
+        <div style={{ position: "absolute", inset: 0, borderRadius: "50%", overflow: "hidden", background: "#2573b3", boxShadow: "0 26px 64px -16px rgba(6,34,64,.6)" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, height: "100%", width: "max-content", display: "flex", willChange: "transform", transform: `translateX(${x}%)` }}>
+            <img src="/earth-assets/earth-map.png" alt="" draggable={false} style={{ height: "100%", width: "auto", display: "block", userSelect: "none", filter: "saturate(1.12) contrast(1.06) brightness(1.02)" }} />
+            <img src="/earth-assets/earth-map.png" alt="" draggable={false} style={{ height: "100%", width: "auto", display: "block", userSelect: "none", marginLeft: -1, filter: "saturate(1.12) contrast(1.06) brightness(1.02)" }} />
+          </div>
+          <div style={{ position: "absolute", top: 0, left: 0, height: "100%", width: "200%", pointerEvents: "none", transform: `translateX(${ccx}%)`, zIndex: 2 }}>
+            {clouds.map((cl, i) => (
+              <img key={i} src={cl.src} alt="" draggable={false} style={{ position: "absolute", left: cl.left + "%", top: cl.top + "%", width: cl.w, opacity: cl.op, transform: "translate(-50%,-50%)", userSelect: "none", filter: "blur(0.3px)" }} />
+            ))}
+          </div>
+          <div style={{ position: "absolute", inset: 0, borderRadius: "50%", pointerEvents: "none", boxShadow: "inset 0 0 16px 2px rgba(150,210,255,.5)" }} />
+          <div style={{ position: "absolute", inset: 0, borderRadius: "50%", pointerEvents: "none", background: "radial-gradient(circle at 30% 26%, rgba(255,255,255,.40), rgba(255,255,255,0) 46%), linear-gradient(108deg, rgba(2,12,30,0) 44%, rgba(3,14,34,.42) 74%, rgba(1,8,24,.66) 100%)", boxShadow: "inset 0 0 50px 10px rgba(2,18,42,.5), inset -16px -18px 60px rgba(1,12,30,.5)" }} />
+        </div>
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 9 }}>
+          {pins.map((p, i) => (
+            <div key={i} style={{ position: "absolute", left: p.left.toFixed(1) + "px", top: p.top.toFixed(1) + "px", opacity: p.op, willChange: "transform, opacity" }}>
+              <div style={{ transform: `translateY(${p.strikeY.toFixed(1)}px)` }}>
+                <div style={{ position: "relative", width: 23, height: 30, transformOrigin: "50% 100%", transform: `translate(-50%,-100%) scale(${p.sx.toFixed(3)},${p.sy.toFixed(3)})` }}>
+                  <svg viewBox="0 0 24 24" style={{ position: "absolute", left: 0, top: 0, width: 23, height: 30, filter: "drop-shadow(0 3px 4px rgba(18,2,2,.5))" }}>
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 1C7.58 1 4 4.58 4 9c0 5.25 8 14 8 14s8-8.75 8-14c0-4.42-3.58-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" fill="#884A70" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ════════════════════ GLOBAL SECTION ════════════════════ */
 export function LandingGlobal() {
   const { t } = useI18n();
@@ -885,19 +1045,11 @@ export function LandingGlobal() {
             </ul>
           </div>
 
-          {/* flags grid */}
-          <div className="grid grid-cols-4 gap-3">
-            {countries.map((c) => (
-              <div key={c.name}
-                className="panel flex flex-col items-center gap-1.5 rounded-2xl p-4 text-center transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
-                <span className="text-3xl">{c.flag}</span>
-                <span className="text-xs font-semibold text-on-surface-variant">{c.name}</span>
-              </div>
-            ))}
-            <div className="col-span-4 flex items-center justify-center rounded-2xl border-2 border-dashed border-primary/30 p-4">
-              <p className="text-sm font-bold text-primary">{t.landingMoreCountries}</p>
-            </div>
+          {/* Globe */}
+          <div className="flex items-center justify-center">
+            <SpinningEarth size={380} />
           </div>
+
         </div>
       </div>
     </section>
@@ -906,7 +1058,8 @@ export function LandingGlobal() {
 
 /* ════════════════════ UNIQUE URL SECTION ════════════════════ */
 export function LandingUniqueURL() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const isAr = locale === "ar";
 
   const examples = [
     { name: t.landingUrlShopName1, url: "nmoo.store/layla-fashion" },
@@ -928,28 +1081,24 @@ export function LandingUniqueURL() {
         <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
           {/* URLs showcase */}
           <div className="space-y-4">
-            {examples.map((e, i) => (
-              <div key={e.name}
-                className="panel flex items-center gap-4 p-5 transition-all duration-200 hover:-translate-x-1 hover:shadow-md"
-                style={{ animation: `heroSlideUp 0.6s ${i * 100}ms cubic-bezier(.22,1,.36,1) both` }}>
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-container/30 text-2xl font-black text-primary">
-                  {e.name.charAt(0)}
-                </div>
-                <div className="flex-1 text-start">
-                  <p className="font-bold text-on-surface">{e.name}</p>
-                  <p className="font-mono text-sm text-primary" dir="ltr">{e.url}</p>
-                </div>
-                <div className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
-                  {t.landingUrlActiveLabel}
+            <div className="panel flex items-center gap-4 p-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-container/30 text-2xl font-black text-primary">ز</div>
+              <div className="flex-1 text-start">
+                <p className="font-bold text-on-surface">زينة</p>
+                <div className="mt-0.5 flex items-center gap-2">
+                  <p className="font-mono text-sm text-primary" dir="ltr">nmoo.store/zaynah</p>
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">{t.landingUrlActiveLabel}</span>
                 </div>
               </div>
-            ))}
+            </div>
 
             <div className="panel flex items-center gap-4 border-2 border-dashed border-primary/30 p-5">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-2xl font-black text-primary">+</div>
               <div className="flex-1 text-start">
                 <p className="font-bold text-primary">{t.landingUrlYourStore}</p>
-                <p className="font-mono text-sm text-on-surface-variant" dir="ltr">nmoo.store/<span className="text-primary">{t.landingUrlYourStoreLabel}</span></p>
+                <p className={`mt-0.5 font-mono text-sm text-on-surface-variant ${isAr ? "text-right" : "text-left"}`} dir="ltr">
+                  nmoo.store/<span className="text-primary">{t.landingUrlYourStoreLabel}</span>
+                </p>
               </div>
             </div>
           </div>
@@ -974,9 +1123,13 @@ export function LandingUniqueURL() {
                 </li>
               ))}
             </ul>
-            <Link href="/register" className="primary-button mt-8 inline-flex items-center gap-2 px-8 py-4 text-lg">
-              {t.landingUrlCta}
-              <HiArrowLeft />
+            <Link href="/register" className="primary-button group mt-8 inline-flex items-center justify-center gap-2 whitespace-nowrap px-6 py-4 text-base sm:px-8 sm:text-lg" dir={isAr ? "rtl" : "ltr"}>
+              <span>{t.landingUrlCta}</span>
+              {isAr ? (
+                <HiArrowLeft className="shrink-0 transition-transform duration-300 group-hover:-translate-x-1" />
+              ) : (
+                <HiArrowRight className="shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
+              )}
             </Link>
           </div>
         </div>
@@ -996,7 +1149,13 @@ export function LandingPricing() {
       period: t.landingPlan1Period,
       color: "border-outline-variant/30",
       badge: "",
-      features: [t.landingPlan1F1, t.landingPlan1F2, t.landingPlan1F3, t.landingPlan1F4, t.landingPlan1F5],
+      features: [
+        { text: t.landingPlan1F1 },
+        { text: t.landingPlan1F2 },
+        { text: t.landingPlan1F3, crossed: true },
+        { text: t.landingPlan1F4 },
+        { text: t.landingPlan1F5 },
+      ],
       cta: t.landingPlan1Cta,
       ctaClass: "secondary-button",
     },
@@ -1006,7 +1165,7 @@ export function LandingPricing() {
       period: t.landingPlan2Period,
       color: "border-primary",
       badge: t.landingPlan2Badge,
-      features: [t.landingPlan2F1, t.landingPlan2F2, t.landingPlan2F3, t.landingPlan2F4, t.landingPlan2F5, t.landingPlan2F6],
+      features: [t.landingPlan2F1, t.landingPlan2F2, t.landingPlan2F3, t.landingPlan2F4, t.landingPlan2F5, t.landingPlan2F6].map((text) => ({ text })),
       cta: t.landingPlan2Cta,
       ctaClass: "primary-button",
     },
@@ -1016,7 +1175,7 @@ export function LandingPricing() {
       period: t.landingPlan3Period,
       color: "border-secondary",
       badge: "",
-      features: [t.landingPlan3F1, t.landingPlan3F2, t.landingPlan3F3, t.landingPlan3F4, t.landingPlan3F5, t.landingPlan3F6],
+      features: [t.landingPlan3F1, t.landingPlan3F2, t.landingPlan3F3, t.landingPlan3F4, t.landingPlan3F5, t.landingPlan3F6].map((text) => ({ text })),
       cta: t.landingPlan3Cta,
       ctaClass: "secondary-button",
     },
@@ -1052,9 +1211,11 @@ export function LandingPricing() {
               </div>
               <ul className="flex-1 space-y-2.5">
                 {plan.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-on-surface-variant">
-                    <HiCheckCircle className="shrink-0 text-primary" />
-                    {f}
+                  <li key={f.text} className="flex items-center gap-2 text-sm text-on-surface-variant">
+                    {f.crossed
+                      ? <FiX className="shrink-0 text-on-surface-variant/40" />
+                      : <HiCheckCircle className="shrink-0 text-primary" />}
+                    <span className={f.crossed ? "opacity-40" : ""}>{f.text}</span>
                   </li>
                 ))}
               </ul>
@@ -1422,37 +1583,109 @@ function PagesMockup({ t }: MockupProps) {
 
 /* ════════════════════ CTA ════════════════════ */
 export function LandingCTA() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const isEn = locale === "en";
 
   return (
     <section className="py-20">
       <div className="app-container">
-        <div className="relative overflow-hidden rounded-3xl bg-secondary p-10 text-center md:p-16">
-          <Orb className="h-72 w-72 bg-primary/30" style={{ top: "-20%", left: "10%" }} />
-          <Orb className="h-56 w-56 bg-violet-400/20" style={{ bottom: "-15%", right: "8%" }} />
+        <div className="relative overflow-hidden rounded-3xl p-10 text-center md:p-20"
+          style={{ background: "linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%)" }}>
+
+          {/* glow blobs */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-16 -top-16 h-80 w-80 rounded-full opacity-30"
+              style={{ background: "radial-gradient(circle, #a855f7 0%, transparent 70%)" }} />
+            <div className="absolute -bottom-20 -right-10 h-96 w-96 rounded-full opacity-20"
+              style={{ background: "radial-gradient(circle, #3b82f6 0%, transparent 70%)" }} />
+            <div className="absolute left-1/2 top-1/3 h-64 w-64 -translate-x-1/2 rounded-full opacity-15"
+              style={{ background: "radial-gradient(circle, #ec4899 0%, transparent 70%)" }} />
+          </div>
+
+          {/* grid overlay */}
+          <div className="pointer-events-none absolute inset-0 opacity-[0.04]"
+            style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
 
           <div className="relative">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-white/90">
-              <HiSparkles />
+            {/* badge */}
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-bold text-white backdrop-blur-sm">
+              <HiSparkles className="text-yellow-300" />
               {t.landingCtaBadge}
             </div>
-            <h2 className="section-title text-3xl text-white md:text-4xl">
+
+            <h2 className="text-3xl font-extrabold leading-tight text-white md:text-5xl">
               {t.landingCtaTitle}
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg leading-loose text-white/70">
+
+            <p className="mt-5 w-full text-base leading-relaxed text-white/60 md:text-lg">
               {t.landingCtaDesc}
             </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+
+            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Link href="/register"
-                className="group inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-lg font-bold text-secondary transition-all duration-200 hover:bg-white/90 hover:shadow-lg hover:shadow-white/20">
-                {t.landingCtaPrimary}
-                <HiArrowLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl px-7 py-4 text-base font-bold text-white shadow-2xl transition-all duration-300 hover:scale-105 sm:px-9 sm:text-lg"
+                dir={isEn ? "ltr" : "rtl"}
+                style={{ background: "linear-gradient(135deg, #a855f7, #6366f1)" }}>
+                <span className="absolute inset-0 translate-x-full bg-white/10 transition-transform duration-300 group-hover:translate-x-0" />
+                <span className="relative whitespace-nowrap">{t.landingCtaPrimary}</span>
+                {isEn ? (
+                  <HiArrowRight className="relative shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
+                ) : (
+                  <HiArrowLeft className="relative shrink-0 transition-transform duration-300 group-hover:-translate-x-1" />
+                )}
               </Link>
               <Link href="/register"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-8 py-4 text-lg font-bold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20">
+                className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-9 py-4 text-lg font-bold text-white/80 backdrop-blur-sm transition-all duration-200 hover:bg-white/10 hover:text-white">
                 {t.landingCtaSecondary}
               </Link>
             </div>
+
+            <p className="mt-6 text-sm text-white/35">
+              {isEn ? "No credit card required · Free to start" : "لا يلزم بطاقة ائتمان · مجاني للبدء"}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════ SUPPORT STORY ════════════════════ */
+export function LandingSupportStory() {
+  const { locale } = useI18n();
+  const isEn = locale === "en";
+
+  return (
+    <section className="border-t border-outline-variant/20 py-16">
+      <div className="app-container">
+        <div className="mx-auto max-w-2xl text-center">
+          <div className="mb-5 text-4xl">🌱</div>
+          <h2 className="text-xl font-extrabold text-on-surface">
+            {isEn ? "A solo project — built with passion" : "مشروع فردي"}
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-on-surface-variant">
+            {isEn
+              ? "This is a solo project built by a recent graduate who couldn't find a suitable job after finishing university, so she decided to start her own project. If this project gets enough support, I plan to add more features, more languages, and keep improving the experience for everyone."
+              : "هذا الموقع مشروع فردي، أنشأته خريجة لم تجد عملاً مناسباً بعد التخرج فقررت تبدأ مشروعها الخاص، إذا حصل المشروع على دعم كافٍ أخطط لإضافة المزيد من المميزات واللغات والاستمرار في تحسين التجربة للجميع."}
+          </p>
+
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <a
+              href="https://paypal.me/QShatha"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2.5 rounded-2xl bg-[#0070BA] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            >
+              <HiCash className="h-5 w-5" />
+              paypal.me/QShatha
+            </a>
+            <a
+              href="mailto:shathalvu@gmail.com"
+              className="inline-flex items-center gap-2.5 rounded-2xl border border-outline-variant/40 bg-surface-container px-6 py-3 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high"
+            >
+              <HiMail className="h-5 w-5 text-primary" />
+              shathalvu@gmail.com
+            </a>
           </div>
         </div>
       </div>

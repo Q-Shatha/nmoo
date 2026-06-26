@@ -240,6 +240,37 @@ html {
   background-color: color-mix(in oklab, var(--color-primary-container) 30%, transparent) !important;
 }
 
+/* ── Landing page palette override ── */
+[data-landing] {
+  --color-primary: #884a70;
+  --color-primary-container: #bf88aa;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #3a0a28;
+  --color-primary-fixed: #f0c8de;
+  --color-primary-fixed-dim: #bf88aa;
+  --color-secondary: #092327;
+  --color-secondary-container: #092327;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #fafafa;
+  --color-tertiary: #63927b;
+  --color-tertiary-container: #c2ddd3;
+  --color-background: #fafafa;
+  --color-surface: #fafafa;
+  --color-surface-bright: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f2f2;
+  --color-surface-container: #e8e8e8;
+  --color-surface-container-high: #dedede;
+  --color-surface-container-highest: #d4d4d4;
+  --color-on-surface: #092327;
+  --color-on-background: #092327;
+  --color-on-surface-variant: #3a4040;
+  --color-outline: #63927b;
+  --color-outline-variant: #c4d6ce;
+  --color-surface-tint: #884a70;
+  --color-inverse-primary: #bf88aa;
+}
+
 .dashboard-panel label:has(> input[readonly][type="number"]) {
   align-self: start;
 }

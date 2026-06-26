@@ -1,5 +1,6 @@
 git add .
-git commit -m "قبل القوالب"
+git commit -m "2before adding fr,es languges  "
 git push
 
 netstat -ano | findstr :3000
+taskkill /PID <PID_NUMBER> /F

@@ -77,7 +77,7 @@ export function AccountMenu({ compact = false, initialUser = null }: AccountMenu
 }
 
 function MobileAccountMenu({ isLoading, user, onLogout }: { isLoading: boolean; user: ApiUser | null; onLogout: () => void }) {
-  const { t: tMobile } = useI18n();
+  const { t: tMobile, locale } = useI18n();
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
   function closeMenu() {
@@ -113,10 +113,10 @@ function MobileAccountMenu({ isLoading, user, onLogout }: { isLoading: boolean; 
               <>
                 <div className="flex items-center gap-3 border-b border-outline-variant/20 px-3 py-3">
                   <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-sm font-black text-on-primary-container">
-                    {user.avatarUrl ? <Image alt={user.name} className="object-cover" src={user.avatarUrl} fill sizes="48px" unoptimized /> : user.name.trim()[0] ?? "ن"}
+                    {user.avatarUrl ? <Image alt={displayName(user, locale)} className="object-cover" src={user.avatarUrl} fill sizes="48px" unoptimized /> : displayName(user, locale).trim()[0] ?? "ن"}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate font-black text-on-surface">{user.name}</p>
+                    <p className="truncate font-black text-on-surface">{displayName(user, locale)}</p>
                     <p className="mt-1 truncate text-xs text-on-surface-variant">{user.email}</p>
                   </div>
                 </div>
@@ -157,7 +157,7 @@ function DesktopAccountMenu({
   user: ApiUser | null;
   onLogout: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   if (isLoading) {
     return <div className="h-11 w-11 animate-pulse rounded-full bg-surface-container-low" aria-hidden="true" />;
@@ -205,7 +205,7 @@ function DesktopAccountMenu({
       <button
         className={`${compact ? "h-11 w-11 justify-center rounded-full p-0" : "gap-2 rounded-xl px-3 py-2"} flex items-center border border-outline-variant/45 bg-surface-container-lowest text-start shadow-sm transition hover:bg-surface-container-low`}
         type="button"
-        aria-label={`${user.name} - ${formatRole(user.role, t)}`}
+        aria-label={`${displayName(user, locale)} - ${formatRole(user.role, t)}`}
         aria-expanded={isOpen}
         aria-haspopup="menu"
         onClick={() => setIsOpen((value) => !value)}
@@ -214,12 +214,12 @@ function DesktopAccountMenu({
           <MenuIcon />
         ) : (
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-container font-black text-on-primary-container">
-            {user.name.trim()[0] ?? "?"}
+            {displayName(user, locale).trim()[0] ?? "?"}
           </span>
         )}
         {!compact ? (
           <span className="hidden min-w-0 sm:block">
-            <span className="block max-w-28 truncate text-sm font-bold text-on-surface">{user.name}</span>
+            <span className="block max-w-28 truncate text-sm font-bold text-on-surface">{displayName(user, locale)}</span>
             <span className="block text-xs text-on-surface-variant">{formatRole(user.role, t)}</span>
           </span>
         ) : null}
@@ -228,7 +228,7 @@ function DesktopAccountMenu({
       {isOpen ? (
         <div className="absolute left-0 top-full z-50 mt-3 w-64 overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-2 text-start shadow-xl" role="menu">
           <div className="border-b border-outline-variant/20 px-3 py-3">
-            <p className="font-black text-on-surface">{user.name}</p>
+            <p className="font-black text-on-surface">{displayName(user, locale)}</p>
             <p className="mt-1 truncate text-xs text-on-surface-variant">{user.email}</p>
           </div>
           <MenuLink href="/orders" label={t.myOrdersLink} onClick={() => setIsOpen(false)} />
@@ -288,6 +288,18 @@ function readCookie(name: string) {
 
 function clearAuthCookie() {
   document.cookie = "nmoo_access_token=; path=/; max-age=0; samesite=lax";
+}
+
+function displayName(user: ApiUser, locale?: string) {
+  if (user.role === "VENDOR") {
+    const theme = user.theme;
+    if (theme) {
+      if (locale === "ar" && theme.storeNameAr) return theme.storeNameAr;
+      if (locale === "en" && theme.storeNameEn) return theme.storeNameEn;
+      if (theme.storeName) return theme.storeName;
+    }
+  }
+  return user.name;
 }
 
 function formatRole(role: ApiUser["role"], t: ReturnType<typeof useI18n>["t"]) {

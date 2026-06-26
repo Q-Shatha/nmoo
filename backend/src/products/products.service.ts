@@ -94,9 +94,15 @@ export class ProductsService {
     const product = await this.prisma.product.create({
       data: {
         title: createProductDto.title,
+        titleAr: this.normalizeOptionalText(createProductDto.titleAr),
+        titleEn: this.normalizeOptionalText(createProductDto.titleEn),
         slug: await this.createUniqueSlug(createProductDto.title),
         description: createProductDto.description,
+        descriptionAr: this.normalizeOptionalText(createProductDto.descriptionAr),
+        descriptionEn: this.normalizeOptionalText(createProductDto.descriptionEn),
         badgeLabel: this.normalizeOptionalText(createProductDto.badgeLabel),
+        badgeLabelAr: this.normalizeOptionalText(createProductDto.badgeLabelAr),
+        badgeLabelEn: this.normalizeOptionalText(createProductDto.badgeLabelEn),
         price: new Prisma.Decimal(createProductDto.price),
         discountType: discountData.discountType,
         discountValue: discountData.discountValue,
@@ -130,8 +136,14 @@ export class ProductsService {
 
     const data: Prisma.ProductUpdateInput = {
       title: updateProductDto.title,
+      titleAr: updateProductDto.titleAr !== undefined ? this.normalizeOptionalText(updateProductDto.titleAr) : undefined,
+      titleEn: updateProductDto.titleEn !== undefined ? this.normalizeOptionalText(updateProductDto.titleEn) : undefined,
       description: updateProductDto.description,
+      descriptionAr: updateProductDto.descriptionAr !== undefined ? this.normalizeOptionalText(updateProductDto.descriptionAr) : undefined,
+      descriptionEn: updateProductDto.descriptionEn !== undefined ? this.normalizeOptionalText(updateProductDto.descriptionEn) : undefined,
       badgeLabel: this.normalizeOptionalText(updateProductDto.badgeLabel),
+      badgeLabelAr: updateProductDto.badgeLabelAr !== undefined ? this.normalizeOptionalText(updateProductDto.badgeLabelAr) : undefined,
+      badgeLabelEn: updateProductDto.badgeLabelEn !== undefined ? this.normalizeOptionalText(updateProductDto.badgeLabelEn) : undefined,
       stock: updateProductDto.stock,
       imageUrl: updateProductDto.imageUrl,
       status: updateProductDto.status,
@@ -447,7 +459,11 @@ export class ProductsService {
     return (options ?? [])
       .map((option, index) => ({
         name: option.name.trim(),
+        nameAr: option.nameAr?.trim() || null,
+        nameEn: option.nameEn?.trim() || null,
         values: Array.from(new Set(option.values.map((value) => value.trim()).filter(Boolean))),
+        valuesAr: option.valuesAr ? Array.from(new Set(option.valuesAr.map((v) => v.trim()).filter(Boolean))) : [],
+        valuesEn: option.valuesEn ? Array.from(new Set(option.valuesEn.map((v) => v.trim()).filter(Boolean))) : [],
         valueQuantities: this.normalizeOptionQuantities(option.values, option.valueQuantities),
         valuePrices: this.normalizeOptionPrices(option.values, option.valuePrices, fallbackPrice),
         sortOrder: index,
@@ -459,6 +475,8 @@ export class ProductsService {
     return (addons ?? [])
       .map((addon, index) => ({
         name: addon.name.trim(),
+        nameAr: addon.nameAr?.trim() || null,
+        nameEn: addon.nameEn?.trim() || null,
         price: new Prisma.Decimal(addon.price),
         enabled: addon.enabled ?? true,
         sortOrder: index,

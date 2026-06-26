@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { ApiError, ApiUser, getMe, getProducts, getVendor, getVendorReviews, getVendorShippingCoverage, getVendorStorePages, getVendorTheme, Product, Review, StorePage, VendorTheme } from "@/lib/api";
 import { getStoreTemplate } from "@/lib/store-templates";
 import { themeToStyle } from "@/lib/theme";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
 import { ProductCard } from "../../components/ProductCard";
 import { PublicFooter } from "../../components/PublicFooter";
 import { PublicHeader } from "../../components/PublicHeader";
@@ -42,21 +42,27 @@ type T = Awaited<ReturnType<typeof getT>>;
 export default async function VendorPage({ params, searchParams }: VendorPageProps) {
   const { vendorId } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
-  const t = await getT();
+  const [t, locale] = await Promise.all([getT(), getLocale()]);
   const data = await loadVendorPage(vendorId, resolvedSearchParams.q?.trim() ?? "", t);
 
   if (!data.ok) {
     return <Unavailable message={data.message} t={t} />;
   }
 
-  return <VendorProfile data={data} t={t} />;
+  return <VendorProfile data={data} t={t} locale={locale} />;
 }
 
-function VendorProfile({ data, t }: { data: Extract<VendorPageData, { ok: true }>; t: T }) {
+function VendorProfile({ data, t, locale }: { data: Extract<VendorPageData, { ok: true }>; t: T; locale: string }) {
+  const isAr = locale === "ar";
+  const isEn = locale === "en";
   const storefrontImage = data.theme.storefrontImageUrl || data.products[0]?.imageUrl || data.products[0]?.images?.[0]?.url || fallbackHeroImage;
   const heroImage = data.theme.bannerUrl || storefrontImage;
   const logoImage = data.theme.logoUrl || "/nmoo-logo.png";
-  const storeName = data.theme.storeName?.trim() || data.vendor.name;
+  const storeName = (isEn
+    ? (data.theme.storeNameEn?.trim() || data.theme.storeName?.trim())
+    : isAr
+    ? (data.theme.storeNameAr?.trim() || data.theme.storeName?.trim())
+    : data.theme.storeName?.trim()) || data.vendor.name;
   const returnPolicy = findPage(data.storePages, ["return", "استرجاع", "سياسة"]);
   const rating = data.reviews.length > 0 ? averageRating(data.reviews) : data.total > 20 ? "4.9" : "4.8";
   const profileHref = data.vendor.storeUsername ? `/${data.vendor.storeUsername}` : `/vendors/${data.vendor.id}`;

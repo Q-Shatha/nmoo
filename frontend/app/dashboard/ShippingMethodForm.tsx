@@ -1,19 +1,71 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, createShippingMethod, ShippingDeliveryLocation, ShippingMethod, updateShippingMethod } from "@/lib/api";
 import { countries, saRegions } from "@/lib/location-data";
 import { DashboardAccordion } from "./DashboardAccordion";
 import { useI18n } from "@/lib/i18n/context";
+import { FiPlus, FiX } from "react-icons/fi";
+
+const SUPPORTED_LANGS = [
+  { code: "ar", label: "العربية" },
+  { code: "en", label: "English" },
+] as const;
+
+const LANG_META: Record<string, { label: string; flag: string }> = {
+  ar: { label: "العربية", flag: "🇸🇦" },
+  en: { label: "English", flag: "🇬🇧" },
+};
+
+function AddLangButton({ addedLangs, onAdd }: { addedLangs: string[]; onAdd: (lang: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const available = SUPPORTED_LANGS.filter((l) => !addedLangs.includes(l.code));
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+  if (available.length === 0) return null;
+  return (
+    <div ref={ref} className="relative w-fit">
+      <button type="button" title="إضافة لغة"
+        className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed border-outline-variant/50 text-on-surface-variant transition-colors hover:border-primary hover:text-primary"
+        onClick={() => setOpen((v) => !v)}>
+        <FiPlus className="h-4 w-4" />
+      </button>
+      {open && (
+        <div className="absolute start-0 top-10 z-20 min-w-[130px] rounded-xl border border-outline-variant/30 bg-surface shadow-lg">
+          {available.map((lang) => (
+            <button key={lang.code} type="button" dir="ltr"
+              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-bold text-on-surface hover:bg-surface-container-low"
+              onClick={() => { onAdd(lang.code); setOpen(false); }}>
+              {lang.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 type Draft = {
   code: string;
   name: string;
+  nameAr: string;
+  nameEn: string;
   fee: string;
   description: string;
+  descriptionAr: string;
+  descriptionEn: string;
   eta: string;
+  etaAr: string;
+  etaEn: string;
   enabled: boolean;
   cashOnDeliveryEnabled: boolean;
   freeShippingEnabled: boolean;
@@ -37,10 +89,16 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
   const [draft, setDraft] = useState<Draft>({
     code: method?.code ?? "",
     name: method?.name ?? "",
+    nameAr: method?.nameAr ?? "",
+    nameEn: method?.nameEn ?? "",
     fee: method?.fee ? String(method.fee) : "",
     freeShippingMinimum: method?.freeShippingMinimum ? String(method.freeShippingMinimum) : "",
     description: method?.description ?? "",
+    descriptionAr: method?.descriptionAr ?? "",
+    descriptionEn: method?.descriptionEn ?? "",
     eta: method?.eta ?? "",
+    etaAr: method?.etaAr ?? "",
+    etaEn: method?.etaEn ?? "",
     enabled: method?.enabled ?? true,
     cashOnDeliveryEnabled: method?.cashOnDeliveryEnabled ?? false,
     freeShippingEnabled: method?.freeShippingEnabled ?? false,
@@ -48,6 +106,19 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
     pickupAddress: method?.pickupAddress ?? "",
     deliveryLocations: method?.deliveryLocations ?? [],
   });
+
+  const [addedLangs, setAddedLangs] = useState<string[]>(() => {
+    const langs: string[] = [];
+    if (method?.nameAr || method?.descriptionAr || method?.etaAr) langs.push("ar");
+    if (method?.nameEn || method?.descriptionEn || method?.etaEn) langs.push("en");
+    return langs;
+  });
+
+  function removeLang(lang: string) {
+    setAddedLangs((current) => current.filter((l) => l !== lang));
+    if (lang === "ar") setDraft((d) => ({ ...d, nameAr: "", descriptionAr: "", etaAr: "" }));
+    if (lang === "en") setDraft((d) => ({ ...d, nameEn: "", descriptionEn: "", etaEn: "" }));
+  }
   const [locationDraft, setLocationDraft] = useState<LocationDraft>(emptyLocation);
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -89,13 +160,19 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
       const input = {
         code: draft.code,
         name: draft.name,
+        nameAr: addedLangs.includes("ar") ? draft.nameAr || undefined : undefined,
+        nameEn: addedLangs.includes("en") ? draft.nameEn || undefined : undefined,
         fee: Number(draft.fee),
         freeShippingEnabled: draft.freeShippingEnabled,
         freeShippingMinimum: draft.freeShippingEnabled && draft.freeShippingMinimum ? Number(draft.freeShippingMinimum) : null,
         isPickup: draft.isPickup,
         pickupAddress: draft.isPickup && draft.pickupAddress ? draft.pickupAddress : null,
         description: draft.description || undefined,
+        descriptionAr: addedLangs.includes("ar") ? draft.descriptionAr || undefined : undefined,
+        descriptionEn: addedLangs.includes("en") ? draft.descriptionEn || undefined : undefined,
         eta: draft.eta || undefined,
+        etaAr: addedLangs.includes("ar") ? draft.etaAr || undefined : undefined,
+        etaEn: addedLangs.includes("en") ? draft.etaEn || undefined : undefined,
         enabled: draft.enabled,
         cashOnDeliveryEnabled: draft.cashOnDeliveryEnabled,
         excludedRegions: [],
@@ -125,24 +202,73 @@ export function ShippingMethodForm({ method }: { method?: ShippingMethod }) {
       </div>
 
       <form className="grid gap-5 p-5 text-start" onSubmit={handleSubmit}>
-        <div className="grid gap-4 lg:grid-cols-6">
-          <Field label={t.carrierCode} required>
-            <input className="input-field px-4 py-3 text-left" dir="ltr" placeholder={t.carrierCodePlaceholder} required value={draft.code} onChange={(event) => setDraft({ ...draft, code: event.target.value })} />
-          </Field>
-          <Field className="lg:col-span-2" label={t.carrierName} required>
-            <input className="input-field px-4 py-3 text-start" required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
-          </Field>
-          <Field label={t.shippingFee} required>
-            <input className="input-field px-4 py-3 text-left" dir="ltr" min="0" required step="0.01" type="number" value={draft.fee} onChange={(event) => setDraft({ ...draft, fee: event.target.value })} />
-          </Field>
-          <Field className="lg:col-span-2" label={t.deliveryDuration}>
-            <input className="input-field px-4 py-3 text-start" placeholder={t.deliveryDurationPlaceholder} value={draft.eta} onChange={(event) => setDraft({ ...draft, eta: event.target.value })} />
-          </Field>
+        {/* Default fields */}
+        <div className="rounded-xl border border-outline-variant/20 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="rounded-md bg-surface-container px-2.5 py-1 text-xs font-bold text-on-surface-variant">Default</span>
+            <span className="text-xs text-on-surface-variant">{t.defaultLangHint}</span>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-6">
+            <Field label={t.carrierCode} required>
+              <input className="input-field px-4 py-3 text-left" dir="ltr" placeholder={t.carrierCodePlaceholder} required value={draft.code} onChange={(event) => setDraft({ ...draft, code: event.target.value })} />
+            </Field>
+            <Field className="lg:col-span-2" label={t.carrierName} required>
+              <input className="input-field px-4 py-3 text-start" required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
+            </Field>
+            <Field label={t.shippingFee} required>
+              <input className="input-field px-4 py-3 text-left" dir="ltr" min="0" required step="0.01" type="number" value={draft.fee} onChange={(event) => setDraft({ ...draft, fee: event.target.value })} />
+            </Field>
+            <Field className="lg:col-span-2" label={t.deliveryDuration}>
+              <input className="input-field px-4 py-3 text-start" placeholder={t.deliveryDurationPlaceholder} value={draft.eta} onChange={(event) => setDraft({ ...draft, eta: event.target.value })} />
+            </Field>
+          </div>
+          <div className="mt-4">
+            <Field label={t.shortDescription}>
+              <input className="input-field px-4 py-3 text-start" value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
+            </Field>
+          </div>
         </div>
 
-        <Field label={t.shortDescription}>
-          <input className="input-field px-4 py-3 text-start" value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
-        </Field>
+        {/* Language sections */}
+        {addedLangs.map((lang) => {
+          const meta = LANG_META[lang];
+          const isAr = lang === "ar";
+          return (
+            <div key={lang} className="rounded-xl border border-outline-variant/20 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="rounded-md bg-surface-container px-2.5 py-1 text-xs font-bold text-on-surface-variant">
+                  {meta.flag} {meta.label}
+                </span>
+                <button type="button"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-on-surface-variant hover:bg-error-container/30 hover:text-error"
+                  onClick={() => removeLang(lang)}>
+                  <FiX className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <Field label={t.carrierName}>
+                  <input className="input-field px-4 py-3 text-start" dir={isAr ? "rtl" : "ltr"}
+                    value={isAr ? draft.nameAr : draft.nameEn}
+                    onChange={(e) => setDraft({ ...draft, [isAr ? "nameAr" : "nameEn"]: e.target.value })} />
+                </Field>
+                <Field label={t.deliveryDuration}>
+                  <input className="input-field px-4 py-3 text-start" dir={isAr ? "rtl" : "ltr"}
+                    value={isAr ? draft.etaAr : draft.etaEn}
+                    onChange={(e) => setDraft({ ...draft, [isAr ? "etaAr" : "etaEn"]: e.target.value })} />
+                </Field>
+              </div>
+              <div className="mt-4">
+                <Field label={t.shortDescription}>
+                  <input className="input-field px-4 py-3 text-start" dir={isAr ? "rtl" : "ltr"}
+                    value={isAr ? draft.descriptionAr : draft.descriptionEn}
+                    onChange={(e) => setDraft({ ...draft, [isAr ? "descriptionAr" : "descriptionEn"]: e.target.value })} />
+                </Field>
+              </div>
+            </div>
+          );
+        })}
+
+        <AddLangButton addedLangs={addedLangs} onAdd={(lang) => setAddedLangs((current) => [...current, lang])} />
 
         <DashboardAccordion title={t.carrierOptionsTitle} defaultOpen>
           <div className="grid gap-3 md:grid-cols-2">

@@ -36,7 +36,9 @@ export function ProductPurchasePanel({
   options = [],
   addons = [],
 }: ProductPurchasePanelProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const isEn = locale === "en";
+  const isAr = locale === "ar";
   const selectableOptions = useMemo(() => options.filter((option) => option.values.length > 0), [options]);
   const availableAddons = useMemo(() => addons.filter((addon) => addon.enabled), [addons]);
   const [selectedValues, setSelectedValues] = useState<Record<string, string>>({});
@@ -79,9 +81,17 @@ export function ProductPurchasePanel({
           <h2 className="text-xl font-black text-on-surface">{t.chooseProductType}</h2>
           {selectableOptions.map((option) => (
             <div key={option.id} className="grid gap-2">
-              <p className="font-bold text-on-surface">{option.name}</p>
+              <p className="font-bold text-on-surface">
+                {isEn ? (option.nameEn || option.name) : isAr ? (option.nameAr || option.name) : option.name}
+              </p>
               <div className="flex flex-wrap gap-2">
-                {option.values.map((value) => (
+                {option.values.map((value, vi) => {
+                  const displayValue = isEn
+                    ? (option.valuesEn?.[vi] || value)
+                    : isAr
+                    ? (option.valuesAr?.[vi] || value)
+                    : value;
+                  return (
                   <label key={`${option.id}-${value}`} className="cursor-pointer">
                     <input
                       checked={selectedValues[option.id] === value}
@@ -92,12 +102,13 @@ export function ProductPurchasePanel({
                       onChange={() => handleOptionChange(option, value)}
                     />
                     <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-2 font-bold text-on-surface-variant transition-colors peer-checked:border-primary peer-checked:bg-primary-container/35 peer-checked:text-primary">
-                      <span>{value}</span>
+                      <span>{displayValue}</span>
                       <span className="text-xs opacity-75">{t.inStockCount(option.valueQuantities?.[value] ?? 0)}</span>
                       <span className="text-xs opacity-75">{formatPrice(String(getOptionValuePrice(option, value, Number(displayPrice))), t.currency, t.numberLocale)}</span>
                     </span>
                   </label>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -113,7 +124,7 @@ export function ProductPurchasePanel({
               const checked = selectedAddonIds.includes(addon.id);
               return (
                 <label key={addon.id} className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-4 py-3 font-bold transition ${checked ? "border-primary bg-primary-container/35 text-primary" : "border-outline-variant/40 bg-surface-container-lowest text-on-surface"}`}>
-                  <span>{addon.name}</span>
+                  <span>{isEn ? (addon.nameEn || addon.name) : isAr ? (addon.nameAr || addon.name) : addon.name}</span>
                   <span className="text-sm">+ {formatPrice(String(addon.price), t.currency, t.numberLocale)}</span>
                   <input
                     checked={checked}

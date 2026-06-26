@@ -48,15 +48,21 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
         product.id,
         {
           title: draft.title,
+          titleAr: draft.titleAr || undefined,
+          titleEn: draft.titleEn || undefined,
           description: draft.description,
+          descriptionAr: draft.descriptionAr || undefined,
+          descriptionEn: draft.descriptionEn || undefined,
           badgeLabel: draft.badgeLabel,
+          badgeLabelAr: draft.badgeLabelAr || undefined,
+          badgeLabelEn: draft.badgeLabelEn || undefined,
           price: Number(draft.price),
           discountType: draft.discountType || undefined,
           discountValue: draft.discountType ? Number(draft.discountValue || 0) : 0,
           stock: calculateProductStock(draft),
           categoryId: draft.categoryId || undefined,
           imageUrl: draft.imageUrls[0] || undefined,
-          imageUrls: draft.imageUrls,
+          imageUrls: draft.imageUrls.filter(Boolean),
           options: normalizeProductOptions(draft.options),
           addons: normalizeProductAddons(draft.addons),
           status: draft.status,
@@ -114,8 +120,14 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
 function productToDraft(product: Product): ProductDraft {
   return {
     title: product.title,
+    titleAr: product.titleAr ?? "",
+    titleEn: product.titleEn ?? "",
     description: product.description ?? "",
+    descriptionAr: product.descriptionAr ?? "",
+    descriptionEn: product.descriptionEn ?? "",
     badgeLabel: product.badgeLabel ?? "",
+    badgeLabelAr: product.badgeLabelAr ?? "",
+    badgeLabelEn: product.badgeLabelEn ?? "",
     price: String(product.price),
     discountType: product.discountType ?? "",
     discountValue: product.discountValue ? String(product.discountValue) : "",
@@ -126,8 +138,12 @@ function productToDraft(product: Product): ProductDraft {
     options:
       product.options?.map((option) => ({
         name: option.name,
-        values: option.values.map((value) => ({
+        nameAr: option.nameAr ?? "",
+        nameEn: option.nameEn ?? "",
+        values: option.values.map((value, i) => ({
           value,
+          valueAr: option.valuesAr?.[i] ?? "",
+          valueEn: option.valuesEn?.[i] ?? "",
           quantity: String(option.valueQuantities?.[value] ?? 0),
           price: String(option.valuePrices?.[value] ?? product.price),
         })),
@@ -135,6 +151,8 @@ function productToDraft(product: Product): ProductDraft {
     addons:
       product.addons?.map((addon) => ({
         name: addon.name,
+        nameAr: addon.nameAr ?? "",
+        nameEn: addon.nameEn ?? "",
         price: String(addon.price),
         enabled: addon.enabled,
       })) ?? [],

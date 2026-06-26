@@ -8,7 +8,9 @@ import { CartItem, clearVendorCart, getCartItemKey, getCartSummary, readCart, su
 import { useI18n } from "@/lib/i18n/context";
 
 export function CheckoutView({ vendorId }: { vendorId?: string }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const isEn = locale === "en";
+  const isAr = locale === "ar";
   const items = useCartItems(vendorId);
   const summary = useMemo(() => getCartSummary(items), [items]);
   const [buyer, setBuyer] = useState<ApiUser | null>(null);
@@ -300,9 +302,19 @@ export function CheckoutView({ vendorId }: { vendorId?: string }) {
                 />
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-black text-on-surface">{option.name}</h3>
-                    {option.description ? <p className="mt-2 leading-7 text-on-surface-variant">{option.description}</p> : null}
-                    {option.eta ? <p className="mt-2 text-sm font-bold text-primary">{option.eta}</p> : null}
+                    <h3 className="text-lg font-black text-on-surface">
+                      {isEn ? (option.nameEn || option.name) : isAr ? (option.nameAr || option.name) : option.name}
+                    </h3>
+                    {(isEn ? (option.descriptionEn || option.description) : isAr ? (option.descriptionAr || option.description) : option.description) ? (
+                      <p className="mt-2 leading-7 text-on-surface-variant">
+                        {isEn ? (option.descriptionEn || option.description) : isAr ? (option.descriptionAr || option.description) : option.description}
+                      </p>
+                    ) : null}
+                    {(isEn ? (option.etaEn || option.eta) : isAr ? (option.etaAr || option.eta) : option.eta) ? (
+                      <p className="mt-2 text-sm font-bold text-primary">
+                        {isEn ? (option.etaEn || option.eta) : isAr ? (option.etaAr || option.eta) : option.eta}
+                      </p>
+                    ) : null}
                     {option.vendorCount > 1 ? <p className="mt-1 text-xs font-bold text-on-surface-variant">{t.checkoutVendorCount(option.vendorCount)}</p> : null}
                   </div>
                   <strong className="whitespace-nowrap text-lg text-primary">{formatPrice(Number(option.fee), t.currency, t.numberLocale, t.checkoutFreeShipping)}</strong>

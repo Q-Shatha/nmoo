@@ -25,6 +25,18 @@ const safeUserSelect = Prisma.validator<Prisma.UserSelect>()({
   nationalAddress: true,
   createdAt: true,
   updatedAt: true,
+  theme: {
+    select: {
+      storeName: true,
+      storeNameAr: true,
+      storeNameEn: true,
+      primaryColor: true,
+      secondaryColor: true,
+      textColor: true,
+      logoUrl: true,
+      storeStatus: true,
+    },
+  },
 });
 
 const userWithPasswordSelect = Prisma.validator<Prisma.UserSelect>()({
@@ -260,6 +272,7 @@ export class UsersService {
       nationalAddress: user.nationalAddress,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      theme: user.theme ?? null,
     };
   }
 

@@ -1,16 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { ChangeEvent, FormEvent, KeyboardEvent, useMemo, useRef, useState } from "react";
-import { FiEdit3, FiTrash2 } from "react-icons/fi";
+import { ChangeEvent, FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FiEdit3, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import { ApiError, Category, deleteCategory, deleteProduct, DiscountType, Product, ProductStatus, restoreProduct, updateCategory, updateProduct, uploadProductImage } from "@/lib/api";
 import { DashboardAccordion } from "./DashboardAccordion";
 import { useI18n } from "@/lib/i18n/context";
 
-type ProductDraft = {
+export type ProductDraft = {
   title: string;
+  titleAr: string;
+  titleEn: string;
   description: string;
+  descriptionAr: string;
+  descriptionEn: string;
   badgeLabel: string;
+  badgeLabelAr: string;
+  badgeLabelEn: string;
   price: string;
   discountType: DiscountType | "";
   discountValue: string;
@@ -22,17 +28,23 @@ type ProductDraft = {
   addons: ProductAddonDraft[];
 };
 
-type ProductOptionDraft = {
+export type ProductOptionDraft = {
   name: string;
+  nameAr: string;
+  nameEn: string;
   values: Array<{
     value: string;
+    valueAr: string;
+    valueEn: string;
     quantity: string;
     price: string;
   }>;
 };
 
-type ProductAddonDraft = {
+export type ProductAddonDraft = {
   name: string;
+  nameAr: string;
+  nameEn: string;
   price: string;
   enabled: boolean;
 };
@@ -52,8 +64,14 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
     setEditingProduct(product);
     setDraft({
       title: product.title,
+      titleAr: product.titleAr ?? "",
+      titleEn: product.titleEn ?? "",
       description: product.description ?? "",
+      descriptionAr: product.descriptionAr ?? "",
+      descriptionEn: product.descriptionEn ?? "",
       badgeLabel: product.badgeLabel ?? "",
+      badgeLabelAr: product.badgeLabelAr ?? "",
+      badgeLabelEn: product.badgeLabelEn ?? "",
       price: String(product.price),
       discountType: product.discountType ?? "",
       discountValue: product.discountValue ? String(product.discountValue) : "",
@@ -64,8 +82,12 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
       options:
         product.options?.map((option) => ({
           name: option.name,
-          values: option.values.map((value) => ({
+          nameAr: option.nameAr ?? "",
+          nameEn: option.nameEn ?? "",
+          values: option.values.map((value, i) => ({
             value,
+            valueAr: option.valuesAr?.[i] ?? "",
+            valueEn: option.valuesEn?.[i] ?? "",
             quantity: String(option.valueQuantities?.[value] ?? 0),
             price: String(option.valuePrices?.[value] ?? product.price),
           })),
@@ -73,6 +95,8 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
       addons:
         product.addons?.map((addon) => ({
           name: addon.name,
+          nameAr: addon.nameAr ?? "",
+          nameEn: addon.nameEn ?? "",
           price: String(addon.price),
           enabled: addon.enabled,
         })) ?? [],
@@ -101,8 +125,14 @@ export function DashboardProductManager({ categories, initialProducts }: { categ
         editingProduct.id,
         {
           title: draft.title,
+          titleAr: draft.titleAr || undefined,
+          titleEn: draft.titleEn || undefined,
           description: draft.description,
+          descriptionAr: draft.descriptionAr || undefined,
+          descriptionEn: draft.descriptionEn || undefined,
           badgeLabel: draft.badgeLabel,
+          badgeLabelAr: draft.badgeLabelAr || undefined,
+          badgeLabelEn: draft.badgeLabelEn || undefined,
           price: Number(draft.price),
           discountType: draft.discountType || undefined,
           discountValue: draft.discountType ? Number(draft.discountValue || 0) : 0,
@@ -379,6 +409,73 @@ function CategoryManager({
   );
 }
 
+const SUPPORTED_LANGS = [
+  { code: "ar", label: "العربية" },
+  { code: "en", label: "English" },
+] as const;
+
+const LANG_META: Record<string, { label: string; flag: string }> = {
+  ar: { label: "العربية", flag: "🇸🇦" },
+  en: { label: "English", flag: "🇬🇧" },
+};
+
+function LangSectionLabel({ lang }: { lang: string }) {
+  const meta = LANG_META[lang];
+  if (!meta) return null;
+  return (
+    <div className="flex items-center gap-2">
+      <span className="rounded-md bg-surface-container px-2.5 py-1 text-xs font-bold text-on-surface-variant">
+        {meta.flag} {meta.label}
+      </span>
+    </div>
+  );
+}
+
+function AddLangButton({ addedLangs, onAdd }: { addedLangs: string[]; onAdd: (lang: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const available = SUPPORTED_LANGS.filter((l) => !addedLangs.includes(l.code));
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  if (available.length === 0) return null;
+
+  return (
+    <div ref={ref} className="relative w-fit">
+      <button
+        type="button"
+        title="إضافة لغة"
+        className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed border-outline-variant/50 text-on-surface-variant transition-colors hover:border-primary hover:text-primary"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <FiPlus className="h-4 w-4" />
+      </button>
+      {open && (
+        <div className="absolute start-0 top-10 z-20 min-w-[130px] rounded-xl border border-outline-variant/30 bg-surface shadow-lg">
+          {available.map((lang) => (
+            <button
+              key={lang.code}
+              type="button"
+              dir="ltr"
+              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-bold text-on-surface hover:bg-surface-container-low"
+              onClick={() => { onAdd(lang.code); setOpen(false); }}
+            >
+              {lang.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ProductFields({
   categories,
   draft,
@@ -389,105 +486,147 @@ export function ProductFields({
   setDraft: (draft: ProductDraft) => void;
 }) {
   const { t } = useI18n();
+  const [addedLangs, setAddedLangs] = useState<string[]>(() => {
+    const langs: string[] = [];
+    if (draft.titleAr || draft.descriptionAr || draft.badgeLabelAr) langs.push("ar");
+    if (draft.titleEn || draft.descriptionEn || draft.badgeLabelEn) langs.push("en");
+    if (langs.length === 0) langs.push("ar", "en");
+    return langs;
+  });
   const optionsStock = calculateDraftOptionsStock(draft.options);
   const hasOptionQuantities = hasDraftOptionQuantities(draft.options);
 
+  function removeLang(lang: string) {
+    setAddedLangs((prev) => prev.filter((l) => l !== lang));
+    if (lang === "ar") setDraft({ ...draft, titleAr: "", descriptionAr: "", badgeLabelAr: "" });
+    if (lang === "en") setDraft({ ...draft, titleEn: "", descriptionEn: "", badgeLabelEn: "" });
+  }
+
   return (
     <>
-      <div className="grid gap-4 text-start lg:grid-cols-6">
-        <label className="grid gap-2 lg:col-span-2">
-          <RequiredLabel>{t.productNameLabel}</RequiredLabel>
-          <input className="input-field px-4 py-3 text-start" dir="auto" required value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} />
-        </label>
-        <label className="grid gap-2">
-          <span className="text-sm font-bold text-on-surface">{t.productBadge}</span>
-          <input
-            className="input-field px-4 py-3 text-start"
-            dir="auto"
-            maxLength={40}
-            placeholder={t.productBadgePlaceholder}
-            value={draft.badgeLabel}
-            onChange={(event) => setDraft({ ...draft, badgeLabel: event.target.value })}
-          />
-        </label>
-        <label className="grid gap-2">
-          <RequiredLabel>{t.productPriceLabel}</RequiredLabel>
-          <input className="input-field px-4 py-3 text-right" dir="ltr" min="0" required step="0.01" type="number" value={draft.price} onChange={(event) => setDraft({ ...draft, price: event.target.value })} />
-        </label>
-        <label className="grid gap-2">
-          <span className="text-sm font-bold text-on-surface">{t.discountTypeLabel2}</span>
-          <select
-            className="input-field px-4 py-3 text-start"
-            value={draft.discountType}
-            onChange={(event) => setDraft({ ...draft, discountType: event.target.value as DiscountType | "", discountValue: event.target.value ? draft.discountValue : "" })}
-          >
-            <option value="">{t.noDiscount}</option>
-            <option value="PERCENTAGE">{t.percentageDiscount}</option>
-            <option value="FIXED">{t.fixedDiscount}</option>
-          </select>
-        </label>
-        <label className="grid gap-2">
-          <span className="text-sm font-bold text-on-surface">{t.discountValueLabel}</span>
-          <input
-            className="input-field px-4 py-3 text-start disabled:opacity-50"
-            dir="ltr"
-            disabled={!draft.discountType}
-            max={draft.discountType === "PERCENTAGE" ? "100" : undefined}
-            min="0"
-            step="0.01"
-            type="number"
-            value={draft.discountValue}
-            onChange={(event) => setDraft({ ...draft, discountValue: event.target.value })}
-          />
-        </label>
-        <label className="grid gap-2">
-          <RequiredLabel>{t.quantityLabel2}</RequiredLabel>
-          <input
-            className="input-field px-4 py-3 text-start read-only:bg-surface-container-low read-only:text-on-surface"
-            dir="ltr"
-            min="0"
-            readOnly={hasOptionQuantities}
-            required
-            type="number"
-            value={hasOptionQuantities ? String(optionsStock) : draft.stock}
-            onChange={(event) => setDraft({ ...draft, stock: event.target.value })}
-          />
-          {hasOptionQuantities ? (
-            <span className="text-xs font-bold text-on-surface-variant">
-              {t.currentTotal}{formatStockBreakdown(draft.options)} = {optionsStock}
-            </span>
-          ) : null}
-        </label>
-        <label className="grid gap-2 lg:col-span-2">
-          <span className="text-sm font-bold text-on-surface">{t.categoryLabel}</span>
-          <select className="input-field px-4 py-3 text-start" value={draft.categoryId} onChange={(event) => setDraft({ ...draft, categoryId: event.target.value })}>
-            <option value="">{t.noCategory}</option>
-            {categories.filter((category) => category.vendorId).map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="grid gap-2">
-          <RequiredLabel>{t.statusLabel}</RequiredLabel>
-          <select className="input-field px-4 py-3 text-start" required value={draft.status} onChange={(event) => setDraft({ ...draft, status: event.target.value as ProductStatus })}>
-            <option value="ACTIVE">{t.active}</option>
-            <option value="DRAFT">{t.draft}</option>
-          </select>
-        </label>
-      </div>
+      {/* Default + language sections container */}
+      <div className="rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
+        {/* Default header */}
+        <div className="mb-3 flex items-center gap-2">
+          <span className="rounded-md bg-surface-container px-2.5 py-1 text-xs font-bold text-on-surface-variant">Default</span>
+          <span className="text-xs text-on-surface-variant">{t.defaultLangHint}</span>
+        </div>
 
-      <label className="grid gap-2">
-        <RequiredLabel>{t.productDescriptionLabel}</RequiredLabel>
-        <textarea className="input-field min-h-28 px-4 py-3 text-start" dir="auto" required value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
-      </label>
+        {/* Default fields */}
+        <div className="grid gap-4 text-start">
+          <div className="grid gap-4 lg:grid-cols-6">
+            <label className="grid gap-2 lg:col-span-2">
+              <RequiredLabel>{t.productNameLabel}</RequiredLabel>
+              <input className="input-field px-4 py-3 text-start" dir="auto" required value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} />
+            </label>
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-on-surface">{t.productBadge}</span>
+              <input className="input-field px-4 py-3 text-start" dir="auto" maxLength={40} placeholder={t.productBadgePlaceholder} value={draft.badgeLabel} onChange={(event) => setDraft({ ...draft, badgeLabel: event.target.value })} />
+            </label>
+            <label className="grid gap-2">
+              <RequiredLabel>{t.productPriceLabel}</RequiredLabel>
+              <input className="input-field px-4 py-3 text-right" dir="ltr" min="0" required step="0.01" type="number" value={draft.price} onChange={(event) => setDraft({ ...draft, price: event.target.value })} />
+            </label>
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-on-surface">{t.discountTypeLabel2}</span>
+              <select className="input-field px-4 py-3 text-start" value={draft.discountType} onChange={(event) => setDraft({ ...draft, discountType: event.target.value as DiscountType | "", discountValue: event.target.value ? draft.discountValue : "" })}>
+                <option value="">{t.noDiscount}</option>
+                <option value="PERCENTAGE">{t.percentageDiscount}</option>
+                <option value="FIXED">{t.fixedDiscount}</option>
+              </select>
+            </label>
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-on-surface">{t.discountValueLabel}</span>
+              <input className="input-field px-4 py-3 text-start disabled:opacity-50" dir="ltr" disabled={!draft.discountType} max={draft.discountType === "PERCENTAGE" ? "100" : undefined} min="0" step="0.01" type="number" value={draft.discountValue} onChange={(event) => setDraft({ ...draft, discountValue: event.target.value })} />
+            </label>
+            <label className="grid gap-2">
+              <RequiredLabel>{t.quantityLabel2}</RequiredLabel>
+              <input className="input-field px-4 py-3 text-start read-only:bg-surface-container-low read-only:text-on-surface" dir="ltr" min="0" readOnly={hasOptionQuantities} required type="number" value={hasOptionQuantities ? String(optionsStock) : draft.stock} onChange={(event) => setDraft({ ...draft, stock: event.target.value })} />
+              {hasOptionQuantities && <span className="text-xs font-bold text-on-surface-variant">{t.currentTotal}{formatStockBreakdown(draft.options)} = {optionsStock}</span>}
+            </label>
+            <label className="grid gap-2 lg:col-span-2">
+              <span className="text-sm font-bold text-on-surface">{t.categoryLabel}</span>
+              <select className="input-field px-4 py-3 text-start" value={draft.categoryId} onChange={(event) => setDraft({ ...draft, categoryId: event.target.value })}>
+                <option value="">{t.noCategory}</option>
+                {categories.filter((c) => c.vendorId).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-2">
+              <RequiredLabel>{t.statusLabel}</RequiredLabel>
+              <select className="input-field px-4 py-3 text-start" required value={draft.status} onChange={(event) => setDraft({ ...draft, status: event.target.value as ProductStatus })}>
+                <option value="ACTIVE">{t.active}</option>
+                <option value="DRAFT">{t.draft}</option>
+              </select>
+            </label>
+          </div>
+          <label className="grid gap-2">
+            <RequiredLabel>{t.productDescriptionLabel}</RequiredLabel>
+            <textarea className="input-field min-h-28 px-4 py-3 text-start" dir="auto" required value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
+          </label>
+        </div>
+
+        {/* Language-specific translations */}
+        {addedLangs.map((lang) => {
+          const meta = LANG_META[lang];
+          const isAr = lang === "ar";
+          return (
+            <div key={lang} className="mt-3 grid gap-4 rounded-xl border border-outline-variant/20 p-3">
+              <div className="flex items-center justify-between">
+                <span className="rounded-md bg-surface-container px-2.5 py-1 text-xs font-bold text-on-surface-variant">{meta.flag} {meta.label}</span>
+                <button
+                  type="button"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-on-surface-variant hover:bg-error-container/30 hover:text-error transition-colors"
+                  onClick={() => removeLang(lang)}
+                >
+                  <FiX className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="grid gap-4 lg:grid-cols-[1fr_160px]">
+                <label className="grid gap-2">
+                  <span className="text-sm font-bold text-on-surface">{t.productNameLabel}</span>
+                  <input className="input-field px-4 py-3 text-start" dir={isAr ? "rtl" : "ltr"}
+                    placeholder={isAr ? "مثال: حقيبة ماتشا" : "e.g. Matcha Rose"}
+                    value={isAr ? draft.titleAr : draft.titleEn}
+                    onChange={(e) => setDraft(isAr ? { ...draft, titleAr: e.target.value } : { ...draft, titleEn: e.target.value })} />
+                </label>
+                <label className="grid gap-2">
+                  <span className="text-sm font-bold text-on-surface">{t.productBadge}</span>
+                  <input className="input-field px-4 py-3 text-start" dir={isAr ? "rtl" : "ltr"} maxLength={40}
+                    placeholder={isAr ? "" : "e.g. New"}
+                    value={isAr ? draft.badgeLabelAr : draft.badgeLabelEn}
+                    onChange={(e) => setDraft(isAr ? { ...draft, badgeLabelAr: e.target.value } : { ...draft, badgeLabelEn: e.target.value })} />
+                </label>
+              </div>
+              <label className="grid gap-2">
+                <span className="text-sm font-bold text-on-surface">{t.productDescriptionLabel}</span>
+                <textarea className="input-field min-h-28 px-4 py-3 text-start" dir={isAr ? "rtl" : "ltr"}
+                  placeholder={isAr ? "" : "Describe your product in English..."}
+                  value={isAr ? draft.descriptionAr : draft.descriptionEn}
+                  onChange={(e) => setDraft(isAr ? { ...draft, descriptionAr: e.target.value } : { ...draft, descriptionEn: e.target.value })} />
+              </label>
+            </div>
+          );
+        })}
+
+        <div className="mt-3">
+          <AddLangButton addedLangs={addedLangs} onAdd={(lang) => setAddedLangs((prev) => [...prev, lang])} />
+        </div>
+      </div>
     </>
   );
 }
 
 export function ProductOptionsEditor({ options, onChange }: { options: ProductOptionDraft[]; onChange: (options: ProductOptionDraft[]) => void }) {
   const { t } = useI18n();
+  const [addedLangs, setAddedLangs] = useState<string[]>(() => {
+    const langs: string[] = [];
+    if (options.some((o) => o.nameAr || o.values.some((v) => v.valueAr))) langs.push("ar");
+    if (options.some((o) => o.nameEn || o.values.some((v) => v.valueEn))) langs.push("en");
+    if (langs.length === 0) langs.push("ar", "en");
+    return langs;
+  });
+  const showAr = addedLangs.includes("ar");
+  const showEn = addedLangs.includes("en");
 
   function updateOption(index: number, input: Partial<ProductOptionDraft>) {
     onChange(options.map((option, optionIndex) => (optionIndex === index ? { ...option, ...input } : option)));
@@ -497,26 +636,36 @@ export function ProductOptionsEditor({ options, onChange }: { options: ProductOp
     onChange(
       options.map((option, currentOptionIndex) =>
         currentOptionIndex === optionIndex
-          ? {
-              ...option,
-              values: option.values.map((value, currentValueIndex) => (currentValueIndex === valueIndex ? { ...value, ...input } : value)),
-            }
+          ? { ...option, values: option.values.map((value, currentValueIndex) => (currentValueIndex === valueIndex ? { ...value, ...input } : value)) }
           : option,
       ),
     );
   }
 
   function addOptionValue(optionIndex: number) {
-    onChange(options.map((option, currentOptionIndex) => (currentOptionIndex === optionIndex ? { ...option, values: [...option.values, { value: "", quantity: "0", price: "" }] } : option)));
+    onChange(options.map((option, i) => (i === optionIndex ? { ...option, values: [...option.values, { value: "", valueAr: "", valueEn: "", quantity: "0", price: "" }] } : option)));
   }
 
   function removeOptionValue(optionIndex: number, valueIndex: number) {
-    onChange(options.map((option, currentOptionIndex) => (currentOptionIndex === optionIndex ? { ...option, values: option.values.filter((_, currentValueIndex) => currentValueIndex !== valueIndex) } : option)));
+    onChange(options.map((option, i) => (i === optionIndex ? { ...option, values: option.values.filter((_, vi) => vi !== valueIndex) } : option)));
   }
 
   function removeOption(index: number) {
-    onChange(options.filter((_, optionIndex) => optionIndex !== index));
+    onChange(options.filter((_, i) => i !== index));
   }
+
+  function removeLang(lang: string) {
+    setAddedLangs((prev) => prev.filter((l) => l !== lang));
+    if (lang === "ar") onChange(options.map((o) => ({ ...o, nameAr: "", values: o.values.map((v) => ({ ...v, valueAr: "" })) })));
+    if (lang === "en") onChange(options.map((o) => ({ ...o, nameEn: "", values: o.values.map((v) => ({ ...v, valueEn: "" })) })));
+  }
+
+  const colCount = 1 + (showAr ? 1 : 0) + (showEn ? 1 : 0);
+  const gridCols = colCount === 3
+    ? "grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_112px_112px_44px]"
+    : colCount === 2
+    ? "grid-cols-[minmax(0,1fr)_minmax(0,1fr)_112px_112px_44px]"
+    : "grid-cols-[minmax(0,1fr)_112px_112px_44px]";
 
   return (
     <section className="grid gap-3 rounded-xl bg-surface-container-low p-4">
@@ -525,7 +674,7 @@ export function ProductOptionsEditor({ options, onChange }: { options: ProductOp
           <h3 className="text-lg font-black text-on-surface">{t.productVariantsTitle}</h3>
           <p className="mt-1 text-sm leading-6 text-on-surface-variant">{t.productVariantsDesc}</p>
         </div>
-        <button className="secondary-button px-5 py-3" type="button" onClick={() => onChange([...options, { name: "", values: [{ value: "", quantity: "0", price: "" }] }])}>
+        <button className="secondary-button px-5 py-3" type="button" onClick={() => onChange([...options, { name: "", nameAr: "", nameEn: "", values: [{ value: "", valueAr: "", valueEn: "", quantity: "0", price: "" }] }])}>
           {t.addVariant}
         </button>
       </div>
@@ -536,51 +685,50 @@ export function ProductOptionsEditor({ options, onChange }: { options: ProductOp
         <div className="grid gap-3">
           {options.map((option, index) => (
             <div key={index} className="grid gap-4 rounded-xl bg-surface-container-lowest p-3">
-              <label className="grid gap-2">
-                <span className="text-sm font-bold text-on-surface">{t.variantName}</span>
-                <input className="input-field px-4 py-3 text-start" placeholder={t.variantNamePlaceholder} value={option.name} onChange={(event) => updateOption(index, { name: event.target.value })} />
-              </label>
+              {/* Option name row */}
+              <div className="grid gap-2">
+                <div className={`grid gap-2 ${colCount > 1 ? `sm:grid-cols-${colCount}` : ""}`}>
+                  <div className="grid gap-1">
+                    <span className="rounded-md bg-surface-container px-2 py-0.5 text-xs font-bold text-on-surface-variant w-fit">Default</span>
+                    <input className="input-field px-4 py-3 text-start" placeholder={t.variantNamePlaceholder} value={option.name} onChange={(e) => updateOption(index, { name: e.target.value })} />
+                  </div>
+                  {showAr && (
+                    <div className="grid gap-1">
+                      <LangSectionLabel lang="ar" />
+                      <input className="input-field px-4 py-3 text-start" dir="rtl" placeholder="مثال: اللون" value={option.nameAr} onChange={(e) => updateOption(index, { nameAr: e.target.value })} />
+                    </div>
+                  )}
+                  {showEn && (
+                    <div className="grid gap-1">
+                      <LangSectionLabel lang="en" />
+                      <input className="input-field px-4 py-3 text-start" dir="ltr" placeholder="e.g. Color" value={option.nameEn} onChange={(e) => updateOption(index, { nameEn: e.target.value })} />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Values table */}
               <div className="grid gap-2">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-bold text-on-surface">{t.variantValuesTitle}</span>
-                  <button className="secondary-button px-4 py-2 text-sm" type="button" onClick={() => addOptionValue(index)}>
-                    {t.addVariantValue}
-                  </button>
+                  <button className="secondary-button px-4 py-2 text-sm" type="button" onClick={() => addOptionValue(index)}>{t.addVariantValue}</button>
                 </div>
                 <div className="grid gap-2">
-                  <div className="grid grid-cols-[minmax(0,1fr)_112px_112px_44px] gap-2 rounded-xl bg-surface-container-low p-2 text-xs font-black text-on-surface-variant">
-                    <span>{t.variantValueLabel}</span>
+                  <div className={`grid gap-2 rounded-xl bg-surface-container-low p-2 text-xs font-black text-on-surface-variant ${gridCols}`}>
+                    <span>Default</span>
+                    {showAr && <LangSectionLabel lang="ar" />}
+                    {showEn && <LangSectionLabel lang="en" />}
                     <span className="text-center">{t.variantStockLabel}</span>
                     <span className="text-center">{t.variantPriceLabel}</span>
                     <span aria-hidden="true" />
                   </div>
                   {option.values.map((item, valueIndex) => (
-                    <div key={valueIndex} className="grid grid-cols-[minmax(0,1fr)_112px_112px_44px] gap-2 rounded-xl bg-surface-container-low p-2">
-                      <input
-                        className="input-field px-4 py-3 text-start"
-                        placeholder={t.variantValuePlaceholder}
-                        value={item.value}
-                        onChange={(event) => updateOptionValue(index, valueIndex, { value: event.target.value })}
-                      />
-                      <input
-                        className="input-field px-4 py-3 text-start"
-                        dir="ltr"
-                        min="0"
-                        placeholder={t.stockPlaceholder}
-                        type="number"
-                        value={item.quantity}
-                        onChange={(event) => updateOptionValue(index, valueIndex, { quantity: event.target.value })}
-                      />
-                      <input
-                        className="input-field px-4 py-3 text-start"
-                        dir="ltr"
-                        min="0"
-                        placeholder={t.pricePlaceholder}
-                        step="0.01"
-                        type="number"
-                        value={item.price}
-                        onChange={(event) => updateOptionValue(index, valueIndex, { price: event.target.value })}
-                      />
+                    <div key={valueIndex} className={`grid gap-2 rounded-xl bg-surface-container-low p-2 ${gridCols}`}>
+                      <input className="input-field px-4 py-3 text-start" placeholder={t.variantValuePlaceholder} value={item.value} onChange={(e) => updateOptionValue(index, valueIndex, { value: e.target.value })} />
+                      {showAr && <input className="input-field px-4 py-3 text-start" dir="rtl" placeholder="مثال: أحمر" value={item.valueAr} onChange={(e) => updateOptionValue(index, valueIndex, { valueAr: e.target.value })} />}
+                      {showEn && <input className="input-field px-4 py-3 text-start" dir="ltr" placeholder="e.g. Red" value={item.valueEn} onChange={(e) => updateOptionValue(index, valueIndex, { valueEn: e.target.value })} />}
+                      <input className="input-field px-4 py-3 text-start" dir="ltr" min="0" placeholder={t.stockPlaceholder} type="number" value={item.quantity} onChange={(e) => updateOptionValue(index, valueIndex, { quantity: e.target.value })} />
+                      <input className="input-field px-4 py-3 text-start" dir="ltr" min="0" placeholder={t.pricePlaceholder} step="0.01" type="number" value={item.price} onChange={(e) => updateOptionValue(index, valueIndex, { price: e.target.value })} />
                       <button className="flex h-11 w-11 items-center justify-center rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40" type="button" title={t.deleteVariantValue} aria-label={t.deleteVariantValue} onClick={() => removeOptionValue(index, valueIndex)}>
                         <FiTrash2 aria-hidden="true" className="h-5 w-5" />
                       </button>
@@ -588,6 +736,7 @@ export function ProductOptionsEditor({ options, onChange }: { options: ProductOp
                   ))}
                 </div>
               </div>
+
               <button className="flex h-11 w-fit items-center gap-2 rounded-lg border border-error/30 px-4 py-2 text-sm font-bold text-error hover:bg-error-container/40" type="button" onClick={() => removeOption(index)}>
                 <FiTrash2 aria-hidden="true" className="h-5 w-5" />
                 {t.deleteVariant}
@@ -596,29 +745,66 @@ export function ProductOptionsEditor({ options, onChange }: { options: ProductOp
           ))}
         </div>
       )}
+
+      {options.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <AddLangButton addedLangs={addedLangs} onAdd={(lang) => setAddedLangs((prev) => [...prev, lang])} />
+          {showAr && (
+            <button type="button" className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-error hover:bg-error-container/30 transition-colors" onClick={() => removeLang("ar")}>
+              <FiX className="h-3 w-3" /> إزالة العربية
+            </button>
+          )}
+          {showEn && (
+            <button type="button" className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-error hover:bg-error-container/30 transition-colors" onClick={() => removeLang("en")}>
+              <FiX className="h-3 w-3" /> Remove English
+            </button>
+          )}
+        </div>
+      )}
     </section>
   );
 }
 
 export function ProductAddonsEditor({ addons, onChange }: { addons: ProductAddonDraft[]; onChange: (addons: ProductAddonDraft[]) => void }) {
   const { t } = useI18n();
+  const [addedLangs, setAddedLangs] = useState<string[]>(() => {
+    const langs: string[] = [];
+    if (addons.some((a) => a.nameAr)) langs.push("ar");
+    if (addons.some((a) => a.nameEn)) langs.push("en");
+    if (langs.length === 0) langs.push("ar", "en");
+    return langs;
+  });
+  const showAr = addedLangs.includes("ar");
+  const showEn = addedLangs.includes("en");
+  const colCount = 1 + (showAr ? 1 : 0) + (showEn ? 1 : 0);
+  const gridCols = colCount === 3
+    ? "grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_120px_90px_44px]"
+    : colCount === 2
+    ? "grid-cols-[minmax(0,1fr)_minmax(0,1fr)_120px_90px_44px]"
+    : "grid-cols-[minmax(0,1fr)_120px_90px_44px]";
 
   function updateAddon(index: number, input: Partial<ProductAddonDraft>) {
-    onChange(addons.map((addon, currentIndex) => (currentIndex === index ? { ...addon, ...input } : addon)));
+    onChange(addons.map((addon, i) => (i === index ? { ...addon, ...input } : addon)));
   }
 
   function removeAddon(index: number) {
-    onChange(addons.filter((_, currentIndex) => currentIndex !== index));
+    onChange(addons.filter((_, i) => i !== index));
+  }
+
+  function removeLang(lang: string) {
+    setAddedLangs((prev) => prev.filter((l) => l !== lang));
+    if (lang === "ar") onChange(addons.map((a) => ({ ...a, nameAr: "" })));
+    if (lang === "en") onChange(addons.map((a) => ({ ...a, nameEn: "" })));
   }
 
   return (
     <section className="grid gap-3 rounded-xl bg-surface-container-low p-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h5 className="font-black text-on-surface">{t.productAddonsTitle}</h5>
           <p className="mt-1 text-sm leading-6 text-on-surface-variant">{t.productAddonsDesc}</p>
         </div>
-        <button className="secondary-button px-5 py-3" type="button" onClick={() => onChange([...addons, { name: "", price: "0", enabled: true }])}>
+        <button className="secondary-button px-5 py-3" type="button" onClick={() => onChange([...addons, { name: "", nameAr: "", nameEn: "", price: "0", enabled: true }])}>
           {t.add}
         </button>
       </div>
@@ -627,24 +813,36 @@ export function ProductAddonsEditor({ addons, onChange }: { addons: ProductAddon
         <p className="rounded-xl bg-surface-container-lowest p-4 text-sm font-bold text-on-surface-variant">{t.noAddons}</p>
       ) : (
         <div className="grid gap-2">
-          <div className="grid grid-cols-[minmax(0,1fr)_120px_90px_44px] gap-2 rounded-xl bg-surface-container-lowest p-2 text-xs font-black text-on-surface-variant">
-            <span>{t.addonName}</span>
+          <div className={`grid gap-2 rounded-xl bg-surface-container-lowest p-2 text-xs font-black text-on-surface-variant ${gridCols}`}>
+            <span>Default</span>
+            {showAr && <LangSectionLabel lang="ar" />}
+            {showEn && <LangSectionLabel lang="en" />}
             <span className="text-center">{t.addonPrice}</span>
             <span className="text-center">{t.addonEnabled}</span>
             <span aria-hidden="true" />
           </div>
           {addons.map((addon, index) => (
-            <div key={index} className="grid grid-cols-[minmax(0,1fr)_120px_90px_44px] gap-2 rounded-xl bg-surface-container-lowest p-2">
-              <input className="input-field px-4 py-3 text-start" placeholder={t.addonNamePlaceholder} value={addon.name} onChange={(event) => updateAddon(index, { name: event.target.value })} />
-              <input className="input-field px-4 py-3 text-start" dir="ltr" min="0" step="0.01" type="number" value={addon.price} onChange={(event) => updateAddon(index, { price: event.target.value })} />
+            <div key={index} className={`grid gap-2 rounded-xl bg-surface-container-lowest p-2 ${gridCols}`}>
+              <input className="input-field px-4 py-3 text-start" placeholder={t.addonNamePlaceholder} value={addon.name} onChange={(e) => updateAddon(index, { name: e.target.value })} />
+              {showAr && <input className="input-field px-4 py-3 text-start" dir="rtl" placeholder="مثال: تغليف هدية" value={addon.nameAr} onChange={(e) => updateAddon(index, { nameAr: e.target.value })} />}
+              {showEn && <input className="input-field px-4 py-3 text-start" dir="ltr" placeholder="e.g. Gift wrapping" value={addon.nameEn} onChange={(e) => updateAddon(index, { nameEn: e.target.value })} />}
+              <input className="input-field px-4 py-3 text-start" dir="ltr" min="0" step="0.01" type="number" value={addon.price} onChange={(e) => updateAddon(index, { price: e.target.value })} />
               <label className="flex items-center justify-center rounded-xl border border-outline-variant/30 bg-surface px-3 py-2">
-                <input checked={addon.enabled} type="checkbox" onChange={(event) => updateAddon(index, { enabled: event.target.checked })} />
+                <input checked={addon.enabled} type="checkbox" onChange={(e) => updateAddon(index, { enabled: e.target.checked })} />
               </label>
               <button className="flex h-11 w-11 items-center justify-center rounded-lg border border-error/30 p-0 text-[0px] font-bold text-error hover:bg-error-container/40" type="button" title={t.deleteAddon} aria-label={t.deleteAddon} onClick={() => removeAddon(index)}>
                 <FiTrash2 aria-hidden="true" className="h-5 w-5" />
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {addons.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <AddLangButton addedLangs={addedLangs} onAdd={(lang) => setAddedLangs((prev) => [...prev, lang])} />
+          {showAr && <button type="button" className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-error hover:bg-error-container/30 transition-colors" onClick={() => removeLang("ar")}><FiX className="h-3 w-3" /> إزالة العربية</button>}
+          {showEn && <button type="button" className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-error hover:bg-error-container/30 transition-colors" onClick={() => removeLang("en")}><FiX className="h-3 w-3" /> Remove English</button>}
         </div>
       )}
     </section>
@@ -919,6 +1117,8 @@ function normalizeProductOptions(options: ProductOptionDraft[]) {
   return options
     .map((option) => {
       const values = Array.from(new Set(option.values.map((item) => item.value.trim()).filter(Boolean)));
+      const valuesAr = option.values.map((item) => item.valueAr?.trim() ?? "");
+      const valuesEn = option.values.map((item) => item.valueEn?.trim() ?? "");
       const valueQuantities = values.reduce<Record<string, number>>((result, value) => {
         const source = option.values.find((item) => item.value.trim() === value);
         const quantity = Number(source?.quantity ?? 0);
@@ -936,7 +1136,11 @@ function normalizeProductOptions(options: ProductOptionDraft[]) {
 
       return {
         name: option.name.trim(),
+        nameAr: option.nameAr?.trim() || undefined,
+        nameEn: option.nameEn?.trim() || undefined,
         values,
+        valuesAr: valuesAr.some(Boolean) ? valuesAr : undefined,
+        valuesEn: valuesEn.some(Boolean) ? valuesEn : undefined,
         valueQuantities,
         valuePrices,
       };
@@ -950,6 +1154,8 @@ function normalizeProductAddons(addons: ProductAddonDraft[]) {
       const price = Number(addon.price);
       return {
         name: addon.name.trim(),
+        nameAr: addon.nameAr?.trim() || undefined,
+        nameEn: addon.nameEn?.trim() || undefined,
         price: Number.isFinite(price) && price >= 0 ? Number(price.toFixed(2)) : 0,
         enabled: addon.enabled,
       };
@@ -999,4 +1205,3 @@ function calculateProductStock(draft: ProductDraft) {
 }
 
 export { calculateProductStock, normalizeProductAddons, normalizeProductOptions };
-export type { ProductAddonDraft, ProductDraft, ProductOptionDraft };

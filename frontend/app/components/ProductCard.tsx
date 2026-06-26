@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/api";
 import { themeToStyle } from "@/lib/theme";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
 import { ProductCardCartButton } from "./ProductCardCartButton";
 
 const defaultFallbackImage =
@@ -16,12 +16,25 @@ type ProductCardProps = {
 };
 
 export async function ProductCard({ product, fallbackImage = defaultFallbackImage, index = 0, showVendor = false }: ProductCardProps) {
-  const t = await getT();
+  const [t, locale] = await Promise.all([getT(), getLocale()]);
+  const isEn = locale === "en";
+  const isAr = locale === "ar";
+  const displayCategory = isEn
+    ? (product.category?.nameEn || product.category?.name)
+    : isAr
+    ? (product.category?.nameAr || product.category?.name)
+    : product.category?.name;
+  const displayTitle = isEn
+    ? (product.titleEn || product.title)
+    : (product.titleAr || product.title);
+  const displayBadge = isEn
+    ? (product.badgeLabelEn?.trim() || product.badgeLabel?.trim())
+    : (product.badgeLabelAr?.trim() || product.badgeLabel?.trim());
   const imageUrl = product.imageUrl || product.images?.[0]?.url || fallbackImage;
   const rating = (4.7 + (index % 3) * 0.1).toFixed(1);
   const hasDiscount = Boolean(product.hasDiscount && product.salePrice && Number(product.salePrice) < Number(product.price));
   const displayPrice = hasDiscount ? product.salePrice! : product.price;
-  const badge = hasDiscount ? t.discount : product.badgeLabel?.trim();
+  const badge = hasDiscount ? t.discount : displayBadge;
   const themeStyle = product.vendor?.theme ? themeToStyle(product.vendor.theme) : undefined;
   const vendorHref = product.vendor?.storeUsername ? `/${product.vendor.storeUsername}` : product.vendor ? `/vendors/${product.vendor.id}` : `/vendors/${product.vendorId}`;
   const productHref = `${vendorHref}/products/${product.id}`;
@@ -41,7 +54,7 @@ export async function ProductCard({ product, fallbackImage = defaultFallbackImag
 
       <div className="store-product-card-body flex flex-1 flex-col p-3 text-start sm:p-5">
         <div className="flex items-center justify-between gap-2 sm:gap-3">
-          <p className="text-xs font-bold text-primary">{product.category?.name ?? t.productChip}</p>
+          <p className="text-xs font-bold text-primary">{displayCategory ?? t.productChip}</p>
           {showVendor && product.vendor ? (
             <Link className="text-xs font-bold text-on-surface-variant underline-offset-4 hover:text-primary hover:underline" href={vendorHref}>
               {storeName}
@@ -50,7 +63,7 @@ export async function ProductCard({ product, fallbackImage = defaultFallbackImag
         </div>
 
         <Link href={productHref}>
-          <h3 className="mt-2 line-clamp-2 min-h-10 text-sm font-black leading-5 text-on-surface sm:min-h-12 sm:text-base sm:leading-6">{product.title}</h3>
+          <h3 className="mt-2 line-clamp-2 min-h-10 text-sm font-black leading-5 text-on-surface sm:min-h-12 sm:text-base sm:leading-6">{displayTitle}</h3>
         </Link>
 
         <p className="store-product-card-rating mt-2 text-sm font-bold text-on-surface">★ {rating}</p>
@@ -66,7 +79,7 @@ export async function ProductCard({ product, fallbackImage = defaultFallbackImag
               productId: product.id,
               vendorId: product.vendorId,
               vendorUsername: product.vendor?.storeUsername,
-              title: product.title,
+              title: displayTitle,
               price: Number(displayPrice),
               imageUrl,
               stock: product.stock,

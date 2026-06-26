@@ -290,6 +290,7 @@ const en: Translations = {
   deleteCategoryAriaLabel: (name: string) => `Delete ${name}`,
 
   // ProductFields
+  defaultLangHint: "Shown to all customers if no translation is added",
   productNameLabel: "Product name",
   productBadge: "Product badge",
   productBadgePlaceholder: "e.g. New",
@@ -705,7 +706,7 @@ const en: Translations = {
   landingCustomersLabel: "Customers",
   landingWeeklySales: "This week's sales (USD)",
   landingRecentOrders: "Recent orders",
-  landingNewOrder: "New order 🇩🇪",
+  landingNewOrder: "New order",
   landingNewProducts: "+3 products",
   landingOrderStatusCompleted: "Completed",
   landingOrderStatusShipping: "In delivery",
@@ -716,6 +717,11 @@ const en: Translations = {
   landingStatMerchants: "active merchants",
   landingStatOrders: "completed orders",
   landingStatSatisfaction: "merchant satisfaction",
+  landingStatFreeVal: "$0",
+  landingStatFree: "Free to start",
+  landingStatMinutes: "minutes to launch",
+  landingStatSupport: "Support",
+  landingStatLanguages: "commission on your sales",
 
   // LandingHowItWorks
   landingHowBadge: "How to start?",
@@ -843,9 +849,9 @@ const en: Translations = {
   landingPricingDesc: "No commissions on your sales — just a fixed, transparent subscription.",
   landingPlan1Name: "Free",
   landingPlan1Period: "forever",
-  landingPlan1F1: "Up to 10 products",
+  landingPlan1F1: "Up to 3 products",
   landingPlan1F2: "Custom store link",
-  landingPlan1F3: "Full dashboard",
+  landingPlan1F3: "Full dashboard access",
   landingPlan1F4: "Order management",
   landingPlan1F5: "Email support",
   landingPlan1Cta: "Start free",
@@ -871,8 +877,8 @@ const en: Translations = {
 
   // LandingCTA
   landingCtaBadge: "Start today — free",
-  landingCtaTitle: "Your own store is waiting for you",
-  landingCtaDesc: "Join thousands of merchants around the world who manage their own stores with their unique link on nmoo.",
+  landingCtaTitle: "Launch your store today",
+  landingCtaDesc: "A new platform built to help anyone launch their own store with a unique link — no complexity, no hassle. Be one of the first.",
   landingCtaPrimary: "Open your store for free",
   landingCtaSecondary: "Browse demo store",
 

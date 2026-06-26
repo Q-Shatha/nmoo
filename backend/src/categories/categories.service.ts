@@ -42,6 +42,8 @@ export class CategoriesService {
     return this.prisma.category.create({
       data: {
         name: createCategoryDto.name,
+        nameAr: createCategoryDto.nameAr || null,
+        nameEn: createCategoryDto.nameEn || null,
         slug,
         vendorId,
       },
@@ -58,11 +60,21 @@ export class CategoriesService {
 
     const data: {
       name?: string;
+      nameAr?: string | null;
+      nameEn?: string | null;
       slug?: string;
     } = {};
 
     if (updateCategoryDto.name) {
       data.name = updateCategoryDto.name;
+    }
+
+    if (updateCategoryDto.nameAr !== undefined) {
+      data.nameAr = updateCategoryDto.nameAr || null;
+    }
+
+    if (updateCategoryDto.nameEn !== undefined) {
+      data.nameEn = updateCategoryDto.nameEn || null;
     }
 
     if (updateCategoryDto.slug) {

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { ApiError, Category, getMe, getProducts, getVendor, getVendorShippingCoverage, getVendorStorePages, getVendorTheme, Product, StorePage, VendorTheme } from "@/lib/api";
 import { getStoreTemplate } from "@/lib/store-templates";
 import { themeToStyle } from "@/lib/theme";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
 import { ProductCard } from "../../../components/ProductCard";
 import { PublicFooter } from "../../../components/PublicFooter";
 import { PublicHeader } from "../../../components/PublicHeader";
@@ -53,7 +53,7 @@ type T = Awaited<ReturnType<typeof getT>>;
 export default async function VendorStorefrontPage({ params, searchParams }: StorefrontPageProps) {
   const { vendorId } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
-  const [data, t] = await Promise.all([
+  const [data, t, locale] = await Promise.all([
     loadStorefrontData(vendorId, {
       q: resolvedSearchParams.q?.trim() ?? "",
       category: resolvedSearchParams.category?.trim() || undefined,
@@ -61,22 +61,41 @@ export default async function VendorStorefrontPage({ params, searchParams }: Sto
       page: parsePositiveInteger(resolvedSearchParams.page, 1),
     }),
     getT(),
+    getLocale(),
   ]);
 
   if (!data.ok) {
     return <Unavailable message={data.message} t={t} />;
   }
 
-  return <Storefront data={data} t={t} />;
+  return <Storefront data={data} t={t} locale={locale} />;
 }
 
-function Storefront({ data, t }: { data: Extract<StorefrontData, { ok: true }>; t: T }) {
+function Storefront({ data, t, locale }: { data: Extract<StorefrontData, { ok: true }>; t: T; locale: string }) {
+  const isEn = locale === "en";
+  const isAr = locale === "ar";
+  function categoryDisplayName(category: Category) {
+    const name = isEn ? (category.nameEn || category.name) : isAr ? (category.nameAr || category.name) : category.name;
+    return `${name}${category._count?.products ? ` (${category._count.products})` : ""}`;
+  }
   const profileHref = data.vendor.storeUsername ? `/${data.vendor.storeUsername}` : `/vendors/${data.vendor.id}`;
   const storefrontHref = `${profileHref}/storefront`;
   const storefrontImage = data.theme.storefrontImageUrl || data.theme.bannerUrl || data.products[0]?.imageUrl || data.products[0]?.images?.[0]?.url || fallbackStorefrontImage;
-  const storeName = data.theme.storeName?.trim() || data.vendor.name;
-  const storefrontTitle = data.theme.storefrontTitle?.trim() || t.storefrontTitleDefault(storeName);
-  const storefrontDescription = data.theme.storefrontDescription?.trim() || t.storefrontDescDefault;
+  const storeName = (isEn
+    ? (data.theme.storeNameEn?.trim() || data.theme.storeName?.trim())
+    : isAr
+    ? (data.theme.storeNameAr?.trim() || data.theme.storeName?.trim())
+    : data.theme.storeName?.trim()) || data.vendor.name;
+  const storefrontTitle = (isEn
+    ? (data.theme.storefrontTitleEn?.trim() || data.theme.storefrontTitle?.trim())
+    : isAr
+    ? (data.theme.storefrontTitleAr?.trim() || data.theme.storefrontTitle?.trim())
+    : data.theme.storefrontTitle?.trim()) || t.storefrontTitleDefault(storeName);
+  const storefrontDescription = (isEn
+    ? (data.theme.storefrontDescriptionEn?.trim() || data.theme.storefrontDescription?.trim())
+    : isAr
+    ? (data.theme.storefrontDescriptionAr?.trim() || data.theme.storefrontDescription?.trim())
+    : data.theme.storefrontDescription?.trim()) || t.storefrontDescDefault;
   const template = getStoreTemplate(data.theme.templateId);
 
   return (
@@ -133,7 +152,7 @@ function Storefront({ data, t }: { data: Extract<StorefrontData, { ok: true }>; 
                   key={category.id}
                   active={data.category === category.slug || data.category === category.id}
                   href={buildStorefrontHref(storefrontHref, data.query, category.slug || category.id, undefined, 1)}
-                  label={`${category.name}${category._count?.products ? ` (${category._count.products})` : ""}`}
+                  label={categoryDisplayName(category)}
                 />
               ))}
             </nav>
@@ -155,7 +174,7 @@ function Storefront({ data, t }: { data: Extract<StorefrontData, { ok: true }>; 
                   key={category.id}
                   active={data.category === category.slug || data.category === category.id}
                   href={buildStorefrontHref(storefrontHref, data.query, category.slug || category.id, undefined, 1)}
-                  label={`${category.name}${category._count?.products ? ` (${category._count.products})` : ""}`}
+                  label={categoryDisplayName(category)}
                 />
               ))}
             </nav>

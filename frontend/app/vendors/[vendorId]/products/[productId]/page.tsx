@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { ApiError, getProductById, getProductReviews, getProducts, getVendorTheme, Product, Review, VendorTheme } from "@/lib/api";
 import { getStoreTemplate } from "@/lib/store-templates";
 import { themeToStyle } from "@/lib/theme";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
 import { AddToCartWithQuantity } from "../../../../components/AddToCartWithQuantity";
 import { ProductCard } from "../../../../components/ProductCard";
 import { PublicFooter } from "../../../../components/PublicFooter";
@@ -27,18 +27,35 @@ type T = Awaited<ReturnType<typeof getT>>;
 
 export default async function StoreProductPage({ params }: StoreProductPageProps) {
   const { vendorId, productId } = await params;
-  const t = await getT();
+  const [t, locale] = await Promise.all([getT(), getLocale()]);
+  const isEn = locale === "en";
+  const isAr = locale === "ar";
   const product = await loadProduct(productId, vendorId);
   const relatedProducts = await loadRelatedProducts(product, vendorId);
   const reviews = await loadProductReviews(product.id);
   const theme = await loadProductTheme(product);
   const images = getProductImages(product);
+  const displayTitle = isEn
+    ? (product.titleEn || product.title)
+    : (product.titleAr || product.title);
+  const displayDescription = isEn
+    ? (product.descriptionEn || product.description)
+    : (product.descriptionAr || product.description);
+  const displayCategory = isEn
+    ? (product.category?.nameEn || product.category?.name)
+    : isAr
+    ? (product.category?.nameAr || product.category?.name)
+    : product.category?.name;
   const hasDiscount = Boolean(product.hasDiscount && product.salePrice && Number(product.salePrice) < Number(product.price));
   const displayPrice = hasDiscount ? product.salePrice! : product.price;
   const profileHref = product.vendor?.storeUsername ? `/${product.vendor.storeUsername}` : `/vendors/${vendorId}`;
   const storeHref = `${profileHref}/storefront`;
   const template = getStoreTemplate(theme?.templateId);
-  const storeName = theme?.storeName?.trim() || product.vendor?.name || t.defaultStoreName;
+  const storeName = (isEn
+    ? (theme?.storeNameEn?.trim() || theme?.storeName?.trim())
+    : isAr
+    ? (theme?.storeNameAr?.trim() || theme?.storeName?.trim())
+    : theme?.storeName?.trim()) || product.vendor?.name || t.defaultStoreName;
 
   return (
     <div className={`min-h-screen text-on-surface ${template.className}`} style={theme ? { ...themeToStyle(theme), backgroundColor: "var(--color-background)" } : undefined}>
@@ -51,19 +68,19 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
           </Link>
           <span>/</span>
           <Link className="muted-link" href={`${storeHref}${product.category?.slug ? `?category=${product.category.slug}` : ""}#products`}>
-            {product.category?.name ?? t.allProductsCategory}
+            {displayCategory ?? t.allProductsCategory}
           </Link>
           <span>/</span>
-          <span className="text-on-surface">{product.title}</span>
+          <span className="text-on-surface">{displayTitle}</span>
         </nav>
 
         <section className={`store-product-detail store-product-detail-${template.id} grid grid-cols-1 gap-12 lg:grid-cols-2`}>
           <div className="store-product-info has-interactive-purchase order-2 text-start lg:order-1">
-            <span className="chip mb-4 px-4 py-2 text-sm">{product.category?.name ?? t.productChip}</span>
-            <h1 className="section-title text-2xl leading-tight md:text-3xl">{product.title}</h1>
+            <span className="chip mb-4 px-4 py-2 text-sm">{displayCategory ?? t.productChip}</span>
+            <h1 className="section-title text-2xl leading-tight md:text-3xl">{displayTitle}</h1>
             <ProductPurchasePanel
               basePrice={product.price}
-              description={product.description}
+              description={displayDescription}
               displayPrice={displayPrice}
               hasDiscount={hasDiscount}
               imageUrl={images[0]}
@@ -72,7 +89,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
               productId={product.id}
               productStock={product.stock}
               storeName={storeName}
-              title={product.title}
+              title={displayTitle}
               vendorId={product.vendorId}
               vendorUsername={product.vendor?.storeUsername}
             />
@@ -120,7 +137,7 @@ export default async function StoreProductPage({ params }: StoreProductPageProps
 
             <div className="store-product-meta mt-8 grid gap-4 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5">
               <InfoRow label={t.productStatusLabel} value={<StatusBadge status={product.status} t={t} />} />
-              <InfoRow label={t.productCategoryLabel} value={product.category?.name ?? t.uncategorized} />
+              <InfoRow label={t.productCategoryLabel} value={displayCategory ?? t.uncategorized} />
               <InfoRow
                 label={t.merchantLabel}
                 value={

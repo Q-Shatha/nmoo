@@ -8,6 +8,18 @@ export class CreateCategoryDto {
   @MaxLength(80)
   name!: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  nameAr?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  nameEn?: string;
+
   @ApiPropertyOptional({ example: "shoes", minLength: 2, maxLength: 100 })
   @IsOptional()
   @IsString()

@@ -8,6 +8,18 @@ export class CreateStorePageDto {
   @MaxLength(120)
   title!: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  titleAr?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  titleEn?: string;
+
   @ApiPropertyOptional({ example: "return-policy" })
   @IsOptional()
   @IsString()
@@ -18,6 +30,16 @@ export class CreateStorePageDto {
   @IsString()
   @MinLength(10)
   content!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  contentAr?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  contentEn?: string;
 
   @ApiPropertyOptional({ example: true })
   @IsOptional()

@@ -2,12 +2,57 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import { FiPlus, FiX } from "react-icons/fi";
 import { ApiError, updateMyTheme, uploadProductImage, VendorTheme } from "@/lib/api";
 import { getStoreTemplate, StoreTemplate, storeTemplates, StoreTemplateId } from "@/lib/store-templates";
 import { applyThemeTokens } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n/context";
 import { DashboardAccordion } from "./DashboardAccordion";
+
+const SUPPORTED_LANGS = [
+  { code: "ar", label: "العربية" },
+  { code: "en", label: "English" },
+] as const;
+const LANG_META: Record<string, { label: string; flag: string }> = {
+  ar: { label: "العربية", flag: "🇸🇦" },
+  en: { label: "English", flag: "🇬🇧" },
+};
+
+function AddLangButton({ addedLangs, onAdd }: { addedLangs: string[]; onAdd: (lang: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const available = SUPPORTED_LANGS.filter((l) => !addedLangs.includes(l.code));
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+  if (available.length === 0) return null;
+  return (
+    <div ref={ref} className="relative w-fit">
+      <button type="button" title="إضافة لغة"
+        className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed border-outline-variant/50 text-on-surface-variant transition-colors hover:border-primary hover:text-primary"
+        onClick={() => setOpen((v) => !v)}>
+        <FiPlus className="h-4 w-4" />
+      </button>
+      {open && (
+        <div className="absolute start-0 top-10 z-20 min-w-[130px] rounded-xl border border-outline-variant/30 bg-surface shadow-lg">
+          {available.map((lang) => (
+            <button key={lang.code} type="button" dir="ltr"
+              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-bold text-on-surface hover:bg-surface-container-low"
+              onClick={() => { onAdd(lang.code); setOpen(false); }}>
+              {lang.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 type ImageField = "logoUrl" | "bannerUrl" | "storefrontImageUrl";
 type SocialField = "whatsappUrl" | "instagramUrl" | "tiktokUrl" | "lineUrl" | "telegramUrl" | "xUrl" | "snapchatUrl" | "youtubeUrl" | "contactEmail" | "websiteUrl";
@@ -19,11 +64,29 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
   const [secondaryColor, setSecondaryColor] = useState(initialTheme.secondaryColor);
   const [textColor, setTextColor] = useState(initialTheme.textColor ?? initialTheme.secondaryColor);
   const [storeName, setStoreName] = useState(initialTheme.storeName ?? "");
+  const [storeNameAr, setStoreNameAr] = useState(initialTheme.storeNameAr ?? "");
+  const [storeNameEn, setStoreNameEn] = useState(initialTheme.storeNameEn ?? "");
   const [logoUrl, setLogoUrl] = useState(initialTheme.logoUrl ?? "");
   const [bannerUrl, setBannerUrl] = useState(initialTheme.bannerUrl ?? "");
   const [storefrontImageUrl, setStorefrontImageUrl] = useState(initialTheme.storefrontImageUrl ?? "");
   const [storefrontTitle, setStorefrontTitle] = useState(initialTheme.storefrontTitle ?? "");
+  const [storefrontTitleAr, setStorefrontTitleAr] = useState(initialTheme.storefrontTitleAr ?? "");
+  const [storefrontTitleEn, setStorefrontTitleEn] = useState(initialTheme.storefrontTitleEn ?? "");
   const [storefrontDescription, setStorefrontDescription] = useState(initialTheme.storefrontDescription ?? "");
+  const [storefrontDescriptionAr, setStorefrontDescriptionAr] = useState(initialTheme.storefrontDescriptionAr ?? "");
+  const [storefrontDescriptionEn, setStorefrontDescriptionEn] = useState(initialTheme.storefrontDescriptionEn ?? "");
+  const [addedLangs, setAddedLangs] = useState<string[]>(() => {
+    const langs: string[] = [];
+    if (initialTheme.storeNameAr || initialTheme.storefrontTitleAr || initialTheme.storefrontDescriptionAr) langs.push("ar");
+    if (initialTheme.storeNameEn || initialTheme.storefrontTitleEn || initialTheme.storefrontDescriptionEn) langs.push("en");
+    return langs;
+  });
+
+  function removeLang(lang: string) {
+    setAddedLangs((c) => c.filter((l) => l !== lang));
+    if (lang === "ar") { setStoreNameAr(""); setStorefrontTitleAr(""); setStorefrontDescriptionAr(""); }
+    if (lang === "en") { setStoreNameEn(""); setStorefrontTitleEn(""); setStorefrontDescriptionEn(""); }
+  }
   const [templateId, setTemplateId] = useState<StoreTemplateId>(getStoreTemplate(initialTheme.templateId).id);
   const [socialLinks, setSocialLinks] = useState<Record<SocialField, string>>({
     whatsappUrl: initialTheme.whatsappUrl ?? "",
@@ -137,11 +200,17 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
           secondaryColor,
           textColor,
           storeName,
+          storeNameAr: addedLangs.includes("ar") ? storeNameAr || undefined : undefined,
+          storeNameEn: addedLangs.includes("en") ? storeNameEn || undefined : undefined,
           logoUrl,
           bannerUrl,
           storefrontImageUrl,
           storefrontTitle,
+          storefrontTitleAr: addedLangs.includes("ar") ? storefrontTitleAr || undefined : undefined,
+          storefrontTitleEn: addedLangs.includes("en") ? storefrontTitleEn || undefined : undefined,
           storefrontDescription,
+          storefrontDescriptionAr: addedLangs.includes("ar") ? storefrontDescriptionAr || undefined : undefined,
+          storefrontDescriptionEn: addedLangs.includes("en") ? storefrontDescriptionEn || undefined : undefined,
           templateId,
           ...socialLinks,
         },
@@ -167,17 +236,52 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
 
       <form className="grid gap-5 p-5 text-start lg:grid-cols-[1fr_360px]" onSubmit={handleSubmit}>
         <div className="grid gap-5">
-          <label className="grid gap-2 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
-            <span className="text-sm font-bold text-on-surface">{t.storeName}</span>
-            <input
-              className="input-field px-4 py-3 text-start"
-              maxLength={70}
-              placeholder={t.storeNamePlaceholderTheme}
-              value={storeName}
-              onChange={(event) => setStoreName(event.target.value)}
-            />
-            <span className="text-xs font-bold leading-5 text-on-surface-variant">{t.storeNameHelperTheme}</span>
-          </label>
+          <div className="rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="rounded-md bg-surface-container px-2.5 py-1 text-xs font-bold text-on-surface-variant">Default</span>
+              <span className="text-xs text-on-surface-variant">{t.defaultLangHint}</span>
+            </div>
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-on-surface">{t.storeName}</span>
+              <input
+                className="input-field px-4 py-3 text-start"
+                maxLength={70}
+                placeholder={t.storeNamePlaceholderTheme}
+                value={storeName}
+                onChange={(event) => setStoreName(event.target.value)}
+              />
+              <span className="text-xs font-bold leading-5 text-on-surface-variant">{t.storeNameHelperTheme}</span>
+            </label>
+            {addedLangs.map((lang) => {
+              const meta = LANG_META[lang];
+              const isAr = lang === "ar";
+              return (
+                <div key={lang} className="mt-3 rounded-xl border border-outline-variant/20 p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="rounded-md bg-surface-container px-2.5 py-1 text-xs font-bold text-on-surface-variant">{meta.flag} {meta.label}</span>
+                    <button type="button"
+                      className="flex h-7 w-7 items-center justify-center rounded-lg text-on-surface-variant hover:bg-error-container/30 hover:text-error"
+                      onClick={() => removeLang(lang)}>
+                      <FiX className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <label className="grid gap-2">
+                    <span className="text-sm font-bold text-on-surface">{t.storeName}</span>
+                    <input
+                      className="input-field px-4 py-3 text-start"
+                      dir={isAr ? "rtl" : "ltr"}
+                      maxLength={70}
+                      value={isAr ? storeNameAr : storeNameEn}
+                      onChange={(e) => isAr ? setStoreNameAr(e.target.value) : setStoreNameEn(e.target.value)}
+                    />
+                  </label>
+                </div>
+              );
+            })}
+            <div className="mt-3">
+              <AddLangButton addedLangs={addedLangs} onAdd={(lang) => setAddedLangs((c) => [...c, lang])} />
+            </div>
+          </div>
 
           <div className="grid gap-4 md:grid-cols-3">
             <ColorField label={t.primaryColorLabel} value={primaryColor} onChange={setPrimaryColor} />
@@ -191,26 +295,55 @@ export function ThemeManager({ initialTheme }: { initialTheme: VendorTheme }) {
 
           <DashboardAccordion title={t.storefrontTextAccordionTitle} description={t.storefrontTextAccordionDesc}>
             <div className="grid gap-4">
-              <label className="grid gap-2">
-                <span className="text-sm font-bold text-on-surface">{t.storefrontTitleLabel}</span>
-                <input
-                  className="input-field px-4 py-3 text-start"
-                  maxLength={80}
-                  placeholder={t.storefrontTitlePlaceholder}
-                  value={storefrontTitle}
-                  onChange={(event) => setStorefrontTitle(event.target.value)}
-                />
-              </label>
-              <label className="grid gap-2">
-                <span className="text-sm font-bold text-on-surface">{t.storefrontDescLabel}</span>
-                <textarea
-                  className="input-field min-h-28 resize-y px-4 py-3 text-start leading-8"
-                  maxLength={220}
-                  placeholder={t.storefrontDescPlaceholder}
-                  value={storefrontDescription}
-                  onChange={(event) => setStorefrontDescription(event.target.value)}
-                />
-              </label>
+              {/* Default */}
+              <div className="rounded-xl border border-outline-variant/20 p-3">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="rounded-md bg-surface-container px-2.5 py-1 text-xs font-bold text-on-surface-variant">Default</span>
+                  <span className="text-xs text-on-surface-variant">{t.defaultLangHint}</span>
+                </div>
+                <div className="grid gap-3">
+                  <label className="grid gap-2">
+                    <span className="text-sm font-bold text-on-surface">{t.storefrontTitleLabel}</span>
+                    <input className="input-field px-4 py-3 text-start" maxLength={80} placeholder={t.storefrontTitlePlaceholder} value={storefrontTitle} onChange={(e) => setStorefrontTitle(e.target.value)} />
+                  </label>
+                  <label className="grid gap-2">
+                    <span className="text-sm font-bold text-on-surface">{t.storefrontDescLabel}</span>
+                    <textarea className="input-field min-h-28 resize-y px-4 py-3 text-start leading-8" maxLength={220} placeholder={t.storefrontDescPlaceholder} value={storefrontDescription} onChange={(e) => setStorefrontDescription(e.target.value)} />
+                  </label>
+                </div>
+              </div>
+              {/* Language sections */}
+              {addedLangs.map((lang) => {
+                const meta = LANG_META[lang];
+                const isAr = lang === "ar";
+                return (
+                  <div key={lang} className="rounded-xl border border-outline-variant/20 p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="rounded-md bg-surface-container px-2.5 py-1 text-xs font-bold text-on-surface-variant">{meta.flag} {meta.label}</span>
+                      <button type="button"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-on-surface-variant hover:bg-error-container/30 hover:text-error"
+                        onClick={() => removeLang(lang)}>
+                        <FiX className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="grid gap-3">
+                      <label className="grid gap-2">
+                        <span className="text-sm font-bold text-on-surface">{t.storefrontTitleLabel}</span>
+                        <input className="input-field px-4 py-3 text-start" dir={isAr ? "rtl" : "ltr"} maxLength={80}
+                          value={isAr ? storefrontTitleAr : storefrontTitleEn}
+                          onChange={(e) => isAr ? setStorefrontTitleAr(e.target.value) : setStorefrontTitleEn(e.target.value)} />
+                      </label>
+                      <label className="grid gap-2">
+                        <span className="text-sm font-bold text-on-surface">{t.storefrontDescLabel}</span>
+                        <textarea className="input-field min-h-28 resize-y px-4 py-3 text-start leading-8" dir={isAr ? "rtl" : "ltr"} maxLength={220}
+                          value={isAr ? storefrontDescriptionAr : storefrontDescriptionEn}
+                          onChange={(e) => isAr ? setStorefrontDescriptionAr(e.target.value) : setStorefrontDescriptionEn(e.target.value)} />
+                      </label>
+                    </div>
+                  </div>
+                );
+              })}
+              <AddLangButton addedLangs={addedLangs} onAdd={(lang) => setAddedLangs((c) => [...c, lang])} />
             </div>
           </DashboardAccordion>
 

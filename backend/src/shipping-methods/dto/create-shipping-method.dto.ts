@@ -32,6 +32,18 @@ export class CreateShippingMethodDto {
   @MaxLength(80)
   name!: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  nameAr?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  nameEn?: string;
+
   @ApiProperty({ example: 20, minimum: 0 })
   @Type(() => Number)
   @IsNumber({ maxDecimalPlaces: 2 })
@@ -44,11 +56,35 @@ export class CreateShippingMethodDto {
   @MaxLength(240)
   description?: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(240)
+  descriptionAr?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(240)
+  descriptionEn?: string;
+
   @ApiPropertyOptional({ example: "2 - 5 أيام عمل" })
   @IsOptional()
   @IsString()
   @MaxLength(80)
   eta?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  etaAr?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  etaEn?: string;
 
   @ApiPropertyOptional({ example: true })
   @IsOptional()

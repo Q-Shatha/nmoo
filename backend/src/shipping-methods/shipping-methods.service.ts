@@ -10,8 +10,14 @@ type VendorShippingChoice = {
   vendorId: string;
   code: string;
   name: string;
+  nameAr: string | null;
+  nameEn: string | null;
   description: string | null;
+  descriptionAr: string | null;
+  descriptionEn: string | null;
   eta: string | null;
+  etaAr: string | null;
+  etaEn: string | null;
   fee: Prisma.Decimal;
   freeShippingEnabled: boolean;
   freeShippingMinimum: Prisma.Decimal | null;
@@ -57,9 +63,15 @@ export class ShippingMethodsService {
           vendorId: user.id,
           code,
           name: dto.name.trim(),
+          nameAr: this.optionalText(dto.nameAr),
+          nameEn: this.optionalText(dto.nameEn),
           fee: new Prisma.Decimal(dto.fee),
           description: this.optionalText(dto.description),
+          descriptionAr: this.optionalText(dto.descriptionAr),
+          descriptionEn: this.optionalText(dto.descriptionEn),
           eta: this.optionalText(dto.eta),
+          etaAr: this.optionalText(dto.etaAr),
+          etaEn: this.optionalText(dto.etaEn),
           enabled: dto.enabled ?? true,
           cashOnDeliveryEnabled: dto.cashOnDeliveryEnabled ?? false,
           freeShippingEnabled: dto.freeShippingEnabled ?? false,
@@ -94,6 +106,14 @@ export class ShippingMethodsService {
       data.name = dto.name.trim();
     }
 
+    if (dto.nameAr !== undefined) {
+      data.nameAr = this.optionalText(dto.nameAr);
+    }
+
+    if (dto.nameEn !== undefined) {
+      data.nameEn = this.optionalText(dto.nameEn);
+    }
+
     if (dto.fee !== undefined) {
       data.fee = new Prisma.Decimal(dto.fee);
     }
@@ -102,8 +122,24 @@ export class ShippingMethodsService {
       data.description = this.optionalText(dto.description);
     }
 
+    if (dto.descriptionAr !== undefined) {
+      data.descriptionAr = this.optionalText(dto.descriptionAr);
+    }
+
+    if (dto.descriptionEn !== undefined) {
+      data.descriptionEn = this.optionalText(dto.descriptionEn);
+    }
+
     if (dto.eta !== undefined) {
       data.eta = this.optionalText(dto.eta);
+    }
+
+    if (dto.etaAr !== undefined) {
+      data.etaAr = this.optionalText(dto.etaAr);
+    }
+
+    if (dto.etaEn !== undefined) {
+      data.etaEn = this.optionalText(dto.etaEn);
     }
 
     if (dto.enabled !== undefined) {
@@ -311,8 +347,14 @@ export class ShippingMethodsService {
       .map(([code, group]) => ({
         code,
         name: group[0].name,
+        nameAr: group[0].nameAr,
+        nameEn: group[0].nameEn,
         description: group[0].description,
+        descriptionAr: group[0].descriptionAr,
+        descriptionEn: group[0].descriptionEn,
         eta: group[0].eta,
+        etaAr: group[0].etaAr,
+        etaEn: group[0].etaEn,
         fee: group.reduce((sum, method) => {
           const subtotal = vendorSubtotals.get(method.vendorId) ?? new Prisma.Decimal(0);
           if (method.freeShippingEnabled && method.freeShippingMinimum && subtotal.gte(method.freeShippingMinimum)) {

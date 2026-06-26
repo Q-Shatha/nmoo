@@ -89,8 +89,14 @@ model VendorShippingMethod {
   vendorId    String
   code        String
   name        String
+  nameAr      String?
+  nameEn      String?
   description String?
+  descriptionAr String?
+  descriptionEn String?
   eta         String?
+  etaAr       String?
+  etaEn       String?
   fee         Decimal  @db.Decimal(10, 2)
   enabled     Boolean  @default(true)
   cashOnDeliveryEnabled  Boolean  @default(false)
@@ -116,8 +122,12 @@ model StorePage {
   id        String   @id @default(uuid())
   vendorId  String
   title     String
+  titleAr   String?
+  titleEn   String?
   slug      String
   content   String
+  contentAr String?
+  contentEn String?
   published Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -137,11 +147,17 @@ model VendorTheme {
   secondaryColor String   @default("#1e293b")
   textColor      String   @default("#1e293b")
   storeName      String?
+  storeNameAr    String?
+  storeNameEn    String?
   logoUrl        String?
   bannerUrl      String?
   storefrontImageUrl String?
   storefrontTitle String?
+  storefrontTitleAr String?
+  storefrontTitleEn String?
   storefrontDescription String?
+  storefrontDescriptionAr String?
+  storefrontDescriptionEn String?
   templateId     String   @default("classic")
   storeStatus    String   @default("ACTIVE")
   storeDeletedAt DateTime?
@@ -206,6 +222,8 @@ model Category {
   id        String   @id @default(uuid())
   vendorId  String?
   name      String
+  nameAr    String?
+  nameEn    String?
   slug      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -222,10 +240,16 @@ model Product {
   id          String        @id @default(uuid())
   vendorId    String
   categoryId  String?
-  title       String
-  slug        String        @unique
-  description String?
-  badgeLabel  String?
+  title         String
+  titleAr       String?
+  titleEn       String?
+  slug          String        @unique
+  description   String?
+  descriptionAr String?
+  descriptionEn String?
+  badgeLabel    String?
+  badgeLabelAr  String?
+  badgeLabelEn  String?
   price       Decimal       @db.Decimal(10, 2)
   discountType  DiscountType?
   discountValue Decimal?    @db.Decimal(10, 2)
@@ -257,7 +281,11 @@ model ProductOption {
   id        String   @id @default(uuid())
   productId String
   name      String
+  nameAr    String?
+  nameEn    String?
   values    String[]
+  valuesAr  String[]
+  valuesEn  String[]
   valueQuantities Json @default("{}")
   valuePrices Json @default("{}")
   sortOrder Int      @default(0)
@@ -272,6 +300,8 @@ model ProductAddon {
   id        String   @id @default(uuid())
   productId String
   name      String
+  nameAr    String?
+  nameEn    String?
   price     Decimal  @db.Decimal(10, 2)
   enabled   Boolean  @default(true)
   sortOrder Int      @default(0)
