@@ -316,7 +316,7 @@ export function LandingHowItWorks() {
               )}
               <div className="relative z-10 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/30">
                 <s.icon className="text-2xl" />
-                <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-black text-white">{s.n}</span>
+                <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full text-xs font-black text-white" style={{ background: "#63927b" }}>{s.n}</span>
               </div>
               <h3 className="mb-2 text-lg font-bold text-on-surface">{s.title}</h3>
               <p className="leading-7 text-sm text-on-surface-variant">{s.desc}</p>
@@ -1030,7 +1030,11 @@ export function LandingGlobal() {
               {t.landingGlobalBadge}
             </div>
             <h2 className="section-title text-3xl md:text-4xl">
-              {t.landingGlobalTitle}
+              {t.landingGlobalTitle.split(/(بكل دولة في العالم|in every country in the world)/i).map((part, i) =>
+                /بكل دولة في العالم|in every country in the world/i.test(part)
+                  ? <span key={i} style={{ background: "linear-gradient(135deg, #884a70, #63927b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>{part}</span>
+                  : <span key={i}>{part}</span>
+              )}
             </h2>
             <p className="section-copy mt-4 text-lg leading-loose">
               {t.landingGlobalDesc}
@@ -1140,42 +1144,55 @@ export function LandingUniqueURL() {
 
 /* ════════════════════ PRICING TEASER ════════════════════ */
 export function LandingPricing() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const isAr = locale === "ar";
 
   const plans = [
     {
       name: t.landingPlan1Name,
-      price: "$0",
+      priceAr: "٠ ريال",
+      priceEn: "$0",
       period: t.landingPlan1Period,
       color: "border-outline-variant/30",
       badge: "",
+      planKey: "free",
       features: [
-        { text: t.landingPlan1F1 },
-        { text: t.landingPlan1F2 },
-        { text: t.landingPlan1F3, crossed: true },
-        { text: t.landingPlan1F4 },
-        { text: t.landingPlan1F5 },
-      ],
+        t.landingPlan1F1, t.landingPlan1F2, t.landingPlan1F3,
+        t.landingPlan1F4, t.landingPlan1F5, t.landingPlan1F6,
+      ].map((text) => ({ text })),
       cta: t.landingPlan1Cta,
       ctaClass: "secondary-button",
     },
     {
       name: t.landingPlan2Name,
-      price: "$19",
+      priceAr: "٤٥ ريال",
+      priceEn: "$12",
       period: t.landingPlan2Period,
       color: "border-primary",
       badge: t.landingPlan2Badge,
-      features: [t.landingPlan2F1, t.landingPlan2F2, t.landingPlan2F3, t.landingPlan2F4, t.landingPlan2F5, t.landingPlan2F6].map((text) => ({ text })),
+      planKey: "standard",
+      features: [
+        t.landingPlan2F1, t.landingPlan2F2, t.landingPlan2F3, t.landingPlan2F4,
+        t.landingPlan2F5, t.landingPlan2F6, t.landingPlan2F7, t.landingPlan2F8,
+        t.landingPlan2F9, t.landingPlan2F10, t.landingPlan2F11,
+      ].map((text) => ({ text })),
       cta: t.landingPlan2Cta,
       ctaClass: "primary-button",
     },
     {
       name: t.landingPlan3Name,
-      price: "$49",
+      priceAr: "٩٠ ريال",
+      priceEn: "$24",
       period: t.landingPlan3Period,
       color: "border-secondary",
       badge: "",
-      features: [t.landingPlan3F1, t.landingPlan3F2, t.landingPlan3F3, t.landingPlan3F4, t.landingPlan3F5, t.landingPlan3F6].map((text) => ({ text })),
+      planKey: "premium",
+      features: [
+        t.landingPlan3F1, t.landingPlan3F2, t.landingPlan3F3,
+        t.landingPlan3F4, t.landingPlan3F5, t.landingPlan3F6,
+        t.landingPlan3F7, t.landingPlan3F8, t.landingPlan3F9,
+        t.landingPlan3F10, t.landingPlan3F11,
+      ].map((text) => ({ text })),
       cta: t.landingPlan3Cta,
       ctaClass: "secondary-button",
     },
@@ -1205,21 +1222,19 @@ export function LandingPricing() {
               <div className="text-center">
                 <p className="text-lg font-bold text-on-surface">{plan.name}</p>
                 <p className="mt-2 text-4xl font-extrabold text-primary">
-                  {plan.price}
+                  {isAr ? plan.priceAr : plan.priceEn}
                   <span className="text-base font-normal text-on-surface-variant"> {plan.period}</span>
                 </p>
               </div>
               <ul className="flex-1 space-y-2.5">
                 {plan.features.map((f) => (
-                  <li key={f.text} className="flex items-center gap-2 text-sm text-on-surface-variant">
-                    {f.crossed
-                      ? <FiX className="shrink-0 text-on-surface-variant/40" />
-                      : <HiCheckCircle className="shrink-0 text-primary" />}
-                    <span className={f.crossed ? "opacity-40" : ""}>{f.text}</span>
+                  <li key={f.text} className="flex items-start gap-2 text-sm text-on-surface-variant">
+                    <HiCheckCircle className="mt-0.5 shrink-0 text-primary" />
+                    <span>{f.text}</span>
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className={`${plan.ctaClass} py-3 text-center`}>{plan.cta}</Link>
+              <Link href={`/subscribe?plan=${plan.planKey}`} className={`${plan.ctaClass} py-3 text-center`}>{plan.cta}</Link>
             </div>
           ))}
         </div>
@@ -1590,7 +1605,7 @@ export function LandingCTA() {
     <section className="py-20">
       <div className="app-container">
         <div className="relative overflow-hidden rounded-3xl p-10 text-center md:p-20"
-          style={{ background: "linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #24243e 100%)" }}>
+          style={{ background: "linear-gradient(135deg, #092327 0%, #1a3d35 50%, #2d1422 100%)" }}>
 
           {/* glow blobs */}
           <div className="pointer-events-none absolute inset-0">
@@ -1625,7 +1640,7 @@ export function LandingCTA() {
               <Link href="/register"
                 className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl px-7 py-4 text-base font-bold text-white shadow-2xl transition-all duration-300 hover:scale-105 sm:px-9 sm:text-lg"
                 dir={isEn ? "ltr" : "rtl"}
-                style={{ background: "linear-gradient(135deg, #a855f7, #6366f1)" }}>
+                style={{ background: "linear-gradient(135deg, #884a70, #092327)" }}>
                 <span className="absolute inset-0 translate-x-full bg-white/10 transition-transform duration-300 group-hover:translate-x-0" />
                 <span className="relative whitespace-nowrap">{t.landingCtaPrimary}</span>
                 {isEn ? (

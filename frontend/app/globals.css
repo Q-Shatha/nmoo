@@ -242,33 +242,46 @@ html {
 
 /* ── Landing page palette override ── */
 [data-landing] {
+  /* primary — وردي داكن */
   --color-primary: #884a70;
-  --color-primary-container: #bf88aa;
+  --color-primary-container: #f2d6e8;
   --color-on-primary: #ffffff;
   --color-on-primary-container: #3a0a28;
-  --color-primary-fixed: #f0c8de;
+  --color-primary-fixed: #f5e0ee;
   --color-primary-fixed-dim: #bf88aa;
+  --color-inverse-primary: #bf88aa;
+  --color-surface-tint: #884a70;
+
+  /* secondary — تيلي داكن */
   --color-secondary: #092327;
-  --color-secondary-container: #092327;
+  --color-secondary-container: #0f3538;
   --color-on-secondary: #ffffff;
   --color-on-secondary-container: #fafafa;
+
+  /* tertiary — أخضر زيتي */
   --color-tertiary: #63927b;
-  --color-tertiary-container: #c2ddd3;
+  --color-tertiary-container: #c8e6da;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #0d2d22;
+
+  /* surfaces — أبيض ودرجاته بدون تغيير */
   --color-background: #fafafa;
   --color-surface: #fafafa;
   --color-surface-bright: #ffffff;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f2f2f2;
-  --color-surface-container: #e8e8e8;
-  --color-surface-container-high: #dedede;
-  --color-surface-container-highest: #d4d4d4;
-  --color-on-surface: #092327;
-  --color-on-background: #092327;
-  --color-on-surface-variant: #3a4040;
-  --color-outline: #63927b;
-  --color-outline-variant: #c4d6ce;
-  --color-surface-tint: #884a70;
-  --color-inverse-primary: #bf88aa;
+  --color-surface-container-low: #f5f5f5;
+  --color-surface-container: #efefef;
+  --color-surface-container-high: #e8e8e8;
+  --color-surface-container-highest: #e0e0e0;
+
+  /* نصوص */
+  --color-on-surface: #1a1a1a;
+  --color-on-background: #1a1a1a;
+  --color-on-surface-variant: #555555;
+
+  /* حدود */
+  --color-outline: #aaaaaa;
+  --color-outline-variant: #dddddd;
 }
 
 .dashboard-panel label:has(> input[readonly][type="number"]) {

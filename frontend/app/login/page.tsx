@@ -18,7 +18,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <>
-      <PublicHeader />
+      <PublicHeader hideLogo />
       <main className="app-container flex min-h-screen items-center justify-center pt-8">
         <section className="grid w-full max-w-5xl overflow-hidden rounded-2xl border border-outline-variant/25 bg-surface-container-lowest shadow-xl lg:grid-cols-[0.9fr_1.1fr]">
           <div className="bg-primary-container/30 p-8 text-start lg:p-10">

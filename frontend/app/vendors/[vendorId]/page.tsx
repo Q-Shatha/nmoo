@@ -10,7 +10,7 @@ import { PublicFooter } from "../../components/PublicFooter";
 import { PublicHeader } from "../../components/PublicHeader";
 import { ReviewsCarousel } from "./ReviewsCarousel";
 
-const fallbackHeroImage = "https://images.unsplash.com/photo-1607082349566-187342175e2f?auto=format&fit=crop&w=1800&q=85";
+const fallbackHeroImage = "/banner-default.jpg";
 
 type VendorPageProps = {
   params: Promise<{ vendorId: string }>;
@@ -188,34 +188,7 @@ function LocationUnsupportedNotice({ coverage, t }: { coverage: StoreCoverage; t
 void LocationUnsupportedNotice;
 
 function ReviewsSection({ profileHref, reviews, storeName, t }: { profileHref: string; reviews: Review[]; storeName: string; t: T }) {
-  const localFallbackReviews: Review[] = [
-    {
-      id: "fallback-ahmad",
-      productId: "fallback",
-      userId: "fallback-ahmad",
-      rating: 5,
-      status: "APPROVED" as const,
-      comment: t.fallbackReviewText1,
-      createdAt: new Date(0).toISOString(),
-      updatedAt: new Date(0).toISOString(),
-      user: { id: "fallback-ahmad", name: t.fallbackReviewName1, city: t.fallbackReviewCity1 },
-      product: { id: "fallback", title: t.fallbackProductTitle, vendorId: "fallback" },
-    },
-    {
-      id: "fallback-sarah",
-      productId: "fallback",
-      userId: "fallback-sarah",
-      rating: 5,
-      status: "APPROVED" as const,
-      comment: t.fallbackReviewText2,
-      createdAt: new Date(0).toISOString(),
-      updatedAt: new Date(0).toISOString(),
-      user: { id: "fallback-sarah", name: t.fallbackReviewName2, city: t.fallbackReviewCity2 },
-      product: { id: "fallback", title: t.fallbackProductTitle, vendorId: "fallback" },
-    },
-  ];
-  const visibleReviews = reviews.length > 0 ? reviews : localFallbackReviews;
-  const carouselReviews = [...visibleReviews, ...visibleReviews];
+  const hasReviews = reviews.length > 0;
 
   return (
     <section id="reviews" className="mt-20 rounded-[28px] border border-outline-variant/25 bg-surface-container-lowest px-5 py-10 shadow-sm md:px-16 md:py-14">
@@ -229,29 +202,20 @@ function ReviewsSection({ profileHref, reviews, storeName, t }: { profileHref: s
         </div>
       </div>
 
-      <ReviewsCarousel fallbackContext={storeName} fallbackReviews={localFallbackReviews} reviews={visibleReviews} />
+      {hasReviews ? (
+        <ReviewsCarousel fallbackContext={storeName} fallbackReviews={[]} reviews={reviews} />
+      ) : (
+        <div className="mt-10 flex flex-col items-center gap-3 py-10 text-center text-on-surface-variant">
+          <span className="text-4xl">💬</span>
+          <p className="font-bold text-on-surface">{t.noReviewsYet ?? "لا توجد تقييمات بعد"}</p>
+          <p className="text-sm">{t.beFirstToReview ?? "كن أول من يكتب تقييماً لهذا المتجر"}</p>
+        </div>
+      )}
 
       <div className="mt-8 flex justify-start">
         <Link className="primary-button px-7 py-3" href={`${profileHref}/reviews/new`}>
           {t.writeReview}
         </Link>
-      </div>
-
-      <div className="hidden">
-        <div className="review-marquee-track flex w-max gap-6">
-        {carouselReviews.map((review, index) => (
-          <ReviewCard
-            key={`${review.id}-${index}`}
-            city={review.user?.city ?? t.nmooCustomer}
-            avatarUrl={review.user?.avatarUrl}
-            initials={getInitials(review.user?.name ?? "ع")}
-            name={review.user?.name ?? t.nmooCustomer}
-            productTitle={review.product?.title}
-            rating={review.rating}
-            text={review.comment || t.fallbackReviewDefault}
-          />
-        ))}
-        </div>
       </div>
     </section>
   );

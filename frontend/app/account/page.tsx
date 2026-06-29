@@ -18,7 +18,7 @@ export default async function AccountPage() {
 
   return (
     <>
-      <PublicHeader />
+      <PublicHeader hideLogo />
       <main className="app-container min-h-screen pt-8">
         <section className="mx-auto max-w-3xl">
           <div className="mb-8 text-start">

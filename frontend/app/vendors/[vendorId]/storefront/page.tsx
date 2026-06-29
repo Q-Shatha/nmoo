@@ -141,7 +141,9 @@ function Storefront({ data, t, locale }: { data: Extract<StorefrontData, { ok: t
           <details className="storefront-category-panel group rounded-2xl border border-outline-variant/25 bg-surface-container-lowest p-4 text-start shadow-sm lg:hidden">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
               <span className="text-lg font-black text-on-surface">{t.storefrontCategoriesLabel}</span>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-low text-primary transition group-open:rotate-180">⌄</span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-low text-primary transition-transform duration-200 group-open:rotate-180">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M6 9l6 6 6-6"/></svg>
+              </span>
             </summary>
             <nav className="mt-4 grid gap-2">
               <CategoryLink active={!data.category && !data.filter} href={buildStorefrontHref(storefrontHref, data.query, undefined, undefined, 1)} label={t.storefrontAllProducts} />

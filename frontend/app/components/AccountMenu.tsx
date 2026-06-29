@@ -6,6 +6,7 @@ import type { Dispatch, RefObject, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
 import { ApiError, ApiUser, getMe } from "@/lib/api";
 import { useI18n } from "@/lib/i18n/context";
+import { LOCALE_COOKIE } from "@/lib/i18n";
 
 type AccountMenuProps = {
   compact?: boolean;
@@ -87,7 +88,7 @@ function MobileAccountMenu({ isLoading, user, onLogout }: { isLoading: boolean; 
   }
 
   return (
-    <details ref={detailsRef} className="group relative">
+    <details ref={detailsRef} className="group relative" suppressHydrationWarning>
       <summary
         className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full border border-outline-variant/45 bg-surface-container-lowest text-primary shadow-sm transition hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden"
         aria-label={tMobile.accountMenuLabel}
@@ -97,11 +98,12 @@ function MobileAccountMenu({ isLoading, user, onLogout }: { isLoading: boolean; 
       <div className="fixed inset-0 z-[80] hidden h-dvh group-open:block" role="presentation">
         <button className="absolute inset-0 h-full w-full bg-black/35" type="button" aria-label={tMobile.closeMenu} data-mobile-menu-close onClick={closeMenu} />
         <aside className="absolute right-0 top-0 flex h-dvh w-[84vw] max-w-80 flex-col overflow-hidden rounded-l-3xl border-l border-outline-variant/40 bg-surface-container-lowest p-4 text-start shadow-2xl" role="menu">
-          <div className="mb-3 flex items-center justify-start border-b border-outline-variant/20 pb-4">
+          <div className="mb-3 flex items-center justify-between border-b border-outline-variant/20 pb-4">
             <button className="icon-button border border-outline-variant bg-surface-container-lowest" type="button" aria-label={tMobile.closeMenu} data-mobile-menu-close onClick={closeMenu}>
               <CloseIcon />
             </button>
           </div>
+          <LangSwitcherAccordion locale={locale} />
           <div className="grid gap-1 overflow-y-auto">
             {isLoading ? (
               <div className="grid gap-3 px-3 py-3">
@@ -248,6 +250,55 @@ function MenuLink({ href, label, onClick }: { href: string; label: string; onCli
     <Link className="block rounded-lg px-3 py-3 font-bold text-on-surface hover:bg-surface-container-low" href={href} role="menuitem" onClick={onClick}>
       {label}
     </Link>
+  );
+}
+
+const LANGUAGES = [
+  { code: "ar", label: "العربية", flag: "🇸🇦" },
+  { code: "en", label: "English", flag: "🇬🇧" },
+] as const;
+
+function LangSwitcherAccordion({ locale }: { locale: string }) {
+  const [open, setOpen] = useState(false);
+  function switchLang(code: string) {
+    document.cookie = `${LOCALE_COOKIE}=${code}; path=/; max-age=31536000; samesite=lax`;
+    window.location.reload();
+  }
+  const current = LANGUAGES.find((l) => l.code === locale);
+  return (
+    <div className="border-b border-outline-variant/20 pb-2 mb-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-3 hover:bg-surface-container-low"
+      >
+        <span className="flex items-center gap-2 font-bold text-on-surface">
+          <span>{current?.flag}</span>
+          <span>{current?.label}</span>
+        </span>
+        <span className={`flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-low text-on-surface-variant transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M6 9l6 6 6-6"/></svg>
+        </span>
+      </button>
+      {open && (
+        <div className="mt-1 grid gap-1 px-2">
+          {LANGUAGES.map((lang) => (
+            <button
+              key={lang.code}
+              type="button"
+              onClick={() => switchLang(lang.code)}
+              className={`flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition hover:bg-surface-container-low ${
+                locale === lang.code ? "text-primary" : "text-on-surface-variant"
+              }`}
+            >
+              <span>{lang.flag}</span>
+              <span>{lang.label}</span>
+              {locale === lang.code && <span className="ms-auto text-primary">✓</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

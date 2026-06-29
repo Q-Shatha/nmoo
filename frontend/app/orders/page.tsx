@@ -17,7 +17,7 @@ export default async function OrdersPage() {
 
   return (
     <>
-      <PublicHeader />
+      <PublicHeader hideLogo />
       <main className="app-container min-h-screen pt-8">
         <section className="mb-8 text-start">
           <p className="chip px-4 py-2 text-sm">{t.myOrdersChip}</p>

@@ -3,6 +3,7 @@ import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import Script from "next/script";
 import { cookies } from "next/headers";
 import { I18nProvider } from "@/lib/i18n/context";
+import { HelpWidget } from "./components/HelpWidget";
 import { parseLocale, localeDir, localeLang, LOCALE_COOKIE } from "@/lib/i18n";
 import "./globals.css";
 
@@ -45,6 +46,7 @@ export default async function RootLayout({
         <Script src="/nmoo-mobile-controls.js" strategy="beforeInteractive" />
         <I18nProvider locale={locale}>
           {children}
+          <HelpWidget />
         </I18nProvider>
       </body>
     </html>

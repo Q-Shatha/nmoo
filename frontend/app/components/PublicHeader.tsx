@@ -14,24 +14,25 @@ type PublicHeaderProps = {
   storeLogoUrl?: string | null;
   storeName?: string | null;
   hideCart?: boolean;
+  hideLogo?: boolean;
 };
 
-export async function PublicHeader({ active, storeHref, profileHref, vendorId, storeLogoUrl, storeName, hideCart = false }: PublicHeaderProps) {
+export async function PublicHeader({ active, storeHref, profileHref, vendorId, storeLogoUrl, storeName, hideCart = false, hideLogo = false }: PublicHeaderProps) {
   const [user, t] = await Promise.all([loadHeaderUser(), getT()]);
 
   return (
     <header className="sticky inset-x-0 top-0 z-50 border-b border-outline-variant/25 bg-surface-container-lowest/95 backdrop-blur-xl">
-      <nav className="mx-auto grid min-h-24 w-full max-w-[1180px] grid-cols-[1fr_auto_1fr] items-center px-4 py-3 sm:px-6 lg:px-8" dir="ltr">
-        <div className="justify-self-start">{hideCart ? <span aria-hidden="true" /> : <CartLink vendorId={vendorId} />}</div>
-
-        <div className="justify-self-center">
-          <StoreNavLink href={profileHref ?? storeHref} active={active === "store"} logoUrl={storeLogoUrl} label={storeName} />
-        </div>
-
-        <div className="flex items-center justify-end gap-2 justify-self-end" aria-label={t.accountOptionsLabel}>
-          <LangSwitcher />
+      <nav className="mx-auto flex min-h-24 w-full max-w-[1180px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8" dir="rtl">
+        <div className="flex items-center gap-2" aria-label={t.accountOptionsLabel}>
           <AccountMenu compact initialUser={user} />
+          <div className="hidden sm:block"><LangSwitcher /></div>
         </div>
+
+        {active !== "home" && !hideLogo && (
+          <StoreNavLink href={profileHref ?? storeHref} active={active === "store"} logoUrl={storeLogoUrl} label={storeName} />
+        )}
+
+        <div dir="ltr">{hideCart || active === "home" ? <span aria-hidden="true" /> : <CartLink vendorId={vendorId} />}</div>
       </nav>
     </header>
   );

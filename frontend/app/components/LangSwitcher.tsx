@@ -9,7 +9,7 @@ const LANGUAGES = [
   { code: "en", label: "English", flag: "🇬🇧" },
 ] as const;
 
-export function LangSwitcher() {
+export function LangSwitcher({ fullWidth = false }: { fullWidth?: boolean }) {
   const { locale } = useI18n();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -31,17 +31,38 @@ export function LangSwitcher() {
     router.refresh();
   }
 
+  if (fullWidth) {
+    return (
+      <div className="grid grid-cols-2 gap-2">
+        {LANGUAGES.map((lang) => (
+          <button
+            key={lang.code}
+            onClick={() => switchLang(lang.code)}
+            className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold transition ${
+              locale === lang.code
+                ? "border-primary bg-primary-container/20 text-primary"
+                : "border-outline-variant text-on-surface-variant hover:bg-surface-container-low"
+            }`}
+          >
+            <span className="text-base">{lang.flag}</span>
+            <span>{lang.label}</span>
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-xl border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface-variant hover:bg-surface-container-low transition"
+        className="flex h-9 w-9 items-center justify-center rounded-xl border border-outline-variant bg-surface-container-low font-black text-on-surface transition hover:bg-surface-container"
         aria-label="Select language"
         aria-expanded={open}
         aria-haspopup="listbox"
+        style={{ fontSize: locale === "ar" ? "15px" : "12px", letterSpacing: locale === "ar" ? "0" : "0.04em" }}
       >
-        <GlobeIcon />
-        <span>{locale === "ar" ? "عر" : "EN"}</span>
+        {locale === "ar" ? "ع" : "EN"}
       </button>
 
       {open && (

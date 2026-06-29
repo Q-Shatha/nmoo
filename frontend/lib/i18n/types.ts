@@ -820,6 +820,7 @@ export interface Translations {
   landingPlan1F3: string;
   landingPlan1F4: string;
   landingPlan1F5: string;
+  landingPlan1F6: string;
   landingPlan1Cta: string;
   landingPlan2Name: string;
   landingPlan2Period: string;
@@ -830,6 +831,11 @@ export interface Translations {
   landingPlan2F4: string;
   landingPlan2F5: string;
   landingPlan2F6: string;
+  landingPlan2F7: string;
+  landingPlan2F8: string;
+  landingPlan2F9: string;
+  landingPlan2F10: string;
+  landingPlan2F11: string;
   landingPlan2Cta: string;
   landingPlan3Name: string;
   landingPlan3Period: string;
@@ -839,6 +845,11 @@ export interface Translations {
   landingPlan3F4: string;
   landingPlan3F5: string;
   landingPlan3F6: string;
+  landingPlan3F7: string;
+  landingPlan3F8: string;
+  landingPlan3F9: string;
+  landingPlan3F10: string;
+  landingPlan3F11: string;
   landingPlan3Cta: string;
 
   // LandingCTA
@@ -1040,6 +1051,8 @@ export interface Translations {
   fallbackReviewCity2: string;
   fallbackProductTitle: string;
   fallbackReviewDefault: string;
+  noReviewsYet: string;
+  beFirstToReview: string;
 
   // PublicFooter
   footerQuickLinks: string;
